@@ -605,6 +605,3 @@ section:has(> .list-heading [data-edit-toggle]:not(:checked)) .akce-sloupec{disp
 .pruvodce-nadpis{margin:.2rem 0 0}
 /* Síťový přístup */
 .sit-form{display:grid;gap:.7rem;max-width:640px}.sit-form label.checkline{display:flex;gap:.6rem;align-items:baseline;font-weight:400}.sit-form .checkline input{width:auto;min-height:auto;flex:none}.sit-form .checkline small{display:block}.sit-domaci{display:grid;gap:.6rem;border-left:3px solid var(--color-border);padding-left:.8rem}.sit-domaci[hidden]{display:none}.sit-poznamka{font-size:.85rem;color:var(--color-muted);margin:0}.sit-poznamka[hidden]{display:none}.sit-nova-adresa{font-size:1.3rem}.sit-stav code{overflow-wrap:anywhere}
-/* Horní menu: na širokých obrazovkách o kus širší než obsah stránky, aby se vešly i texty (širší písma, např. na Linuxu).
-   O zobrazení textů/ikon dál rozhoduje měření v ui.js (nav-compact) – platí pro každé písmo i přiblížení. */
-@media(min-width:1320px){.app-nav-inner{max-width:calc(var(--page-max-width) + 5rem)}}
