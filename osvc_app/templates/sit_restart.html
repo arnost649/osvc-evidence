@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block content %}
+<section class="login" data-sit-restart>
+  <h1>Aplikace se restartuje</h1>
+  {% if nova %}<p>Nová adresa v domácí síti:</p><p class="sit-nova-adresa"><a href="{{ nova }}"><code>{{ nova }}</code></a></p>
+  <p class="settings-help">Otevřete ji v mobilu nebo jiném zařízení ve stejné síti. Na tomto počítači dál funguje <code>{{ lokalni }}</code>.</p>
+  {% else %}<p>Aplikace bude dostupná jen na tomto počítači: <code>{{ lokalni }}</code>.</p>{% endif %}
+  {% if firewall.zprava %}<p class="{{ 'settings-help' if firewall.stav in ('ok', 'bez_zasahu') else 'flash error' }}" data-firewall="{{ firewall.stav }}">Firewall: {{ firewall.zprava }}</p>{% endif %}
+  {% if restart %}<p class="settings-help" data-sit-cekam>Za pár sekund se vrátíte do Nastavení…</p>
+  <script>setTimeout(()=>{location.href='/settings?tab=sit';},6000);</script>
+  {% else %}<p class="settings-help">Změna se projeví po příštím spuštění aplikace.</p>{% endif %}
+  <p><a class="button" href="/settings?tab=sit">Zpět do Nastavení</a></p>
+</section>
+{% endblock %}

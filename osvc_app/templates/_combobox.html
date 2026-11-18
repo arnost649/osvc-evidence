@@ -1,0 +1,23 @@
+{% from '_icons.html' import icon %}
+{% macro counterparty_combobox(name_field,id_field,options,verify_supplier=false,verify_fuel=false,verify_employer=false) -%}
+<label class="counterparty-field">{{name_field.label}}
+  <div class="combobox{% if verify_supplier or verify_fuel or verify_employer %} combobox-verified{% endif %}" data-combobox data-hidden-input="{{id_field.id}}">
+    <input id="{{name_field.id}}" name="{{name_field.name}}" value="{{name_field.data or ''}}" maxlength="200"{% if name_field.flags.required %} required{% endif %} autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false">
+    {% if verify_supplier or verify_fuel or verify_employer %}<button type="button" class="combobox-verify{% if verify_supplier %} verify-supplier-name{% endif %}" {% if (name_field.data or '')|trim|length < 2 %}disabled{% endif %} aria-label="Ověřit subjekt"  data-name-input="{{name_field.id}}" data-id-input="{{id_field.id}}" data-csrf="{{csrf_token()}}" {% if verify_employer %}data-employer-verify{% elif verify_fuel %}data-fuel-verify data-url="{{url_for('main.verify_fuel')}}"{% else %}data-url="{{url_for('main.verify_supplier_name')}}" data-name-apply-url="{{url_for('main.apply_supplier_name_verification')}}"{% endif %}>{{icon('verify')}}</button>{% endif %}
+    <button type="button" class="combobox-toggle" aria-label="Zobrazit možnosti" tabindex="-1">▾</button>
+    <div class="combobox-options" role="listbox" hidden>{% for item in options %}<button type="button" role="option" data-value="{{item.id}}" data-name="{{item.name}}"{% if item.ico %} data-ico="{{item.ico}}"{% endif %}><span>{{item.name}}</span>{% if item.operator_name and item.operator_name != item.name %}<small>{{item.operator_name}}</small>{% endif %}</button>{% endfor %}</div>
+    {% if verify_fuel %}<div class="entity-result" data-fuel-check-results role="status" hidden></div>{% endif %}
+  </div>
+  {% for error in name_field.errors %}<small>{{error}}</small>{% endfor %}
+</label>
+{%- endmacro %}
+{% macro insurer_combobox(id,code,rows,name='') %}
+{% set selected=rows|selectattr('insurance_code','equalto',code)|first %}
+<label class="profile-form-field insurer-field"><span class="profile-form-label">Zdravotní pojišťovna</span>
+<div class="combobox combobox-verified" data-combobox data-insurer-combobox data-hidden-input="{{ id }}-code">
+<input id="{{ id }}"{% if name %} name="insurer_query"{% endif %} value="{{ selected.short_name ~ ' · ' ~ code if selected else '' }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="Zdravotní pojišťovna">
+<button type="button" class="combobox-verify" data-insurer-verify  aria-label="Ověřit v číselníku">{{ icon('verify') }}</button>
+<button type="button" class="combobox-toggle" aria-label="Zobrazit možnosti">▾</button>
+<div class="combobox-options" role="listbox" hidden>{% for r in rows if r.active %}<button type="button" role="option" data-value="{{ r.insurance_code }}" data-name="{{ r.short_name }} · {{ r.insurance_code }}" data-search="{{ r.short_name }} {{ r.name }} {{ r.insurance_code }} {{ r.ico }}"><span>{{ r.short_name }} · {{ r.insurance_code }}</span><small>{{ r.name }} · IČO {{ r.ico }}</small></button>{% endfor %}</div>
+</div><input type="hidden" id="{{ id }}-code"{% if name %} name="{{ name }}"{% endif %} value="{{ code }}"><small class="profile-form-meta" data-insurer-result>{{ '✓ Ověřeno v číselníku' if selected and selected.active else 'Vyberte pojišťovnu' }}</small></label>
+{% endmacro %}

@@ -1,0 +1,44 @@
+name: Chyba
+description: Něco nefunguje, jak má
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Děkujeme za hlášení. **Nepřikládejte svá skutečná data** (databázi, zálohy, doklady, IČO, částky) – stačí popis.
+        Bezpečnostní chyby hlaste soukromě (Security → Report a vulnerability), ne sem.
+  - type: input
+    id: verze
+    attributes:
+      label: Verze aplikace
+      description: Nastavení → Účet / Přihlášení → Aktualizace
+      placeholder: např. 1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Systém
+      options: [Windows 11, Windows 10, Ubuntu / Debian, jiný]
+    validations:
+      required: true
+  - type: textarea
+    id: co
+    attributes:
+      label: Co se stalo
+      description: Co jste dělali, co jste čekali a co se stalo místo toho.
+    validations:
+      required: true
+  - type: textarea
+    id: kroky
+    attributes:
+      label: Jak to zopakovat
+      placeholder: |
+        1. Otevřu …
+        2. Kliknu na …
+  - type: textarea
+    id: log
+    attributes:
+      label: Záznam z logu (nepovinné)
+      description: Windows `%LOCALAPPDATA%\OSVC evidence\data\logy\osvc.log`, Linux `/var/lib/osvc-evidence/data/logy/osvc.log`. Zkontrolujte, že v něm nejsou osobní údaje.
+      render: text

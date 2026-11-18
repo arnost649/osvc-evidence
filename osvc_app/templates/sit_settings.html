@@ -1,0 +1,25 @@
+{# Síťový přístup – jen samostatná instalace (Windows, Linux). Volba v instance/sit.json, po uložení restart aplikace. #}
+{% set s = sit_info %}
+<section class="settings-card settings-tab-panel" id="settings-panel-sit" role="tabpanel" data-settings-panel="sit" hidden>
+  <div class="settings-card-head"><div class="settings-icon">{{ icon('settings') }}</div><div><h2>Síťový přístup</h2><p class="settings-help">Odkud jde aplikaci otevřít – jen z tohoto počítače, nebo i z mobilu a jiných zařízení doma.</p></div></div>
+  <div class="sit-stav" data-sit-stav>
+    <p>Teď je aplikace dostupná {% if s.sitove_adresy %}<strong>v domácí síti</strong> na {% for a in s.sitove_adresy %}<a href="{{ a }}"><code>{{ a }}</code></a>{% endfor %} a na tomto počítači na <code>{{ s.lokalni_adresa }}</code>{% else %}<strong>jen na tomto počítači</strong> (<code>{{ s.lokalni_adresa }}</code>){% endif %}.</p>
+    {% if s.stav.chyba %}<p class="flash error" data-sit-chyba>{{ s.stav.chyba }}</p>{% endif %}
+    {% if s.firewall.zprava %}<p class="settings-help" data-sit-firewall="{{ s.firewall.stav }}">Firewall: {{ s.firewall.zprava }}</p>{% endif %}
+  </div>
+  <form method="post" action="{{ url_for('main.update_sit') }}" class="sit-form" data-sit-form data-adaptery="{{ url_for('main.sit_adaptery') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="checkline"><input type="radio" name="rezim" value="lokalni"{% if s.volba.rezim != 'domaci' %} checked{% endif %}><span><strong>Jen tento počítač</strong> (doporučeno)<small class="settings-help">Aplikace je dostupná jen na adrese localhost, odjinud se k ní nikdo nepřipojí.</small></span></label>
+    <label class="checkline"><input type="radio" name="rezim" value="domaci"{% if s.volba.rezim == 'domaci' %} checked{% endif %}><span><strong>Zpřístupnit v domácí síti</strong><small class="settings-help">Aplikaci otevřete i z mobilu nebo jiného počítače připojeného ke stejné síti.</small></span></label>
+    <div class="sit-domaci" data-sit-domaci>
+      <label>Síťový adaptér<select name="ip" data-sit-ip><option value="{{ s.volba.ip }}">{{ s.volba.ip or 'Načítám adaptéry…' }}</option></select></label>
+      <p class="settings-help" data-sit-ip-pomoc>Předvybraný je adaptér, kterým jde internet. Port: {{ s.port }}.</p>
+      <p class="sit-poznamka" data-sit-verejna hidden>Síť je ve Windows nastavená jako Veřejná, připojení z jiných zařízení nepůjde.</p>
+      <p class="sit-poznamka" role="note">{{ s.upozorneni }}</p>
+      <label class="checkline"><input type="checkbox" name="potvrzeni" value="ano"><span>Rozumím</span></label>
+      {% if s.windows %}<p class="settings-help">Windows se zeptá na oprávnění správce – aplikace přidá do firewallu pravidlo jen pro port {{ s.port }} a jen pro soukromou síť.</p>{% else %}<p class="settings-help">Pravidla firewallu aplikace na Linuxu nemění; je-li zapnutý (např. ufw), povolte port {{ s.port }} ručně.</p>{% endif %}
+    </div>
+    <button type="submit">Uložit a restartovat aplikaci</button>
+  </form>
+</section>
+<script src="{{ url_for('static', filename='sit.js') }}" defer></script>

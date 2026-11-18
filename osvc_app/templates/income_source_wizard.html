@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% from '_icons.html' import icon %}
+{% block content %}
+{# přidání zdroje na jedné stránce – stejná pole jako karta zdroje (_source_settings.html). #}
+<div class="page-header"><h1>Přidat zdroj příjmů</h1></div>
+<section class="section-panel income-source-card income-source-new"><form id="income-source-new" action="/settings/income-sources/add" method="post" data-source-new>
+<input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+{% if providers|length==1 %}{% for key,name in providers.items() %}<input type="hidden" name="provider" value="{{key}}"><p class="settings-help">Typ zdroje: <strong>{{name}}</strong></p>{% endfor %}
+{% else %}<label>Typ zdroje<select name="provider">{% for key,name in providers.items() %}<option value="{{key}}" {% if source.provider==key %}selected{% endif %}>{{name}}</option>{% endfor %}</select></label>{% endif %}
+{% include '_source_settings.html' %}
+<p class="settings-help">Po uložení se připojení hned ověří. Zdroj zůstane vypnutý, dokud ověření neprojde a nekliknete na <strong>Aktivovat</strong>.
+ Chybějící přístupy na serveru může správce doplnit později – rozpracované nastavení jde uložit i tak.</p>
+<div class="source-actions"><button type="submit">{{icon('check')}} Uložit a ověřit</button><a class="button secondary" href="/settings?tab=sources">Zrušit</a></div>
+</form></section>
+{% endblock %}

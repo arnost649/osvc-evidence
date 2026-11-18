@@ -1,0 +1,3 @@
+# Knihovny pro Windows (I4): stejné verze jako server + časová pásma (Windows nemá databázi tz, kterou potřebuje zoneinfo).
+-r ../../requirements.lock.txt
+tzdata==2025.3

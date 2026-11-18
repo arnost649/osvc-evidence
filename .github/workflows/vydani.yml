@@ -1,0 +1,253 @@
+# Automatické vydání OSVČ evidence (krok V5). Tag vX.Y.Z → testy → .exe (Windows, Inno Setup) a .deb (Ubuntu) → zkoušky
+# instalace, aktualizace z předchozího vydání a odinstalace (s ponecháním i se smazáním dat) → GitHub Release s popisem
+# z CHANGELOG.md. Jakákoli chyba = nic se nevydá. Ruční spuštění (workflow_dispatch) jen sestaví a vyzkouší, nevydá.
+# Tag s pomlčkou (v0.1.0-test) = předběžné vydání (pre-release).
+name: Vydání
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      verze:
+        description: 'Zkušební číslo verze (jen sestavení a zkoušky, bez vydání)'
+        required: true
+        default: '0.0.0-zkouska'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vydani-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  testy:
+    runs-on: ubuntu-24.04
+    outputs:
+      verze: ${{ steps.verze.outputs.verze }}
+      predchozi: ${{ steps.verze.outputs.predchozi }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Knihovny
+        run: python -m pip install --disable-pip-version-check -r requirements.lock.txt
+      - name: Testy (prázdná databáze ze schématu, bez dat ze serveru)
+        run: OSVC_PYTHON="$(command -v python)" bash tests/spust.sh --ci
+      - name: Verze, popis změn a předchozí vydání
+        id: verze
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = push ]; then
+            V="${GITHUB_REF_NAME#v}"
+            python scripts/ci/popis_vydani.py "$GITHUB_REF_NAME" > /dev/null   # bez popisu v CHANGELOG.md se nevydá
+          else
+            V="${{ inputs.verze }}"
+          fi
+          echo "verze=$V" >> "$GITHUB_OUTPUT"
+          P=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 30 --exclude-drafts --json tagName --jq "[.[] | select(.tagName != \"${GITHUB_REF_NAME}\")][0].tagName // \"\"")
+          echo "predchozi=$P" >> "$GITHUB_OUTPUT"
+          echo "Verze $V, předchozí vydání: ${P:-žádné (aktualizace se zkusí přeinstalací stejné verze)}"
+
+  windows:
+    needs: testy
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      VERZE: ${{ needs.testy.outputs.verze }}
+      PREDCHOZI: ${{ needs.testy.outputs.predchozi }}
+      GH_TOKEN: ${{ github.token }}
+      PYTHONUTF8: '1'   # konzole runneru je cp1252 – zkušební skript vypisuje česky
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Sestavení (vložitelný Python + knihovny + aplikace)
+        run: |
+          python -m pip install --disable-pip-version-check pillow==12.3.0
+          python scripts/windows/sestav.py --verze $env:VERZE --vystup sestaveni
+      - name: Instalátor .exe (Inno Setup)
+        run: |
+          choco install innosetup --no-progress -y
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "sestaveni\windows-$env:VERZE\osvc.iss"
+          if ($LASTEXITCODE) { throw "ISCC skončil chybou $LASTEXITCODE" }
+          Move-Item "sestaveni\windows-$env:VERZE\osvc-evidence-$env:VERZE-windows.exe" sestaveni\
+      # Podpis instalátoru (SignPath Foundation, zdarma pro open source). Zapne se nastavením proměnné repozitáře
+      # SIGNPATH_ORGANIZATION_ID a tajného údaje SIGNPATH_API_TOKEN po schválení přihlášky; do té doby se kroky přeskočí.
+      - name: Nepodepsaný instalátor pro SignPath
+        id: nepodepsany
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: nepodepsany-instalator
+          path: sestaveni/osvc-evidence-*-windows.exe
+          if-no-files-found: error
+      - name: Podpis (SignPath)
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: osvc-evidence
+          signing-policy-slug: ${{ startsWith(github.ref, 'refs/tags/') && 'release-signing' || 'test-signing' }}
+          github-artifact-id: ${{ steps.nepodepsany.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: sestaveni/podepsany
+      - name: Podepsaný instalátor místo nepodepsaného
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        run: |
+          $podpis = Get-AuthenticodeSignature (Get-ChildItem sestaveni\podepsany\*.exe)[0].FullName
+          if ($podpis.Status -ne 'Valid') { throw "podpis není platný: $($podpis.Status)" }
+          Move-Item -Force sestaveni\podepsany\*.exe sestaveni\
+      - name: Zkouška instalace, aktualizace a odinstalace
+        run: |
+          $ErrorActionPreference = 'Stop'; $PSNativeCommandUseErrorActionPreference = $true
+          $App = "$env:LOCALAPPDATA\Programs\OSVC evidence"; $Koren = "$env:LOCALAPPDATA\OSVC evidence"
+          $Konf = "$Koren\osvc.conf"; $Data = "$Koren\data"; $Nova = (Resolve-Path "sestaveni\osvc-evidence-$env:VERZE-windows.exe").Path
+          function Instaluj($exe) { $p = Start-Process $exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru; if ($p.ExitCode) { throw "instalace skončila $($p.ExitCode)" } }
+          function Spust { Start-Process "$App\python\pythonw.exe" -ArgumentList '-X','utf8','-m','osvc_app.spoustec','spust','--config',"`"$Konf`"",'--data',"`"$Data`"" -WorkingDirectory "$App\app"; Start-Sleep 3 }
+          function Odinstaluj($param) {
+            $p = Start-Process "$App\unins000.exe" -ArgumentList (@('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') + $param) -Wait -PassThru
+            for ($i = 0; $i -lt 120 -and (Test-Path "$App\unins000.exe"); $i++) { Start-Sleep 1 }
+            if (Test-Path "$App\python") { throw 'program po odinstalaci zůstal' }
+          }
+          function Zbytky {
+            if (Get-Process pythonw, python -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$App*" }) { throw 'po odinstalaci běží proces aplikace' }
+            $start = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs"
+            if (Get-ChildItem "$start\OSV* evidence*.lnk", "$start\Zastavit OSV*.lnk", "$start\Startup\OSV*.lnk", "$env:USERPROFILE\Desktop\OSV*.lnk" -ErrorAction SilentlyContinue) { throw 'zůstal zástupce' }
+            if (Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -like '*OSVC*' }) { throw 'zůstal plánovač Windows' }
+            if (Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like '*OSV*' }) { throw 'zůstalo pravidlo firewallu' }
+            if (Get-NetTCPConnection -State Listen -LocalPort 8765 -ErrorAction SilentlyContinue) { throw 'port aplikace je stále obsazený' }
+          }
+          # 1) aktualizace: předchozí vydání s daty → nová verze (bez předchozího vydání: přeinstalace stejné verze)
+          if ($env:PREDCHOZI) { gh release download $env:PREDCHOZI --repo $env:GITHUB_REPOSITORY --pattern '*-windows.exe' --dir stara; Instaluj (Get-ChildItem stara\*.exe)[0].FullName }
+          else { Instaluj $Nova }
+          Spust; $Url = python scripts/ci/zkouska_instalace.py port --config $Konf
+          python scripts/ci/zkouska_instalace.py pripravit --url $Url --otisk otisk.json
+          Instaluj $Nova                                       # instalátor sám zastaví běžící starou verzi
+          if (-not (Test-Path "$Data\osvc.sqlite3")) { throw 'instalace smazala data' }
+          Spust; python scripts/ci/zkouska_instalace.py overit --url $Url --otisk otisk.json
+          # síťový přístup: zapnout → pravidlo firewallu (jen port, profil Soukromá) a odpověď na adrese runneru; vypnout → pravidlo pryč
+          $Port = [int](($Url -split ':')[-1])
+          python scripts/ci/zkouska_instalace.py sit --url $Url --rezim domaci
+          $Pravidlo = Get-NetFirewallRule -DisplayName 'OSVC evidence' -ErrorAction SilentlyContinue
+          if (-not $Pravidlo) { throw 'po zapnutí síťového přístupu chybí pravidlo firewallu' }
+          if ($Pravidlo.Profile.ToString() -ne 'Private') { throw "pravidlo platí pro profil $($Pravidlo.Profile), ne jen Soukromá" }
+          if ([int](($Pravidlo | Get-NetFirewallPortFilter).LocalPort) -ne $Port) { throw 'pravidlo není jen pro port aplikace' }
+          python scripts/ci/zkouska_instalace.py sit --url $Url --rezim lokalni
+          if (Get-NetFirewallRule -DisplayName 'OSVC evidence' -ErrorAction SilentlyContinue) { throw 'pravidlo zůstalo po návratu na Jen tento počítač' }
+          python scripts/ci/zkouska_instalace.py sit --url $Url --rezim domaci   # odinstalace musí pravidlo odebrat (kontrola Zbytky)
+          # 2) odinstalace s ponecháním dat (výchozí)
+          Odinstaluj @(); Zbytky
+          if (-not (Test-Path "$Data\osvc.sqlite3")) { throw 'odinstalace smazala data, i když se měla ponechat' }
+          # 3) znovu instalace použije ponechaná data; pak odinstalace se smazáním dat (nejdřív ZIP záloha)
+          Instaluj $Nova; Spust; python scripts/ci/zkouska_instalace.py overit --url $Url --otisk otisk.json
+          $Zaloha = "$env:RUNNER_TEMP\zaloha-pred-smazanim"
+          Odinstaluj @('/SMAZATDATA=1', "/ZALOHA=`"$Zaloha`""); Zbytky
+          if (Test-Path $Koren) { throw 'data se měla smazat' }
+          if (-not (Get-ChildItem "$Zaloha\OSVC-evidence-zaloha-*.zip")) { throw 'před smazáním chybí ZIP záloha' }
+          Write-Output 'Windows: instalace, aktualizace i obě odinstalace v pořádku.'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: balik-windows
+          path: sestaveni/osvc-evidence-*-windows.exe
+          if-no-files-found: error
+
+  linux:
+    needs: testy
+    runs-on: ubuntu-24.04
+    env:
+      VERZE: ${{ needs.testy.outputs.verze }}
+      PREDCHOZI: ${{ needs.testy.outputs.predchozi }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Sestavení .deb
+        run: |
+          python -m pip install --disable-pip-version-check pillow==12.3.0
+          python scripts/linux/sestav_deb.py --verze "$VERZE" --vystup sestaveni
+      - name: Čisté Ubuntu v kontejneru (závislosti a instalace bez systemd)
+        run: |
+          docker run --rm -v "$PWD/sestaveni:/b:ro" ubuntu:24.04 bash -ec '
+            apt-get update -qq; DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /b/osvc-evidence_*.deb >/dev/null
+            test -x /opt/osvc-evidence/venv/bin/python; test -f /etc/osvc-evidence/osvc.conf; test -d /var/lib/osvc-evidence/data
+            echo "kontejner: instalace v pořádku"'
+      - name: Zkouška instalace, aktualizace a odinstalace (se službou)
+        run: |
+          set -euo pipefail
+          DEB=$(ls sestaveni/osvc-evidence_*.deb); Z=scripts/ci/zkouska_instalace.py
+          # 1) aktualizace: předchozí vydání s daty → nová verze (bez předchozího vydání: přeinstalace stejné verze)
+          if [ -n "$PREDCHOZI" ]; then gh release download "$PREDCHOZI" --repo "$GITHUB_REPOSITORY" --pattern '*.deb' --dir stara; sudo apt-get install -y ./stara/*.deb
+          else sudo apt-get install -y "./$DEB"; fi
+          URL=$(sudo python3 $Z port --config /etc/osvc-evidence/osvc.conf); PORT=${URL##*:}
+          python $Z pripravit --url "$URL" --otisk otisk.json
+          sudo dpkg -i "$DEB"
+          python $Z overit --url "$URL" --otisk otisk.json
+          systemctl is-active osvc-evidence
+          # síťový přístup: restart služby (systemd) a odpověď na adrese runneru; firewall se na Linuxu nemění
+          python $Z sit --url "$URL" --rezim domaci; systemctl is-active osvc-evidence
+          python $Z sit --url "$URL" --rezim lokalni; systemctl is-active osvc-evidence
+          chyba() { echo "CHYBA: $*"; exit 1; }
+          zbytky() {
+            systemctl is-active --quiet osvc-evidence && chyba "služba běží"
+            systemctl is-enabled --quiet osvc-evidence 2>/dev/null && chyba "služba je povolená"
+            pgrep -f osvc_app.spoustec >/dev/null && chyba "běží proces aplikace"
+            grep -q ":$PORT " <<< "$(ss -ltn)" && chyba "port $PORT je obsazený"
+            for f in /opt/osvc-evidence /usr/share/applications/osvc-evidence.desktop /usr/lib/systemd/system/osvc-evidence.service /usr/bin/osvc-evidence; do
+              [ ! -e "$f" ] || chyba "zůstalo $f"; done
+            grep -qi osvc <<< "$(ls /etc/cron.d 2>/dev/null)" && chyba "zůstal cron"
+            grep -qi osvc <<< "$(systemctl list-timers --all)" && chyba "zůstal časovač"
+            grep -qi -e osvc -e "dport $PORT" <<< "$(sudo iptables-save)" && chyba "zůstalo pravidlo firewallu"
+            return 0
+          }
+          # 2) apt remove: program a služba pryč, data zůstanou
+          sudo apt-get remove -y osvc-evidence; zbytky
+          sudo test -f /var/lib/osvc-evidence/data/osvc.sqlite3 || chyba "remove smazal data"
+          sudo test -f /etc/osvc-evidence/osvc.conf || chyba "remove smazal nastavení"
+          # 3) znovu instalace použije data; apt purge: záloha do /var/backups/osvc-evidence, pak smazání dat i uživatele
+          sudo dpkg -i "$DEB"; python $Z overit --url "$URL" --otisk otisk.json
+          sudo apt-get purge -y osvc-evidence; zbytky
+          [ ! -e /var/lib/osvc-evidence ] || chyba "purge nesmazal data"
+          [ ! -e /etc/osvc-evidence ] || chyba "purge nesmazal nastavení"
+          getent passwd osvc-evidence >/dev/null && chyba "zůstal uživatel osvc-evidence"
+          ZAL=$(sudo sh -c 'ls /var/backups/osvc-evidence/osvc-evidence-*.tar.gz' | head -n1)
+          [ -n "$ZAL" ] || chyba "purge neuložil zálohu"
+          sudo tar -tzf "$ZAL" > obsah-zalohy.txt   # bez roury: grep -q by tar ukončil (SIGPIPE) a pipefail by hlásil chybu
+          grep -q 'var/lib/osvc-evidence/data/osvc.sqlite3' obsah-zalohy.txt || chyba "záloha neobsahuje databázi"
+          echo "Linux: instalace, aktualizace, remove i purge v pořádku (záloha $ZAL)."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: balik-linux
+          path: sestaveni/osvc-evidence_*.deb
+          if-no-files-found: error
+
+  vydani:
+    needs: [testy, windows, linux]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    env:
+      VERZE: ${{ needs.testy.outputs.verze }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: vydani
+          merge-multiple: true
+      - name: Release s popisem změn a kontrolními součty
+        run: |
+          set -euo pipefail
+          cd vydani && sha256sum osvc-evidence* > SHA256SUMS.txt && cd ..
+          python3 scripts/ci/popis_vydani.py "$GITHUB_REF_NAME" > popis.md
+          PRED=""; case "$VERZE" in *-*) PRED="--prerelease";; esac
+          gh release create "$GITHUB_REF_NAME" vydani/* --repo "$GITHUB_REPOSITORY" --title "OSVČ evidence $VERZE" --notes-file popis.md $PRED

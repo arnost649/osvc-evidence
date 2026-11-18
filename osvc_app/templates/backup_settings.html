@@ -1,0 +1,39 @@
+<section class="settings-card settings-tab-panel backup-panel" id="settings-panel-backup" role="tabpanel" data-settings-panel="backup" hidden>
+<div class="settings-card-head"><div class="settings-icon">{{ icon('save') }}</div><div><h2>Záloha a obnova</h2><p class="settings-help">Kompletní data aplikace v jednom ZIP souboru.</p></div></div>
+{% if obnova %}<div class="backup-restore-result{% if not obnova.ok %} is-error{% endif %}" data-restore-result>
+<h3>{{ 'Obnova dokončena – vše sedí' if obnova.ok else 'Obnova dokončena – POZOR, některé hodnoty nesedí' }}</h3>
+<p class="settings-help">Srovnání zálohy ({{ obnova.zaloha_z[:10] }}) s daty po obnově.{% if obnova.zdroje_vypnuto %} <strong>Zdroje příjmů ({{ obnova.zdroje_vypnuto }}) jsou po obnově vypnuté</strong> – zapněte je v Nastavení → Zdroje příjmů po ověření připojení.{% endif %}</p>
+<div class="table-wrap"><table class="responsive-table restore-comparison"><thead><tr><th>Položka</th><th class="numeric-column">V záloze</th><th class="numeric-column">Po obnově</th><th>Stav</th></tr></thead><tbody>
+{% for polozka,pred,po,stav in obnova.radky %}<tr><td data-label="Položka">{{ polozka|replace(' (Kč)','')|replace(' (počet)',' – počet') }}</td>{% set kc = polozka.endswith('(Kč)') %}<td class="numeric-column" data-label="V záloze">{{ (pred|czk if kc else pred) if pred is not none else '—' }}</td><td class="numeric-column" data-label="Po obnově">{{ (po|czk if kc else po) if po is not none else '—' }}</td><td data-label="Stav"><span class="{{ 'status-chip' if stav=='OK' else 'error' }}">{{ stav }}</span></td></tr>{% endfor %}
+</tbody></table></div></div>{% endif %}
+<div class="server-backups" data-server-backups>
+<h3>Automatické zálohy{% if not config.OSVC_SAMOSTATNA %} serveru{% endif %}</h3>
+<ul>{% for b in server_backup_status() %}<li data-server-backup="{{b.state}}"><strong>{{b.label}}</strong> <small class="muted">({{b.schedule}})</small>:
+{% if b.state=='ok' %}naposled {{b.at|cz_datetime}} – OK
+{% elif b.state=='old' %}<strong>pozor, naposled {{b.at|cz_datetime}}</strong> – od té doby neproběhla ({% if config.OSVC_SAMOSTATNA %}zálohuje se jen při spuštěné aplikaci{% else %}zkontroluje správce serveru{% endif %})
+{% elif b.state=='error' %}<strong>naposled {{b.at|cz_datetime}} – CHYBA</strong> (zkontroluje správce serveru)
+{% elif b.state=='running' %}právě probíhá
+{% elif b.state=='since_boot' %}naposled spuštěna {{b.at|cz_datetime}}, výsledek od restartu serveru není známý
+{% elif b.state=='unavailable' %}stav nejde zjistit
+{% else %}zatím neproběhla{% endif %}{% if b.next and b.state!='unavailable' %} · další {{b.next|cz_datetime}}{% endif %}</li>{% endfor %}</ul>
+<p class="settings-help">{% if config.OSVC_SAMOSTATNA %}Zálohy jsou ve složce <code>{{ config.OSVC_ZALOHY_DIR }}</code> na tomto počítači – při poruše disku by se ztratily i s daty, proto si občas uložte ruční ZIP i jinam (flash disk, cloud). {% endif %}Běží samy bez vašeho zásahu. Ruční ZIP níže je navíc – hodí se třeba před velkou změnou nebo k přenosu dat.</p>
+</div>
+<div class="backup-grid">
+<article class="backup-card" aria-labelledby="backup-export-title">
+<div class="settings-card-head"><div class="settings-icon">{{ icon('save') }}</div><div><h3 id="backup-export-title">Záloha</h3><p class="settings-help">Vytvoří kompletní ZIP zálohu dat, dokladů, příloh a nastavení.</p></div></div>
+<ul class="backup-chips" aria-label="Obsah zálohy">{% for name,label in [('archive','Databáze'),('file','Doklady'),('clip','Přílohy'),('settings','Nastavení'),('settings','Motiv vzhledu')] %}<li>{{ icon(name) }}{{ label }}</li>{% endfor %}</ul>
+<p class="settings-help">Přihlašovací údaje se nezálohují.</p>
+<form method="post" action="{{ url_for('backup.export') }}" data-backup-export><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">{{ icon('download') }}<span>Vytvořit zálohu</span></button></form>
+<dl class="backup-stats backup-export-meta" data-backup-export-meta hidden></dl>
+<p class="backup-status" data-backup-status role="status" hidden></p>
+</article>
+<article class="backup-card" aria-labelledby="backup-restore-title">
+<div class="settings-card-head"><div class="settings-icon">{{ icon('restore') }}</div><div><h3 id="backup-restore-title">Obnova ze zálohy</h3><p class="settings-help">Nahrajte ZIP zálohu a ověřte její obsah před obnovením dat.</p></div></div>
+<form class="backup-upload" method="post" enctype="multipart/form-data" action="{{ url_for('backup.validate') }}" data-backup-validate><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="backup-file">Vybrat ZIP<input id="backup-file" type="file" name="backup" accept=".zip" required aria-describedby="backup-file-help"></label><small id="backup-file-help" class="settings-help">Po ověření uvidíte obsah zálohy. Data se zatím nezmění.</small><button class="secondary" type="submit">{{ icon('verify') }}<span>Ověřit zálohu</span></button></form>
+{% include '_backup_notice.html' %}
+<div data-backup-result aria-live="polite"><div class="backup-idle">{{ icon('file') }}<p>Vyberte zálohu. Zde se zobrazí její datum, počty záznamů a dokumentů.</p></div></div>
+<p class="backup-status" data-backup-status role="status" hidden></p>
+</article>
+</div>
+</section>
+<script src="{{ url_for('static',filename='backup.js') }}" defer></script>

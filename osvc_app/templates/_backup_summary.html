@@ -1,0 +1,14 @@
+{% from '_icons.html' import icon %}
+{% if error %}<p class="backup-status is-error" role="alert">{{ icon('file') }}<span>{{ error }}</span></p>{% else %}
+<div class="backup-summary">
+<p class="backup-valid">{{ icon('check') }}<strong>{{ 'Záloha ověřena s upozorněním' if backup.warnings else 'Záloha je ověřena' }}</strong></p>
+<dl class="backup-stats">
+<div class="backup-stat-wide"><dt>Datum zálohy</dt><dd>{{ backup.created_at|cz_datetime }}</dd></div>
+{% for key,label in [('income','Příjmy'),('expenses','Výdaje'),('trips','Jízdy'),('fuel','PHM'),('contacts','Kontakty')] %}<div><dt>{{ label }}</dt><dd>{{ backup.counts[key] }}</dd></div>{% endfor %}
+<div><dt>Dokumenty</dt><dd>{{ backup.document_count }}</dd></div>
+<div><dt>Velikost ZIPu</dt><dd>{{ (archive_bytes / 1048576)|cz_decimal(2) }} MB</dd></div><div><dt>Dokumenty celkem</dt><dd>{{ (backup.document_bytes / 1048576)|cz_decimal(2) }} MB</dd></div>
+</dl>
+{% if backup.warnings %}<details class="backup-warnings"><summary>Upozornění k dokumentům ({{ backup.warnings|length }})</summary><ul>{% for warning in backup.warnings %}<li>{% if warning.kind == 'missing_document' %}Chybí soubor dokumentu{% elif warning.kind == 'document_hash_mismatch' %}Nesouhlasí kontrolní součet dokumentu{% else %}Chybí záznam dokumentu{% endif %} č. {{ warning.attachment_id }}.</li>{% endfor %}</ul></details>{% endif %}
+<form method="post" action="{{ url_for('backup.restore') }}" data-backup-restore><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="token" value="{{ token }}"><button type="submit" class="danger">{{ icon('restore') }}<span>Obnovit ze zálohy</span></button></form>
+</div>
+{% endif %}

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% from '_attachment.html' import document_icon %}
+{% from '_icons.html' import icon %}
+{% block content %}
+{% if doc.document_type=='receipt' %}
+<h1>Účtenka</h1><p>{{doc.issue_date|cz_date}} · <strong>{{doc.gross_total|czk}}</strong>{% if receipt_fuel and receipt_fuel.station %} · {{receipt_fuel.station}}{% elif doc.counterparty %} · {{doc.counterparty}}{% endif %}</p>{% if doc.note %}<p>{{doc.note}}</p>{% endif %}{% if receipt_fuel and moduly_zapnute.doprava %}<p><a class="button" href="/fuel/{{receipt_fuel.id}}/edit">Upravit PHM</a></p>{% endif %}
+<section><h2>Doklad</h2>{% for a in attachments %}{{document_icon(a.id,a.mime_type)}}{% else %}<p class="hint">K tomuto dokladu není přiložený soubor.</p>{% endfor %}</section>
+{% else %}
+<h1>{% if doc.source=='woocommerce' %}Objednávka #{{doc.number}}{% if source_name %} – {{source_name}}{% endif %}{% else %}Doklad{% endif %}</h1><p>{{doc.issue_date|cz_date}} · {{doc.counterparty or 'bez protistrany'}} · <strong>{{doc.gross_total|czk}}</strong></p>{% if doc.note %}<p>{{doc.note}}</p>{% endif %}{% if doc.source!='woocommerce' %}<p><a class="button" href="/documents/{{doc.id}}/edit">Upravit</a></p>{% endif %}
+<section><h2>Položky</h2><div class="table-wrap"><table class="responsive-table"><thead><tr><th>Popis</th><th class="numeric-column">Celkem</th></tr></thead><tbody>{% for i in items %}<tr><td data-label="Popis">{{i.description}}</td><td class="numeric-column" data-label="Celkem">{{i.gross_amount|czk}}</td></tr>{% else %}<tr><td colspan="2" class="empty-state">Žádné položky.</td></tr>{% endfor %}</tbody></table></div></section>
+{% if doc.source!='woocommerce' %}<form class="entry" method="post" action="/documents/{{doc.id}}/items"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><label>Popis<input required name="description"></label><label>Množství<input name="quantity" type="number" step="0.001" value="1"></label><label>Částka celkem<input required name="gross_amount" type="number" step="0.01"></label><button>{{ icon('plus') }}<span>Přidat položku</span></button></form><form method="post" action="/documents/{{doc.id}}/cancel"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button class="danger icon-only-action"  aria-label="Zrušit doklad">{{ icon('trash') }}</button></form>{% endif %}
+{% endif %}
+{% endblock %}

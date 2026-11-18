@@ -1,0 +1,29 @@
+#!/bin/sh
+# OSVČ evidence – po odebrání (V4).
+#   remove: program a služba pryč (soubory balíčku odebere dpkg, tady virtuální prostředí), data a nastavení zůstanou.
+#   purge:  nejdřív záloha dat a nastavení do /var/backups/osvc-evidence, pak smazat data, nastavení a uživatele.
+set -e
+APP=/opt/osvc-evidence; DATA=/var/lib/osvc-evidence; KONF=/etc/osvc-evidence; ZALOHY=/var/backups/osvc-evidence
+case "$1" in
+  remove|purge)
+    if [ -d /run/systemd/system ]; then
+      systemctl disable osvc-evidence.service >/dev/null 2>&1 || true
+      systemctl daemon-reload || true
+    fi
+    rm -rf "$APP"   # soubory balíčku už odebral dpkg; zbývá virtuální prostředí a mezipaměť Pythonu (__pycache__)
+    ;;
+esac
+if [ "$1" = purge ]; then
+  if [ -d "$DATA" ] || [ -d "$KONF" ]; then
+    install -d -o root -g root -m 700 "$ZALOHY"
+    CIL="$ZALOHY/osvc-evidence-$(date +%Y-%m-%d_%H-%M-%S).tar.gz"
+    tar -czf "$CIL" --ignore-failed-read -C / $( [ -d "$DATA" ] && echo var/lib/osvc-evidence ) $( [ -d "$KONF" ] && echo etc/osvc-evidence )
+    chmod 600 "$CIL"
+    tar -tzf "$CIL" >/dev/null   # záloha musí jít přečíst, jinak se nic nemaže (set -e)
+    echo "Záloha dat OSVČ evidence: $CIL"
+    rm -rf "$DATA" "$KONF"
+  fi
+  if getent passwd osvc-evidence >/dev/null; then deluser --system osvc-evidence >/dev/null 2>&1 || true; fi
+  if getent group osvc-evidence >/dev/null; then delgroup --system osvc-evidence >/dev/null 2>&1 || true; fi
+fi
+exit 0

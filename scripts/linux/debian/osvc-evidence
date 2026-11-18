@@ -1,0 +1,4 @@
+#!/bin/sh
+# Otevře OSVČ evidenci v prohlížeči (adresa podle /etc/osvc-evidence/osvc.conf). Spouští zástupce v nabídce aplikací.
+PORT=$(sed -n 's/^PORT=//p' /etc/osvc-evidence/osvc.conf 2>/dev/null | head -n1)
+exec xdg-open "http://localhost:${PORT:-8765}/"

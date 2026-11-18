@@ -1,0 +1,5 @@
+{% from '_annual_helpers.html' import status %}
+<div class="profile-quick-grid">
+{% for item in profile_view.quick %}<div class="profile-quick-item" data-quick="{{ item.label }}">{{ status(item.state,'quick-'~loop.index,item.hint) }}<button type="button" class="profile-quick-link" data-profile-open="profile-{{ item.target }}"><span>{{ item.label }}</span><strong>{{ item.value }}</strong></button></div>{% endfor %}
+</div>
+{% if profile_view.issues %}<div class="profile-issues"><h3>Vyžaduje doplnění</h3>{% for group in profile_view.issues %}<p><button type="button" class="profile-inline-action" data-profile-open="profile-{{ group.key }}">{{ group.title }}</button> · {{ group['items']|join(', ') }}</p>{% endfor %}</div>{% elif profile_view.profile_state=="known" %}<p class="profile-complete">✓ Profil je kompletní</p>{% else %}<p class="profile-issues">{{ status(profile_view.profile_state,"profile-overview",profile_view.profile_status_reason) }} {{ profile_view.profile_status_reason }}</p>{% endif %}

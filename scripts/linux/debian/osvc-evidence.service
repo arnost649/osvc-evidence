@@ -1,0 +1,26 @@
+# OSVČ evidence – služba balíčku .deb (krok V4). Aplikace + plánovač (synchronizace 15 min, denní záloha) v jednom procesu.
+# Nastavení /etc/osvc-evidence/osvc.conf (HOST, PORT), data /var/lib/osvc-evidence. Poslouchá jen na 127.0.0.1 (bez pravidla ve firewallu).
+[Unit]
+Description=OSVC evidence (samostatna instalace)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=osvc-evidence
+Group=osvc-evidence
+WorkingDirectory=/opt/osvc-evidence/app
+Environment=OSVC_SLUZBA=systemd
+ExecStart=/opt/osvc-evidence/venv/bin/python -X utf8 -m osvc_app.spoustec spust --config /etc/osvc-evidence/osvc.conf
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/osvc-evidence
+ReadOnlyPaths=/etc/osvc-evidence
+
+[Install]
+WantedBy=multi-user.target

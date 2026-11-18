@@ -1,0 +1,28 @@
+#!/bin/sh
+# OSVČ evidence – po instalaci / aktualizaci (V4): systémový uživatel, složky, nastavení (jen poprvé), virtuální prostředí
+# z přibalených knihoven (bez internetu), služba. Data v /var/lib/osvc-evidence se nikdy nemažou ani nepřepisují.
+set -e
+APP=/opt/osvc-evidence; DATA=/var/lib/osvc-evidence; KONF=/etc/osvc-evidence
+if [ "$1" = configure ]; then
+  if ! getent passwd osvc-evidence >/dev/null; then
+    adduser --system --group --home "$DATA" --no-create-home --gecos "OSVC evidence" osvc-evidence >/dev/null
+  fi
+  install -d -o osvc-evidence -g osvc-evidence -m 750 "$DATA" "$DATA/data"
+  install -d -o root -g osvc-evidence -m 750 "$KONF"
+  # virtuální prostředí vždy znovu (aktualizace = nové knihovny); jen přibalené balíčky, nic z internetu
+  rm -rf "$APP/venv"
+  python3 -m venv "$APP/venv"
+  "$APP/venv/bin/pip" install --quiet --no-index --no-cache-dir --disable-pip-version-check --find-links "$APP/wheels" -r "$APP/requirements.txt"
+  if [ ! -e "$KONF/osvc.conf" ]; then
+    (cd "$APP/app" && "$APP/venv/bin/python" -B -X utf8 -m osvc_app.spoustec init --config "$KONF/osvc.conf" --data "$DATA/data" --port auto >/dev/null)
+    chown root:osvc-evidence "$KONF/osvc.conf"; chmod 640 "$KONF/osvc.conf"
+  fi
+  if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload
+    systemctl enable osvc-evidence.service >/dev/null 2>&1 || true
+    systemctl restart osvc-evidence.service || true
+  fi
+  PORT=$(sed -n 's/^PORT=//p' "$KONF/osvc.conf" | head -n1)
+  echo "OSVČ evidence běží na http://localhost:$PORT/ (data: $DATA, nastavení: $KONF/osvc.conf)."
+fi
+exit 0

@@ -1,0 +1,76 @@
+<!doctype html>
+{% from '_icons.html' import icon %}
+<html lang="cs" data-theme="{{ selected_theme }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OSVČ evidence</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',filename='flow.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',filename='ux.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',filename='form-layout.css') }}">
+  <style id="theme-palettes">{% for theme in themes %}
+  html[data-theme="{{ theme.id }}"] { color-scheme: {{ 'dark' if theme.dark else 'light' }};{% for key,value in theme.tokens.items() %} --color-{{ key }}: {{ value }};{% endfor %} }
+  {% endfor %}</style>
+  <link rel="stylesheet" href="{{ url_for('static',filename='themes.css') }}">
+</head>
+<body>
+{% if session.user %}
+<header class="app-header nav-compact">
+ <div class="app-nav-inner">
+ <div class="app-nav-main">
+  <a class="brand" href="/"{% if request.path=='/' %} aria-current="page"{% endif %}>{{ icon('home') }}<span>OSVČ evidence</span></a>
+  <nav class="app-nav" aria-label="Hlavní navigace">{% for label,url,ico in [('Příjmy','/payments/income','income'),('Výdaje','/payments/expense','expense'),('Jízdy','/trips','trip'),('PHM','/fuel','fuel'),('Adresář','/address-book','contacts'),('Roční přehled','/annual','file'),('Nastavení','/settings','settings')] if moduly_zapnute.doprava or url not in ('/trips','/fuel') %}<a class="{% if request.path==url or (url=='/settings' and request.path.startswith('/settings/')) or (url=='/address-book' and request.path.startswith('/address-book')) %}active{% endif %}" href="{{url}}" aria-label="{{label}}"  {% if request.path==url %}aria-current="page"{% endif %}>{{ icon(ico) }}<span>{{label}}</span></a>{% endfor %}</nav>
+ </div>
+  <div class="header-actions app-nav-system"><form class="header-logout" action="/logout" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="button" data-logout-open  aria-label="Odhlásit">{{ icon('logout') }}</button></form><button type="button" class="header-shutdown" data-system-shutdown-open  aria-label="Napájení">{{ icon('power') }}</button></div>
+ </div>
+</header>
+{% endif %}
+{% set messages=get_flashed_messages(with_categories=true) %}
+{% if session.user %}{% set akt = aktualizace_upozorneni() %}{% if akt %}<p class="flash info aktualizace-lista" data-aktualizace role="status">Je k dispozici nová verze <strong>{{ akt.verze }}</strong>. <a href="{{ akt.odkaz }}" target="_blank" rel="noopener noreferrer">Stáhnout z GitHubu</a> · <a href="{{ url_for('main.settings') }}#aktualizace">vypnout upozornění</a></p>{% endif %}{% endif %}
+<div class="global-notifications toast-stack" aria-live="polite">{% for c,m in messages %}{% if c=='saved' %}<span hidden data-save-result="success"></span>{% else %}<p class="flash {{c}}" {% if c=='success' %}data-toast role="status"{% else %}role="alert"{% endif %}>{{m}}</p>{% endif %}{% endfor %}</div>
+<main class="page-shell">
+  {% block content %}{% endblock %}
+</main>
+<div id="document-preview-modal" class="document-preview-modal" hidden role="dialog" aria-modal="true" aria-label="Náhled dokladu">
+  <div class="document-preview-content">
+    <button type="button" class="document-preview-close" aria-label="Zavřít">×</button>
+    <img data-preview-image alt="Náhled dokladu" hidden>
+    <iframe data-preview-pdf aria-label="Náhled PDF dokladu" hidden></iframe>
+    <a class="button document-preview-open" data-preview-open target="_blank" rel="noopener" hidden>Otevřít doklad</a>
+  </div>
+</div>
+{% if session.user %}
+<div id="logout-menu" class="header-dropdown" hidden role="menu" aria-label="Odhlášení"><button type="button" role="menuitem" data-logout-confirm>{{ icon('logout') }} Odhlásit</button></div>
+<div id="power-menu" class="header-dropdown" hidden role="menu" aria-label="Napájení"><button type="button" role="menuitem" data-system-choice="stop" data-confirm-title="Zastavit aplikaci OSVČ?" data-confirm-ok="Zastavit aplikaci" data-confirm="{% if config.OSVC_SAMOSTATNA and config.OSVC_WINDOWS %}Aplikace se ukončí. Znovu ji spustíte zástupcem OSVČ evidence v nabídce Start (nebo po přihlášení, pokud se spouští automaticky). Data zůstanou uložená.{% elif config.OSVC_SAMOSTATNA %}Aplikace se ukončí. Znovu ji spustíte příkazem „sudo systemctl start osvc-evidence“ nebo restartem počítače. Data zůstanou uložená.{% else %}Aplikace přestane odpovídat a z webu ji znovu spustit nejde – spustí ji správce serveru nebo restart počítače. Server i zálohy běží dál.{% endif %}">{{ icon('stop') }} Zastavit aplikaci <small class="power-note">jen OSVČ</small></button>{% if not config.OSVC_SAMOSTATNA %}<button type="button" role="menuitem" class="power-danger" data-system-choice="poweroff" data-confirm-title="Vypnout celý počítač {{ server_name }}?" data-confirm-ok="Vypnout počítač" data-confirm="Nevypne se jen OSVČ, ale celý server – i noční zálohy, panel a další služby. Znovu ho zapne jen někdo přímo u počítače.">{{ icon('power') }} Vypnout počítač <small class="power-note">celý server {{ server_name }}</small></button>{% endif %}</div>
+{# vlastní potvrzení místo window.confirm – předvybrané je „Zrušit“, Enter ani Esc nic nevypne. #}
+<div id="power-confirm" class="dirty-form-confirm" hidden role="alertdialog" aria-modal="true" aria-labelledby="power-confirm-title" aria-describedby="power-confirm-text">
+  <div class="dirty-form-confirm-panel">
+    <h2 id="power-confirm-title"></h2>
+    <p id="power-confirm-text"></p>
+    <div class="dirty-form-confirm-actions">
+      <button type="button" data-power-cancel>Zrušit</button>
+      <button type="button" class="danger" data-power-ok></button>
+    </div>
+  </div>
+</div>
+<form id="system-shutdown-form" method="post" hidden><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>
+<div id="dirty-form-confirm" class="dirty-form-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="dirty-form-confirm-title">
+  <div class="dirty-form-confirm-panel">
+    <h2 id="dirty-form-confirm-title">Neuložené změny</h2>
+    <p>Formulář obsahuje neuložené změny. Opravdu chcete stránku opustit?</p>
+    <div class="dirty-form-confirm-actions">
+      <button type="button" data-dirty-stay>Zůstat</button>
+      <button type="button" class="secondary" data-dirty-leave>Opustit bez uložení</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% if session.user %}{% include '_supplier_verify_modal.html' %}{% endif %}
+<script src="{{ url_for('static',filename='ui.js') }}"></script>
+<script src="{{ url_for('static',filename='themes.js') }}"></script>
+<script src="{{ url_for('static',filename='feedback.js') }}"></script>
+<script src="{{ url_for('static',filename='income-sources.js') }}" defer></script>
+<script src="{{ url_for('static',filename='tax-controls.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{% from '_section_actions.html' import save_action %}
+<section class="settings-card settings-tab-panel" id="settings-panel-sources" role="tabpanel" aria-labelledby="settings-tab-sources" data-settings-panel="sources" hidden>
+<div class="settings-card-head"><div class="settings-icon">{{ icon('income') }}</div><div><h2>Zdroje příjmů</h2></div><a class="button secondary category-new" href="/settings/income-sources/new">{{icon('plus')}} Přidat zdroj</a></div>
+{% if not income_sources %}<p class="settings-help">Zatím nemáte žádný externí zdroj. Ruční příjmy fungují samostatně.</p>{% endif %}
+<div class="profile-cards">{% for source in income_sources %}{% set manifest=source.manifest %}
+<article class="profile-card income-source-card" id="source-{{source.id}}">
+ <div class="section-heading"><div><h3>{{source.name}}</h3><small class="muted">{{manifest.name}}{% if source.url %} · {{source.url|replace('https://','')}}{% endif %}</small></div><span class="annual-status {{'known' if source.status.state=='AKTIVNÍ' else 'review'}}">{{source.status.state}}</span></div>
+ <p class="settings-help" data-source-summary>Poslední synchronizace: <strong>{{source.last_sync_at|cz_datetime}}</strong> · Příjmů: {{source.stats.incomes}} · PDF dokladů: {{source.stats.documents}} · PDF faktury: {{'stahují se' if source.import_documents else 'nestahují se'}}</p>
+ {% set sched=income_scheduler %}{% set run=sched.sources.get(source.id|string) %}
+ <p class="settings-help" data-automation="{{'manual' if not source.automatic_sync else 'inactive' if not source.active else sched.state}}">
+ {%- if not source.automatic_sync %}Synchronizuje se jen ručně. Automatiku zapnete v Nastavení zdroje.
+ {%- elif not source.active %}Automatická synchronizace čeká – zdroj je vypnutý.
+ {%- elif sched.state=='missing' %}<strong>Automatická synchronizace nepoběží</strong> – plánovač na serveru není nainstalovaný (doplní správce serveru).
+ {%- elif sched.state=='stale' %}<strong>Pozor: plánovač na serveru naposled běžel {{sched.last_at|cz_datetime}}</strong> – automatická synchronizace teď neprobíhá (zkontroluje správce serveru).
+ {%- elif sched.state=='waiting' %}Automaticky každých 15 minut – plánovač zatím neběžel, první běh v {{sched.next|cz_datetime}}.
+ {%- else %}Automaticky každých 15 minut · naposled {{sched.last_at|cz_datetime}}:
+  {% if not run %}tento zdroj ještě nebyl na řadě{% elif run.state=='ok' %}OK{% elif run.state=='error' %}<strong>CHYBA</strong> – {{run.message}}{% else %}přeskočeno ({{run.message}}){% endif %}
+ {%- endif %}</p>
+ {% if source.status.error %}<p class="flash error" data-source-error>{{source.status.error}}</p>{% endif %}
+ {% set problems=source.status.checks|rejectattr('ok')|list %}{% if problems %}<ul class="connector-checks" data-source-problems>{% for check in problems %}<li>! <strong>{{check.label}}</strong> – {{check.detail}}</li>{% endfor %}</ul>{% endif %}
+ {% if source.status.warnings %}<details class="flash warning" data-source-warnings><summary>Upozornění z poslední synchronizace: {{source.status.warnings|length}} (zdroj funguje, jde o věci k ruční kontrole)</summary><ul>{% for w in source.status.warnings[:20] %}<li>{{w}}</li>{% endfor %}{% if source.status.warnings|length>20 %}<li>… a dalších {{source.status.warnings|length-20}}</li>{% endif %}</ul></details>{% endif %}
+ <div class="source-actions">
+ <form action="/settings/income-sources/{{source.id}}/sync" method="post" data-source-action="sync"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button data-source-button {% if not source.active or not source.status.configured %}disabled{% endif %}>{{icon('sync')}} Synchronizovat</button></form>
+ <form method="post" action="/settings/income-sources/{{source.id}}/test" data-source-action="test"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button class="secondary" data-source-button>{{icon('check')}} Ověřit připojení</button></form>
+ <form action="/settings/income-sources/{{source.id}}/activation" method="post" data-source-action="activation"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><input type="hidden" name="active" value="{{'no' if source.active else 'yes'}}"><button class="secondary" data-source-button {% if not source.active and (not source.status.configured or not source.status.tested) %}disabled{% endif %}>{{'Deaktivovat' if source.active else 'Aktivovat'}}</button></form>
+ </div>
+ {% if not source.active %}<p class="settings-help" data-sync-block>{% if not source.status.configured %}Synchronizace a aktivace čekají na doplnění nastavení (viz výše a Nastavení → Pro správce).{% elif not source.status.tested %}Zdroj je vypnutý. Nejdřív úspěšně ověřte připojení (tlačítko Ověřit připojení), pak ho aktivujte.{% else %}Zdroj je vypnutý. Synchronizovat půjde po kliknutí na Aktivovat.{% endif %}</p>
+ {% elif not source.status.configured %}<p class="settings-help" data-sync-block>Synchronizace čeká na doplnění nastavení (viz výše a Nastavení → Pro správce).</p>{% endif %}
+ {% set checks=source.diagnostics.get('checks',[]) if source.status.diagnostics_current else [] %}
+ {% if source.diagnostics and not source.status.diagnostics_current %}<p class="settings-help" data-diagnostics-stale>Poslední ověření ({{source.diagnostics.get('at')|cz_datetime}}) už neplatí – od té doby se změnilo nastavení připojení. Klikněte na <strong>Ověřit připojení</strong>.</p>
+ {% elif checks %}<details class="connector-diagnostics" data-diagnostics {% if checks|selectattr('state','equalto','error')|list %}open{% endif %}><summary>Poslední ověření: {{source.diagnostics.get('at')|cz_datetime}} – {{'v pořádku' if source.status.tested else 's chybou'}}</summary>
+ <ul class="connector-checks">{% for check in checks %}<li >{{'✓' if check.state=='ok' else '!' if check.state=='error' else '—' if check.state=='off' else '?'}} {{check.label}}{% if check.detail %}<small class="muted"> · {{check.detail}}</small>{% endif %}</li>{% endfor %}</ul></details>
+ {% elif not source.diagnostics %}<p class="settings-help">Připojení zatím nebylo ověřeno.</p>{% endif %}
+ <details class="source-details" {% if not source.status.configured or request.args.get('configure')==source.id|string %}open{% endif %}><summary>Nastavení</summary>
+ <form id="income-source-{{source.id}}" action="/settings/income-sources/{{source.id}}" method="post">
+ <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+ <div class="section-heading"><h3>Nastavení zdroje</h3>{{ save_action() }}</div>
+ {% include '_source_settings.html' %}
+ </form>
+ </details>
+</article>{% endfor %}</div></section>

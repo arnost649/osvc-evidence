@@ -1,0 +1,66 @@
+{% extends 'base.html' %}{% from '_pagination.html' import pagination %}
+{% from '_attachment.html' import document_icon %}
+{% from '_combobox.html' import counterparty_combobox %}
+{% from '_icons.html' import icon %}
+{% from '_section_actions.html' import form_heading, edit_toggle %}
+{% block content %}
+{% if kind=='trip' %}
+<div class="page-header"><h1>Jízdy</h1>{% if total is not none %}<p>Součet za {{year}}: <strong>{{total|km}}</strong></p>{% endif %}</div>
+{% else %}
+<div class="page-header"><h1>PHM</h1>
+{% if total is not none %}<p>Součet za {{year}}: <strong>{{total|km}}</strong></p>{% endif %}</div>
+{% endif %}
+<section class="section-panel">{{form_heading(('Upravit PHM' if editing else 'Zapsat PHM') if kind=='fuel' else ('Upravit jízdu' if editing else 'Zapsat jízdu'),'record-form')}}
+<form id="record-form" class="entry form-grid {{ 'fuel-entry' if kind=='fuel' else 'trip-entry' }}" method="post" enctype="multipart/form-data" data-draft-form data-dirty-guard data-draft-key="{{draft_key}}"{% if kind=='trip' and trip_has_snapshot %} data-trip-has-snapshot="true"{% endif %}>
+  {{form.hidden_tag()}}
+  {% if kind=='fuel' %}
+    {% for f in [form.purchase_date,form.vehicle_id] %}<label>{{f.label}}{{f}}{% for e in f.errors %}<small>{{e}}</small>{% endfor %}</label>{% endfor %}
+    {{counterparty_combobox(form.counterparty_name,form.counterparty_id,form.counterparty_options,verify_fuel=true)}}
+    {% for f in [form.price_per_liter,form.total_amount,form.liters] %}<label>{{f.label('Cena/litr' if f.name=='price_per_liter' else 'Cena celkem' if f.name=='total_amount' else f.label.text)}}{{f}}{% for e in f.errors %}<small>{{e}}</small>{% endfor %}</label>{% endfor %}
+    <label class="fuel-upload">{{form.upload.label}}{{form.upload}}{% for e in form.upload.errors %}<small>{{e}}</small>{% endfor %}</label>
+    {# Poznámka je interní pole, běžný formulář ji nezobrazuje. #}
+  {% else %}
+    <label class="trip-field-vehicle">{{form.vehicle_id.label}}{{form.vehicle_id}}{% for e in form.vehicle_id.errors %}<small>{{e}}</small>{% endfor %}</label>
+    <div class="trip-field-dates" data-trip-end-wrapper><label>{{form.trip_date.label}}{{form.trip_date}}{% for e in form.trip_date.errors %}<small>{{e}}</small>{% endfor %}</label><div class="trip-field-end"><div class="trip-end-heading"><input type="checkbox" data-multi-day-toggle aria-label="Vícedenní jízda">{{form.trip_end_date.label}}</div>{{form.trip_end_date}}{% for e in form.trip_end_date.errors %}<small>{{e}}</small>{% endfor %}</div></div>
+    <label class="trip-field-origin">{{form.origin.label}}{{form.origin}}{% for e in form.origin.errors %}<small>{{e}}</small>{% endfor %}</label>
+    <label class="trip-field-destination">{{form.destination.label}}{{form.destination}}{% for e in form.destination.errors %}<small>{{e}}</small>{% endfor %}</label>
+    <label class="trip-field-purpose">{{form.purpose.label}}{{form.purpose}}{% for e in form.purpose.errors %}<small>{{e}}</small>{% endfor %}</label>
+    <div class="trip-field-meta"><label>{{form.distance_km.label}}{{form.distance_km}}{% for e in form.distance_km.errors %}<small>{{e}}</small>{% endfor %}</label><label>PHM doklad<select id="fuel_purchase_id" name="fuel_purchase_id" >{% for value,label in form.fuel_purchase_id.choices %}<option data-label="{{label}}" value="{{value}}"{% if form.fuel_purchase_id.data == value %} selected{% endif %}>{{label}}</option>{% endfor %}</select></label></div>
+    <div class="trip-cost-field"><h2 class="trip-cost-label">Náklad cesty</h2><section class="trip-cost" data-trip-cost data-preview-url="{{url_for('main.trip_cost_preview')}}">
+      <div class="trip-cost-head"><span>Celkem</span><strong class="trip-cost-total-head" data-cost-total-head>{{initial_cost.travel_cost_total|czk if initial_cost and initial_cost.travel_cost_total else '—'}}</strong></div>
+      {% if trip_cost_ready %}
+      <div class="trip-cost-source"><span>Cena PHM</span><span data-cost-source >Vyhláška</span></div>
+      <p class="flash error fuel-date-warning" data-fuel-date-warning hidden>Vybraný doklad PHM už není pro toto datum cesty použitelný.</p>
+
+      <dl class="trip-cost-values"{% if not initial_cost or not initial_cost.travel_cost_total %} hidden{% endif %}>
+        <dt>Normovaná spotřeba</dt><dd data-cost-consumption>{% if initial_cost %}{{initial_cost.calculation_consumption_l_100km|cz_decimal(1)}} l/100 km{% else %}—{% endif %}</dd>
+        <dt>Sazba za km</dt><dd data-cost-rate>{% if initial_cost %}{{initial_cost.calculation_base_rate_per_km|czk}}/km{% else %}—{% endif %}</dd>
+        <dt>Použitá cena PHM</dt><dd data-cost-price>{{initial_cost.calculation_fuel_price_per_liter|price_l if initial_cost else '—'}}</dd>
+        <dt>Základní náhrada</dt><dd data-cost-base>{{initial_cost.base_compensation|czk if initial_cost else '—'}}</dd>
+        <dt>PHM</dt><dd data-cost-fuel>{{initial_cost.fuel_compensation|czk if initial_cost else '—'}}</dd>
+        <dt class="trip-cost-total">Celkem</dt><dd class="trip-cost-total" data-cost-total>{{initial_cost.travel_cost_total|czk if initial_cost else '—'}}</dd>
+      </dl>
+      <div class="trip-cost-message" data-cost-message{% if not vehicle_needs_consumption and (not initial_cost or initial_cost.travel_cost_total) %} hidden{% endif %}><span data-cost-message-text>{% if vehicle_needs_consumption %}Nejdříve doplňte normovanou spotřebu vozidla.{% elif initial_cost and not initial_cost.travel_cost_total %}Náklad zatím nelze vypočítat.{% endif %}</span> <a class="button consumption-link" data-consumption-link href="/settings{% if selected_vehicle_id %}#vehicle-{{selected_vehicle_id}}{% endif %}"{% if not vehicle_needs_consumption %} hidden{% endif %}>Doplnit spotřebu vozidla</a></div>
+      <p class="trip-cost-formula">Celkem = km × sazba + km × spotřeba / 100 × cena PHM</p>
+      {% else %}
+      <p class="flash error">Výpočet nákladu cesty zatím není k dispozici – aplikace čeká na aktualizaci databáze, kterou udělá správce serveru.</p>
+      {% endif %}
+    </section></div>
+  {% endif %}
+</form></section>
+{% if kind=='fuel' and current_attachment %}<div class="current-document compact-current-document"><strong>Aktuální účtenka</strong>{{document_icon(current_attachment.id,current_attachment.mime_type)}}<small>Nový soubor slouží k případné náhradě účtenky.</small></div>{% endif %}
+<form class="filter"><label>Rok <input name="year" value="{{year}}"></label><button>{{ icon('filter') }}<span>Filtrovat</span></button></form>
+<section><div class="list-heading section-heading payment-list-heading{% if pager.pages > 1 %} has-pagination{% endif %}"><h2>{{'Všechny jízdy' if kind=='trip' else 'Všechna tankování'}}</h2>{{pagination(pager)}}{% if rows %}{{ edit_toggle() }}{% endif %}</div>
+<div class="table-wrap"><table class="responsive-table">
+{% if kind=='trip' %}
+  <thead><tr><th>Datum</th><th>Vozidlo</th><th>Trasa</th><th>Účel</th><th class="numeric-column">Km</th><th class="numeric-column">Náklad</th><th class="akce-sloupec">Akce</th></tr></thead><tbody>
+  {% for r in rows %}<tr><td data-label="Datum">{{r.trip_date|cz_date}}{% if r.trip_end_date!=r.trip_date %}–{{r.trip_end_date|cz_date}}{% endif %}</td><td data-label="Vozidlo"><span class="text-2r">{{r.vehicle}}</span></td><td data-label="Trasa" class="trip-table-text" ><span class="text-2r">{{r.origin}} – {{r.destination}}</span></td><td data-label="Účel" class="trip-table-text" ><span class="text-2r">{{r.purpose}}</span></td><td data-label="Km" class="numeric-column">{{r.distance_km|km}}</td><td data-label="Náklad" class="numeric-column">{{r.travel_cost_total|czk if r.travel_cost_total is not none else '—'}}</td><td class="akce-sloupec" data-label="Akce"><a class="button secondary icon-only-action" href="/trips/{{r.id}}/edit"  aria-label="Upravit">{{ icon('edit') }}</a><form class="inline" method="post" action="/trip/{{r.id}}/cancel"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button class="danger icon-only-action"  aria-label="Zrušit">{{ icon('trash') }}</button></form></td></tr>{% else %}<tr><td colspan="7" class="empty-state">Zatím není zapsaná žádná jízda. <a class="button" href="/trips">{{ icon('plus') }}<span>Zapsat jízdu</span></a></td></tr>{% endfor %}</tbody>
+{% else %}
+  <thead><tr><th>Datum</th><th>Vozidlo</th><th class="numeric-column">Litry</th><th class="numeric-column">Cena/l</th><th class="numeric-column">Celkem</th><th>Stanice</th><th>Účtenka</th><th class="akce-sloupec">Akce</th></tr></thead><tbody>
+  {% for r in rows %}<tr><td data-label="Datum">{{r.purchase_date|cz_date}}</td><td data-label="Vozidlo"><span class="text-2r">{{r.vehicle}}</span></td><td class="numeric-column" data-label="Litry">{{r.liters|liters}}</td><td class="numeric-column" data-label="Cena/l">{{r.price_per_liter|price_l}}</td><td class="numeric-column" data-label="Celkem">{{r.total_amount|czk}}</td><td data-label="Stanice"><span class="text-2r">{{r.station_name or r.counterparty_name or r.station or '—'}}{% if r.counterparty_name and r.station and r.station != r.counterparty_name %}<small class="muted"> · {{r.station}}</small>{% endif %}</span></td><td data-label="Doklad">{{document_icon(r.attachment_id,r.attachment_mime)}}</td><td class="akce-sloupec" data-label="Akce"><a class="button secondary icon-only-action" href="/fuel/{{r.id}}/edit"  aria-label="Upravit">{{ icon('edit') }}</a><form class="inline" method="post" action="/fuel/{{r.id}}/cancel"><input type="hidden" name="csrf_token" value="{{csrf_token()}}"><button class="danger icon-only-action"  aria-label="Zrušit">{{ icon('trash') }}</button></form></td></tr>{% else %}<tr><td colspan="8" class="empty-state">Zatím není zapsané žádné PHM. <a class="button" href="/fuel">{{ icon('plus') }}<span>Zapsat PHM</span></a></td></tr>{% endfor %}</tbody>
+{% endif %}
+</table></div>
+{{pagination(pager,'bottom')}}</section>
+{% if kind=='fuel' %}<div id="image-modal" class="image-modal" hidden><button type="button" class="modal-close" aria-label="Zavřít">×</button><img alt="Náhled účtenky"></div><script>document.querySelectorAll('.lightbox-trigger').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var m=document.getElementById('image-modal');m.querySelector('img').src=a.querySelector('img').src;m.hidden=false;});});var modal=document.getElementById('image-modal');modal.addEventListener('click',function(e){if(e.target===modal||e.target.classList.contains('modal-close'))modal.hidden=true;});document.addEventListener('keydown',function(e){if(e.key==='Escape')modal.hidden=true;});</script>{% endif %}
+{% if kind=='fuel' %}<script src="{{url_for('static',filename='fuel.js')}}"></script>{% endif %}
+{% endblock %}

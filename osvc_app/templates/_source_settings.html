@@ -1,0 +1,31 @@
+{# Karta zdroje – nastavení.
+   Nahoře jen to, co uživatel mění; technické věci pod sbaleným „Pro správce“ (otevře se samo, když v nich je problém). #}
+{% set c=source.configuration %}
+{% set admin_problem=source.status.checks|selectattr('key','in',['connection','authentication','documents'])|rejectattr('ok')|list %}
+<div class="profile-fields">
+ <label>Název zdroje<input name="name" value="{{source.name}}" required maxlength="160"></label>
+ <label>Adresa webu<input name="url" type="url" value="{{source.url}}" placeholder="https://shop.example.test"></label>
+ <label>Importovat od <small class="muted">· prázdné = celá historie</small><input name="sync_from" type="date" value="{{source.sync_from or ''}}"></label>
+</div>
+<label class="checkline"><input type="checkbox" name="import_documents" {% if source.import_documents %}checked{% endif %}>Stahovat PDF faktury</label>
+<label class="checkline"><input type="checkbox" name="automatic_sync" {% if source.automatic_sync %}checked{% endif %}>Synchronizovat automaticky (každých 15 minut)</label>
+{% if income_scheduler.state in ('missing','stale') %}<p class="settings-help" data-scheduler-missing>Automatická synchronizace teď nepoběží – plánovač na serveru {{'není nainstalovaný' if income_scheduler.state=='missing' else 'dlouho neběžel'}} (doplní správce serveru). Ručně synchronizovat jde dál.</p>{% endif %}
+<p class="settings-help">Příjem se vytvoří ze zaplacené objednávky. Úplná refundace nebo zrušení ho zruší; částečnou refundaci a cizí měnu je potřeba zkontrolovat ručně.</p>
+<details class="source-admin" data-source-admin {% if admin_problem or admin_open %}open{% endif %}><summary>Pro správce</summary>
+ <p class="settings-help">Technické nastavení připojení. Po jeho změně je potřeba znovu ověřit připojení a zdroj aktivovat.</p>
+ <div class="profile-fields">
+  <label>Profil přístupů<input name="secret_profile" value="{{source.secret_profile or ''}}" placeholder="shop2" pattern="[A-Za-z0-9_-]{1,80}"></label>
+  <label>API root<input name="api_root" value="{{c.api_root or 'wp-json/wc/v3'}}"></label>
+ </div>
+ <p class="settings-help">Klíče WooCommerce API (jen pro čtení) a u PDF i soubor s heslem SFTP a known_hosts jsou v souboru přístupů na serveru
+  (INCOME_SOURCE_SECRETS_FILE, práva 600, čte ho jen aplikace). Sem patří jen název profilu z toho souboru; hodnoty se do formuláře nikdy nevracejí.</p>
+ <div class="connector-document-fields">
+  <label>Způsob získání PDF<select name="invoice_mode">{% for value,name in source.manifest.document_modes.items() %}<option value="{{value}}" {% if c.invoice_mode==value %}selected{% endif %}>{{name}}</option>{% endfor %}</select></label>
+  <div class="profile-fields">
+   <label>SFTP server<input name="sftp_host" value="{{c.sftp_host or ''}}"></label><label>SFTP port<input type="number" name="sftp_port" min="1" max="65535" value="{{c.sftp_port or 22}}"></label><label>SFTP uživatel<input name="sftp_user" value="{{c.sftp_user or ''}}"></label>
+   <label data-invoice-mode="sftp_template">Šablona cesty<input name="invoice_template" value="{{c.invoice_template or ''}}" placeholder="/invoices/invoice-{order_id}.pdf"></label>
+   <label data-invoice-mode="sftp_archive">Privátní archiv<input name="private_dir" value="{{c.private_dir or ''}}"></label><label data-invoice-mode="sftp_archive">Historický archiv (WPO)<input name="legacy_dir" value="{{c.legacy_dir or ''}}"></label>
+  </div>
+  <p class="settings-help">Aplikace PDF jen stahuje (nikdy je na webu nevytváří ani nemění). Archivní režim hledá cestu v metadatech objednávky, pak v legacy-wpo a v historickém archivu.</p>
+ </div>
+</details>

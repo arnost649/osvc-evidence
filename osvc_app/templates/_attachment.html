@@ -1,0 +1,7 @@
+{% macro document_icon(attachment_id, mime_type) -%}
+{% if attachment_id %}
+<button type="button" class="document-icon" data-document-preview data-url="{{url_for('main.attachment_view',ident=attachment_id)}}" data-mime="{{mime_type or ''}}"  aria-label="Zobrazit doklad">
+  <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2.75h8l4 4V21.25H6z"/><path d="M14 2.75v4h4M9 12h6M9 16h6"/></svg>
+</button>
+{% else %}—{% endif %}
+{%- endmacro %}

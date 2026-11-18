@@ -1,0 +1,7 @@
+#!/bin/sh
+# OSVČ evidence – před odebráním / aktualizací: zastavit službu (data zůstávají).
+set -e
+if [ -d /run/systemd/system ] && systemctl list-unit-files osvc-evidence.service >/dev/null 2>&1; then
+  systemctl stop osvc-evidence.service || true
+fi
+exit 0

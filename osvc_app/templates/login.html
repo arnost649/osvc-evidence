@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<section class="login"><h1>Přihlášení</h1><form method="post">{{form.hidden_tag()}}{% for f in [form.username,form.password] %}<label>{{f.label}}{{f}}</label>{% for e in f.errors %}<small>{{e}}</small>{% endfor %}{% endfor %}<button>Přihlásit</button></form></section>{% endblock %}

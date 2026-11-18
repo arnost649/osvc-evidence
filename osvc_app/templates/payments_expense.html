@@ -1,0 +1,54 @@
+{% extends 'base.html' %}{% from '_pagination.html' import pagination %}
+{% from '_attachment.html' import document_icon %}
+{% from '_combobox.html' import counterparty_combobox %}
+{% from '_icons.html' import icon %}
+{% from '_section_actions.html' import form_heading, edit_toggle %}
+{% from '_tax_classification.html' import tax_fields %}
+{% block content %}
+<div class="page-header"><h1>Výdaje</h1></div>
+<section class="section-panel">
+  {{form_heading('Upravit nákup' if editing else 'Zapsat nákup','expense-form')}}
+  <form id="expense-form" class="entry form-grid expense-entry" method="post" enctype="multipart/form-data" data-draft-form data-dirty-guard data-draft-key="{{ draft_key }}">
+    {{ form.hidden_tag() }}
+    <label>{{ form.payment_date.label }}{{ form.payment_date }}{% for e in form.payment_date.errors %}<small>{{ e }}</small>{% endfor %}</label>
+    {{ counterparty_combobox(form.counterparty_name, form.counterparty_id, form.counterparty_options, true) }}
+    <label>{{ form.description.label }}{{ form.description }}{% for e in form.description.errors %}<small>{{ e }}</small>{% endfor %}</label>
+    <label>{{ form.amount.label }}{{ form.amount }}{% for e in form.amount.errors %}<small>{{ e }}</small>{% endfor %}</label>
+    <label class="payment-upload">{{ form.upload.label }}{{ form.upload }}{% for e in form.upload.errors %}<small>{{ e }}</small>{% endfor %}</label>
+    <fieldset class="form-grid form-tax-group" aria-label="Daňové uplatnění výdaje">
+      {{ tax_fields(none, form.tax_mode.data or '', form.tax_pct.data or '') }}
+      {% for error in form.tax_mode.errors + form.tax_pct.errors %}<small class="tax-share-error" role="alert">{{ error }}</small>{% endfor %}
+    </fieldset>
+  </form>
+  {% if current_attachment %}
+  <div class="current-document compact-current-document"><strong>Stávající doklad</strong>{{ document_icon(current_attachment.id, current_attachment.mime_type) }}<small>Nový soubor slouží pouze k případné náhradě.</small></div>
+  {% endif %}
+</section>
+<form class="filter"><label>Rok <input name="year" value="{{ year }}"></label><button>{{ icon('filter') }}<span>Filtrovat</span></button></form>
+{% if missing_count %}<p class="annual-missing">{{ missing_count }} výdajů nemá určené daňové uplatnění.</p>{% endif %}
+<section>
+  <div class="list-heading section-heading payment-list-heading{% if pager.pages > 1 %} has-pagination{% endif %}"><h2>Všechny výdaje</h2>{{pagination(pager)}}{% if rows %}{{ edit_toggle() }}{% endif %}</div>
+<div class="table-wrap">
+  <table class="responsive-table payments-expense-table">
+    <thead><tr><th class="expense-tax-status" aria-label="Daňový stav"></th><th>Datum</th><th>Dodavatel</th><th>Popis</th><th class="numeric-column">Částka</th><th>Doklad</th><th>Zdroj</th><th class="akce-sloupec">Akce</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td class="expense-tax-status" data-label="Daňový stav">{% if r.tax_missing %} <a class="tax-pending-marker" href="/payments/expense/{{ r.id }}?year={{ year }}"  aria-label="Chybí daňové uplatnění">!</a>{% endif %}</td>
+        <td data-label="Datum">{{ r.payment_date|cz_date }}</td>
+        <td data-label="Dodavatel"><span class="text-2r">{{ r.counterparty_name or '—' }}</span></td>
+        <td data-label="Popis"><span class="text-2r">{{ r.description or r.note or '—' }}</span></td>
+        <td class="numeric-column" data-label="Částka"><strong>{{ r.amount|czk }}</strong></td>
+        <td data-label="Doklad">{{ document_icon(r.attachment_id, r.attachment_mime) }}</td>
+        <td data-label="Zdroj"><span class="source-badge">{{ type_labels.get(r.system_type, type_labels.expense) }}</span></td>
+        <td class="akce-sloupec" data-label="Akce">{% if (r.source_kind == 'trip' or r.fuel_purchase_id) and not moduly_zapnute.doprava %}—{% elif r.source_kind == 'trip' %}<a class="button secondary icon-only-action" href="/trips/{{ r.id }}/edit"  aria-label="Upravit">{{ icon('edit') }}</a>{% else %}<a class="button secondary icon-only-action" href="/payments/expense/{{ r.id }}?year={{ year }}"  aria-label="Upravit">{{ icon('edit') }}</a><form class="inline" method="post" action="/payments/expense/{{ r.id }}/cancel"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="danger icon-only-action"  aria-label="Zrušit">{{ icon('trash') }}</button></form>{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="8" class="empty-state">Zatím nemáte žádné výdaje. <a class="button" href="/payments/expense">Zapsat nákup</a></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{pagination(pager,'bottom')}}
+</section>
+{% endblock %}

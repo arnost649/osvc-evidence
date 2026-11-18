@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="settings-card backup-panel"><div class="settings-card-head"><div class="settings-icon">{{ icon('restore') }}</div><div><h1>Obnova ze zálohy</h1><p class="settings-help">Zkontrolujte obsah před obnovením dat.</p></div></div>
+<article class="backup-card backup-preview-card">{% include '_backup_summary.html' %}{% include '_backup_notice.html' %}<p class="backup-status" data-backup-status role="status" hidden></p></article>
+<p><a href="{{ url_for('main.settings') }}#backup">Zpět do Nastavení</a></p></section>
+<script src="{{ url_for('static',filename='backup.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,53 @@
+/* Shared semantic paint rules; existing layout and typography stay in their stylesheets. */
+html{background:var(--color-bg);accent-color:var(--color-primary);scrollbar-color:var(--color-input-border) var(--color-bg)}
+a{color:var(--color-primary)}
+header{background:var(--color-header);color:var(--color-on-header);border-bottom-color:var(--color-border)}
+.brand,nav a{color:var(--color-on-header)}
+nav a:hover,nav a.active{background:var(--color-sidebar-active);color:var(--color-primary-text)}
+.header-logout button,.header-shutdown,.menu-toggle{background:var(--color-secondary);color:var(--color-secondary-text)}
+.header-logout button:hover,.header-shutdown:hover,.menu-toggle:hover{background:var(--color-primary);color:var(--color-primary-text)}
+button,.button{color:var(--color-primary-text)}
+.secondary,.discard-draft,.combobox-toggle{background:var(--color-secondary);color:var(--color-secondary-text)}
+.secondary:hover,.discard-draft:hover,.combobox-toggle:hover{background:var(--color-border);color:var(--color-text)}
+.danger,.inline button{background:var(--color-danger-bg);color:var(--color-danger);border-color:var(--color-danger)}
+.danger:hover,.inline button:hover{background:var(--color-danger-bg);color:var(--color-danger)}
+.document-icon,.text-action,.address-tab,.settings-tab,.supplier-verification-close{color:var(--color-primary)}
+.address-tab:not(.active),.settings-tab:not(.is-active){color:var(--color-muted)}
+.combobox-options button{color:var(--color-text);background:var(--color-surface)}
+.combobox-options button:hover,.combobox-options button:focus{background:var(--color-surface-alt)}
+input,select,textarea{background:var(--color-input-bg);border-color:var(--color-input-border);color:var(--color-text)}
+input:hover,select:hover,textarea:hover{border-color:var(--color-focus)}
+input::placeholder,textarea::placeholder{color:var(--color-muted);opacity:1}
+input:focus,select:focus,textarea:focus{border-color:var(--color-focus);box-shadow:none}
+:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.settings-tab:focus-visible{outline:2px solid var(--color-focus);outline-offset:3px;box-shadow:none}
+button:disabled,input:disabled,select:disabled,textarea:disabled{opacity:1;background:var(--color-surface-alt);color:var(--color-muted);cursor:not-allowed;box-shadow:none;transform:none}
+th{background:var(--color-table-header)}
+tbody tr:hover{background:var(--color-table-row-hover)}
+.document-preview-content,.modal-close{background:var(--color-surface);color:var(--color-text)}
+/* Document content itself is not recolored. */
+.document-preview-content iframe{background:var(--color-surface)}
+.source-badge,.category-badge,.record-type,.record-type-trip{background:var(--color-info-bg);color:var(--color-info);border-color:var(--color-info)}
+.status-chip,.success,.record-type-income{background:var(--color-success-bg);color:var(--color-success)}
+.warning,.system-badge,.record-type-fuel{background:var(--color-warning-bg);color:var(--color-warning)}
+.error,.record-type-expense{background:var(--color-danger-bg);color:var(--color-danger)}
+.info{background:var(--color-info-bg);color:var(--color-info)}
+.muted-chip{background:var(--color-surface-alt);color:var(--color-muted)}
+.settings-tablist{background:var(--color-sidebar)}
+.settings-tab.is-active{border-color:var(--color-primary)}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:.8rem;margin-top:.6rem}
+.theme-group-title{margin:1.2rem 0 0;font-size:.95rem}.theme-group-title small{color:var(--color-muted);font-weight:400}
+.theme-card{position:relative;display:flex;flex-direction:column;gap:.6rem;align-items:stretch;padding:.7rem;border:2px solid var(--color-input-border);background:var(--color-surface);color:var(--color-text);text-align:left;box-shadow:none}
+.theme-card:hover{background:var(--color-surface-alt);color:var(--color-text);transform:none}
+.theme-card[aria-pressed=true]{border-color:var(--color-primary);outline:1px solid var(--color-primary);outline-offset:1px}
+.theme-preview{display:grid;grid-template-columns:repeat(4,1fr);height:42px;border-radius:4px;overflow:hidden}
+.theme-check{position:absolute;right:.5rem;top:.5rem;display:none;background:var(--color-primary);color:var(--color-primary-text);border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px}
+.theme-card[aria-pressed=true] .theme-check{display:block}
+[data-theme-message]{color:var(--color-muted)}
+[data-theme-message].error{color:var(--color-danger)}
+@media(max-width:420px){.theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-card{font-size:.78rem;padding:.55rem}}
+
+/* Switch palette atomically; hover transitions must not blend old and new themes. */
+.theme-changing *, .theme-changing *::before, .theme-changing *::after{transition:none!important}
+
+.dashboard-items tbody tr[data-dashboard-item]:focus-visible,.dashboard-trips tbody tr[data-dashboard-trip]:focus-visible{outline:2px solid var(--color-focus);outline-offset:-2px}
+.address-row-inactive{opacity:1}

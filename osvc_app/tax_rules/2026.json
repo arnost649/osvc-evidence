@@ -1,0 +1,311 @@
+{
+  "tax_year": 2026,
+  "id": "cz-osvc-2026-20260927-v2",
+  "verified_at": "2026-09-27",
+  "form_rows_confirmed": false,
+  "social": {
+    "base_ratio": "0.55",
+    "rate": "0.292",
+    "main_min_month": "17139",
+    "new_main_min_month": "12242",
+    "secondary_min_month": "5387",
+    "secondary_threshold": "117521",
+    "threshold_reduction_month": "9794",
+    "max_base": "2350416"
+  },
+  "health": {
+    "base_ratio": "0.5",
+    "rate": "0.135",
+    "min_month": "24483.50",
+    "negative_base_floor": "0",
+    "no_advance_when_exempt_full_month": true
+  },
+  "expense_rates": {
+    "craft": {
+      "label": "Řemeslná živnost / zemědělství – 80 %",
+      "rate": "0.8",
+      "cap": "1600000"
+    },
+    "trade": {
+      "label": "Ostatní živnost – 60 %",
+      "rate": "0.6",
+      "cap": "1200000"
+    },
+    "other": {
+      "label": "Ostatní samostatná činnost – 40 %",
+      "rate": "0.4",
+      "cap": "800000"
+    },
+    "rent": {
+      "label": "Nájem obchodního majetku (§ 7) – 30 %",
+      "rate": "0.3",
+      "cap": "600000"
+    }
+  },
+  "transport": {
+    "full_month": "5000",
+    "private_month": "4000",
+    "max_vehicles": 3
+  },
+  "secondary_reasons": {
+    "employment": "Zaměstnání zakládající účast na pojištění",
+    "other": "Jiný doložený důvod (individuální kontrola)"
+  },
+  "sources": [
+    "https://financnisprava.gov.cz/cs/dane/dane/dan-z-prijmu/fyzicke-osoby/podnikatel-osvc",
+    "https://www.cssz.gov.cz/-/informace-pro-osvc-o-zmene-pojistneho-na-duchodove-pojisteni-od-1-7-2026",
+    "https://www.cssz.gov.cz/osvc-v-kostce",
+    "https://www.cssz.gov.cz/web/cz/zalohy-na-pojistne-na-duchodove-pojisteni",
+    "https://www.vzp.cz/platci/informace/osvc/vymerovaci-zaklad-a-vypocet-pojistneho/jaky-je-minimalni-vymerovaci-zaklad",
+    "https://www.vzp.cz/platci/informace/zamestnavatel/soubeh-vice-kategorii-platcu/soubeh-zamestnani-s-kategorii-osvc",
+    "https://financnisprava.gov.cz/cs/dane/dane/dan-z-prijmu/dotazy-a-odpovedi/dan-z-prijmu-fyzickych-osob/aktualne-k-dani-z-prijmu-fyzickych-osob-za-zdanovaci-obdobi-2019",
+    "https://www.vzp.cz/o-nas/tiskove-centrum/otazky-tydne/platby-zdravotniho-pojisteni-v-roce-2026",
+    "https://www.vzp.cz/platci/informace/povinnosti-platcu-metodika/2-5-osoba-samostatne-vydelecne-cinna-osvc",
+    "https://www.vzp.cz/platci/informace/osvc/zalohy-na-pojistne",
+    "https://www.vzp.cz/formulare/prehled-osvc-2025-pouceni.pdf"
+  ],
+  "form_fields": {
+    "tax.income": {
+      "form_year": 2026,
+      "form_type": "tax",
+      "field_key": "income",
+      "official_label": "Příjmy ze samostatné činnosti",
+      "row_number": null,
+      "source_note": "Příjmy",
+      "description": "Součet nevyřazených plateb příjmů za rok."
+    },
+    "tax.expenses": {
+      "form_year": 2026,
+      "form_type": "tax",
+      "field_key": "expenses",
+      "official_label": "Výdaje související se samostatnou činností",
+      "row_number": null,
+      "source_note": "Výdaje, Jízdy, PHM a Profil OSVČ",
+      "description": "Výdaje podle kategorií a ročního režimu. PHM se nezapočítává znovu vedle náhrady paliva v Jízdách."
+    },
+    "tax.result": {
+      "form_year": 2026,
+      "form_type": "tax",
+      "field_key": "result",
+      "official_label": "Rozdíl příjmů a výdajů",
+      "row_number": null,
+      "source_note": "Vypočteno",
+      "description": "Příjmy minus zvolené daňové výdaje před úpravami základu."
+    },
+    "tax.method": {
+      "form_year": 2026,
+      "form_type": "tax",
+      "field_key": "method",
+      "official_label": "Způsob uplatnění výdajů",
+      "row_number": null,
+      "source_note": "Profil OSVČ → Daňové nastavení",
+      "description": "Skutečné výdaje a procentní paušál jsou odlišné metody. Paušální daň není procentní výdajový paušál."
+    },
+    "tax.adjustment": {
+      "form_year": 2026,
+      "form_type": "tax",
+      "field_key": "adjustment",
+      "official_label": "Úpravy podle § 5 a § 23",
+      "row_number": null,
+      "source_note": "Profil OSVČ → Daňové nastavení",
+      "description": "Ručně ověřené zvýšení nebo snížení výsledku nad rámec evidence. Nula je výslovné potvrzení bez úprav."
+    },
+    "tax.base": {
+      "form_year": 2026,
+      "form_type": "tax",
+      "field_key": "base",
+      "official_label": "Dílčí základ daně (ztráta) ze samostatné činnosti",
+      "row_number": null,
+      "source_note": "Vypočteno z příjmů, výdajů a úprav",
+      "description": "Výsledek samostatné činnosti po zadaných úpravách. Záporný výsledek se pro pojistné neuplatňuje jako záporný vyměřovací základ."
+    },
+    "social.base": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "base",
+      "official_label": "Daňový základ ze samostatné činnosti",
+      "row_number": null,
+      "source_note": "Vypočteno z příjmů, výdajů a úprav",
+      "description": "Výsledek samostatné činnosti po zadaných úpravách. Záporný výsledek se pro pojistné neuplatňuje jako záporný vyměřovací základ."
+    },
+    "social.months": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "months",
+      "official_label": "Počet měsíců výkonu SVČ",
+      "row_number": null,
+      "source_note": "Profil OSVČ → Podnikání",
+      "description": "Počet měsíců, kdy byla vykonávána činnost. I část měsíce může být aktivním měsícem."
+    },
+    "social.main": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "main",
+      "official_label": "Měsíce hlavní samostatné výdělečné činnosti",
+      "row_number": null,
+      "source_note": "Profil OSVČ → ČSSZ",
+      "description": "Počet aktivních měsíců označených pro ČSSZ jako hlavní."
+    },
+    "social.secondary": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "secondary",
+      "official_label": "Měsíce vedlejší samostatné výdělečné činnosti",
+      "row_number": null,
+      "source_note": "Profil OSVČ → ČSSZ",
+      "description": "Počet aktivních měsíců vedlejší činnosti pro ČSSZ, například při pojištěném zaměstnání."
+    },
+    "social.reason": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "reason",
+      "official_label": "Důvod výkonu vedlejší SVČ",
+      "row_number": null,
+      "source_note": "Profil OSVČ → ČSSZ",
+      "description": "Zákonný důvod se dokládá ČSSZ; samotné zaměstnání bez účasti na pojištění nestačí."
+    },
+    "social.paid": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "paid",
+      "official_label": "Úhrn zaplacených záloh na pojistné",
+      "row_number": null,
+      "source_note": "Profil OSVČ → příslušné pojištění",
+      "description": "Skutečně uhrazené zálohy přiřazené k roku. Porovnejte se stavem u příslušné instituce."
+    },
+    "social.assessment": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "assessment",
+      "official_label": "Vyměřovací základ",
+      "row_number": null,
+      "source_note": "Vypočteno z daňového základu a ročního profilu",
+      "description": "Základ pro pojistné podle pravidel roku a potvrzených výjimek. ČSSZ a zdravotní pojištění používají odlišná pravidla."
+    },
+    "social.premium": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "premium",
+      "official_label": "Pojistné za kalendářní rok",
+      "row_number": null,
+      "source_note": "Vypočteno",
+      "description": "Pojistné z vyměřovacího základu, zaokrouhlené na koruny nahoru."
+    },
+    "social.balance": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "balance",
+      "official_label": "Doplatek nebo přeplatek pojistného",
+      "row_number": null,
+      "source_note": "Vypočteno",
+      "description": "Roční pojistné minus zaplacené zálohy. Kladná částka je doplatek, záporná přeplatek."
+    },
+    "social.advance": {
+      "form_year": 2026,
+      "form_type": "social",
+      "field_key": "advance",
+      "official_label": "Nová měsíční záloha",
+      "row_number": null,
+      "source_note": "Vypočteno; kontrola dalšího roku nutná",
+      "description": "Orientační výpočet podle pravidel vykazovaného roku. Minimum a povinnost záloh pro následující rok musí potvrdit aktuální pravidla a instituce; tuto částku zatím neopisujte jako definitivní."
+    },
+    "health.base": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "base",
+      "official_label": "Daňový základ ze samostatné činnosti",
+      "row_number": null,
+      "source_note": "Vypočteno z příjmů, výdajů a úprav",
+      "description": "Výsledek samostatné činnosti po zadaných úpravách. Záporný výsledek se pro pojistné neuplatňuje jako záporný vyměřovací základ."
+    },
+    "health.months": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "months",
+      "official_label": "Počet měsíců výkonu SVČ",
+      "row_number": null,
+      "source_note": "Profil OSVČ → Podnikání",
+      "description": "Počet měsíců, kdy byla vykonávána činnost. I část měsíce může být aktivním měsícem."
+    },
+    "health.paid": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "paid",
+      "official_label": "Úhrn zaplacených záloh na pojistné",
+      "row_number": null,
+      "source_note": "Profil OSVČ → příslušné pojištění",
+      "description": "Skutečně uhrazené zálohy přiřazené k roku. Porovnejte se stavem u příslušné instituce."
+    },
+    "health.assessment": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "assessment",
+      "official_label": "Vyměřovací základ",
+      "row_number": null,
+      "source_note": "Vypočteno z daňového základu a ročního profilu",
+      "description": "Základ pro pojistné podle pravidel roku a potvrzených výjimek. ČSSZ a zdravotní pojištění používají odlišná pravidla."
+    },
+    "health.premium": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "premium",
+      "official_label": "Pojistné za kalendářní rok",
+      "row_number": null,
+      "source_note": "Vypočteno",
+      "description": "Pojistné z vyměřovacího základu, zaokrouhlené na koruny nahoru."
+    },
+    "health.balance": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "balance",
+      "official_label": "Doplatek nebo přeplatek pojistného",
+      "row_number": null,
+      "source_note": "Vypočteno",
+      "description": "Roční pojistné minus zaplacené zálohy. Kladná částka je doplatek, záporná přeplatek."
+    },
+    "health.advance": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "advance",
+      "official_label": "Nová měsíční záloha",
+      "row_number": null,
+      "source_note": "Vypočteno; kontrola dalšího roku nutná",
+      "description": "Orientační výpočet podle pravidel vykazovaného roku. Minimum a povinnost záloh pro následující rok musí potvrdit aktuální pravidla a instituce; tuto částku zatím neopisujte jako definitivní."
+    },
+    "health.insurer": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "insurer",
+      "official_label": "Zdravotní pojišťovna a kód",
+      "row_number": null,
+      "source_note": "Profil OSVČ → Zdravotní pojištění",
+      "description": "Pojišťovna, pro kterou je určen roční přehled. Změna pojišťovny během roku vyžaduje rozdělení údajů."
+    },
+    "health.employment": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "employment",
+      "official_label": "Souběh samostatné činnosti a zaměstnání",
+      "row_number": null,
+      "source_note": "Profil OSVČ → Zaměstnání",
+      "description": "Počet aktivních měsíců se zaměstnáním. Pro zdravotní výjimku nestačí samotný souběh ani vedlejší činnost ČSSZ."
+    },
+    "health.minimum": {
+      "form_year": 2026,
+      "form_type": "health",
+      "field_key": "minimum",
+      "official_label": "Počet měsíců s minimálním vyměřovacím základem",
+      "row_number": null,
+      "source_note": "Profil OSVČ → Zdravotní pojištění",
+      "description": "Počet aktivních měsíců s povinností minima. Výjimka ze zaměstnání vyžaduje celoměsíční souběh, hlavní zdroj v zaměstnání a odvod alespoň zaměstnaneckého minima."
+    }
+  },
+  "insurance_sources": {
+    "tax_year": 2026,
+    "social_secondary": "https://www.cssz.gov.cz/osvc-v-kostce",
+    "health_concurrent": "https://www.vzp.cz/o-nas/tiskove-centrum/otazky-tydne/platby-zdravotniho-pojisteni-v-roce-2026",
+    "health_calculation": "https://www.vzp.cz/platci/informace/povinnosti-platcu-metodika/2-5-osoba-samostatne-vydelecne-cinna-osvc",
+    "health_advances": "https://www.vzp.cz/platci/informace/osvc/zalohy-na-pojistne",
+    "health_instructions": "https://www.vzp.cz/formulare/prehled-osvc-2025-pouceni.pdf"
+  }
+}

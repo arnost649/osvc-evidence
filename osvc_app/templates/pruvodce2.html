@@ -1,0 +1,31 @@
+{% extends 'base.html' %}{% block content %}
+{# A2: průvodce prvním spuštěním, strana 2 – podle zapnutých modulů (už přihlášený). #}
+{% macro radio(name, value, text, help='') %}<label class="checkline"><input type="radio" name="{{ name }}" value="{{ value }}"{% if f[name] == value %} checked{% endif %}><span>{{ text }}{% if help %}<small class="settings-help">{{ help }}</small>{% endif %}</span></label>{% endmacro %}
+<section class="pruvodce" data-pruvodce2>
+  <h1>Ještě chvilku</h1>
+  <p class="settings-help">Nepovinné – můžete to přeskočit a doplnit později v Nastavení.</p>
+  <form method="post" action="{{ url_for('pruvodce.dalsi') }}" autocomplete="off" data-pruvodce-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if zapnute.doprava %}<fieldset class="pruvodce-krok"><legend>Doprava – první vozidlo</legend>
+      <div class="pruvodce-radek"><label>Název<input name="vozidlo_nazev" value="{{ f.vozidlo_nazev or '' }}" maxlength="200" placeholder="např. Škoda Fabia"></label>
+        <label>SPZ<input name="vozidlo_spz" value="{{ f.vozidlo_spz or '' }}" maxlength="20"></label></div>
+      <div class="pruvodce-radek"><label>Palivo<input name="vozidlo_palivo" value="{{ f.vozidlo_palivo or '' }}" maxlength="50" placeholder="Natural 95"></label>
+        <label>Spotřeba podle technického průkazu<input name="vozidlo_spotreba" value="{{ f.vozidlo_spotreba or '' }}" inputmode="decimal" placeholder="l/100 km, např. 4,7"></label></div>
+      {% if pausal_procenty %}<p class="settings-help" data-pausal-vozidlo>Uplatňujete výdajový paušál – ten už auto zahrnuje, vozidlo proto slouží jen pro knihu jízd.</p>
+      {% else %}<div class="pruvodce-volby"><span>Jak vozidlo uplatníte v daních?</span>
+        {{ radio('vozidlo_rezim', 'actual', rezimy.actual, 'Zapisujete jízdy, náhrada se spočítá podle vyhlášky (nejběžnější).') }}
+        {{ radio('vozidlo_rezim', 'fuel', rezimy.fuel, 'Uplatníte skutečné účtenky za palivo místo náhrad.') }}
+        {{ radio('vozidlo_rezim', 'flat', rezimy.flat, 'Pevná částka měsíčně bez knihy jízd.') }}
+        <div class="pruvodce-odsazeni" data-ukaz="vozidlo_rezim=flat"><span>Používáte auto i soukromě?</span>{{ radio('vozidlo_soukrome', 'no', 'Ne, jen k podnikání') }}{{ radio('vozidlo_soukrome', 'yes', 'Ano, i soukromě (nižší paušál)') }}
+          <label class="checkline"><input type="checkbox" name="vozidlo_podminky" value="ano"><span>Potvrzuji, že splňuji podmínky paušálu (auto v obchodním majetku nebo v nájmu, nejvýš 3 auta).</span></label></div>
+        {{ radio('vozidlo_rezim', 'none', rezimy.none) }}</div>{% endif %}
+    </fieldset>{% endif %}
+    {% if zapnute.externi_web %}<fieldset class="pruvodce-krok"><legend>Externí web – zdroj příjmů</legend>
+      <p>Příjmy z e-shopu (WordPress / WooCommerce) se mohou načítat automaticky. K tomu je potřeba adresa e-shopu a přístupové údaje – nastavíte je ve zvláštním průvodci.</p>
+      <button type="submit" name="dalsi" value="zdroj" class="secondary">Uložit a nastavit zdroj příjmů</button>
+    </fieldset>{% endif %}
+    <button type="submit" name="dalsi" value="hotovo">Dokončit</button>
+  </form>
+</section>
+<script src="{{ url_for('static', filename='pruvodce.js') }}" defer></script>
+{% endblock %}

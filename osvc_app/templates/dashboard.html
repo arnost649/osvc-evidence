@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% from '_annual_helpers.html' import help %}
+{% block content %}
+<h1>Přehled {{year}}</h1>
+<section class="quick">
+  <h2>Co chci udělat?</h2>
+  <div class="quick-grid dashboard-quick-grid">
+    <article><h3>Zapsat nákup</h3><p>Faktura nebo účtenka za zboží či službu.</p><a class="button" href="/payments/expense">{{ icon('plus') }}<span>Zapsat nákup</span></a></article>
+    {% if moduly_zapnute.doprava %}
+    <article><h3>Zapsat PHM</h3><p>Tankování. Daňové uplatnění určuje režim vozidla.</p><a class="button" href="/fuel">{{ icon('fuel') }}<span>Zapsat PHM</span></a></article>
+    <article><h3>Zapsat jízdu</h3><p>Služební cesta, trasa a kilometry.</p><a class="button" href="/trips">{{ icon('trip') }}<span>Zapsat jízdu</span></a></article>
+    {% endif %}
+    <article><h3>Zapsat ruční příjem</h3><p>Honorář nebo jiný příjem mimo e-shop.</p><a class="button" href="/payments/income#manual-income">{{ icon('income') }}<span>Zapsat příjem</span></a></article>
+    {% if moduly_zapnute.externi_web %}
+    <article class="system-action">{% if primary_income_source %}<h3>Synchronizovat příjmy <span class="source-badge">{{primary_income_source.name}}</span></h3><p>Zaplacené objednávky načíst automaticky.</p><form method="post" data-source-action="sync" action="/settings/income-sources/{{primary_income_source.id}}/sync"><input type="hidden" name="csrf_token" value="{{csrf_token()}}">{% set sync_block=income_sync_block(primary_income_source) %}<button data-source-button {% if sync_block %}disabled {% endif %}>{{ icon('sync') }}<span>Synchronizovat</span></button></form>{% if sync_block %}<p class="settings-help" data-sync-block>{{sync_block}} <a href="/settings?tab=sources">Otevřít nastavení</a></p>{% endif %}
+    {% else %}<h3>Synchronizovat příjmy</h3><p>Zaplacené objednávky z e-shopu načíst automaticky.</p><p class="settings-help" data-sync-block>Zatím není nastavený žádný zdroj příjmů. <a href="/settings/income-sources/new">Přidat zdroj</a></p>{% endif %}</article>
+    {% endif %}
+  </div>
+</section>
+<div class="cards summary-cards"><div><span class="summary-label">Příjmy</span><strong class="summary-value numeric-value">{{income|czk}}</strong></div><div><span class="summary-label">Výdaje {{ help('dashboard-expenses', 'Výdaje uplatněné v evidenci OSVČ po zohlednění podnikatelského podílu a režimu vozidla.') }}</span><strong class="summary-value numeric-value">{{expense|czk}}</strong></div><div><span class="summary-label">Bilance</span><strong class="summary-value numeric-value">{{balance|czk}}</strong></div>{% if moduly_zapnute.doprava %}<div><span class="summary-label">Jízdy</span><strong class="summary-value numeric-value">{{total_km|km}}</strong></div>{% endif %}</div>
+{% if nezapocteno %}<p class="module-nezapocteno" data-nezapocteno><strong>Nezapočteno:</strong> {{ nezapocteno }}. <a href="/settings?tab=modules">Nastavení → Moduly</a></p>{% endif %}
+{% if predbezne or vyzvy %}<div class="annual-missing" data-vyzvy>{% if predbezne %}<p>Výdaje a bilance jsou zatím <strong>předběžné</strong> (součet evidence) – pro daňový výsledek doplňte:</p>{% else %}<p>Ke kontrole:</p>{% endif %}<ul>{% for v in vyzvy %}<li>{% if v.odkaz %}<a href="{{ v.odkaz }}">{{ v.text }}</a>{% else %}<strong>{{ v.text }}</strong>{% endif %}</li>{% endfor %}{% if predbezne and not vyzvy %}<li><a href="/annual?year={{ year }}#tax">Podklady v Ročním přehledu</a></li>{% endif %}</ul></div>{% endif %}
+<section><div class="section-heading"><div><h2>Posledních 5 položek</h2><p class="section-help" style="position:relative;top:6px">Příjmy, výdaje, jízdy a PHM – nejnovější podle data platby, tankování nebo jízdy.</p></div></div><div class="table-wrap"><table class="responsive-table dashboard-items"><thead><tr><th>Datum</th><th>Typ</th><th>Popis</th><th class="numeric-column">Částka / km</th></tr></thead><tbody>{% for item in recent_items %}<tr{% if item.href %} data-dashboard-item="{{item.href}}" tabindex="0"{% endif %}><td data-label="Datum">{{item.date|cz_date}}</td><td data-label="Typ"><span class="record-type record-type-{{item.kind}}">{{item.kind_label}}</span></td><td data-label="Popis"><span class="text-2r">{{item.description}}</span></td><td data-label="Částka / km" class="dashboard-metric numeric-column">{% if item.metric_kind=='km' %}{{item.metric|km}}{% else %}{{item.metric|czk}}{% endif %}</td></tr>{% else %}<tr><td colspan="4" class="empty-state">Zatím nejsou přidané žádné položky.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

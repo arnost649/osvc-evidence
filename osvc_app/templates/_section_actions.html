@@ -1,0 +1,12 @@
+{% from '_icons.html' import icon %}
+{% macro save_action(form_id=none, disabled=false) -%}
+<button type="submit" {% if form_id %}form="{{form_id}}"{% endif %} class="section-action save-button"  aria-label="Uložit"{% if disabled %} disabled{% endif %}>{{icon('save')}}</button>
+{%- endmacro %}
+{% macro form_heading(title,form_id,disabled=false) -%}
+<div class="list-heading section-heading"><h2>{{title}}</h2>{{save_action(form_id,disabled)}}</div>
+{%- endmacro %}
+
+{# Režim úprav: přepínač v záhlaví seznamu; vypnutý = sloupec Akce (.akce-sloupec) v téže sekci je schovaný (CSS :has). Po načtení stránky vždy vypnutý. #}
+{% macro edit_toggle() -%}
+<label class="edit-toggle"><input type="checkbox" role="switch" data-edit-toggle autocomplete="off"><span class="edit-toggle-track" aria-hidden="true"></span><span>Upravit</span></label>
+{%- endmacro %}

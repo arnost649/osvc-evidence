@@ -1,0 +1,20 @@
+name: Nápad nebo vylepšení
+description: Co by aplikaci pomohlo
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Co by mělo jít líp
+      description: Popište situaci z praxe – co chcete udělat a co vám dnes chybí.
+    validations:
+      required: true
+  - type: textarea
+    id: navrh
+    attributes:
+      label: Návrh řešení (nepovinné)
+  - type: dropdown
+    id: cast
+    attributes:
+      label: Které části se to týká
+      options: [Příjmy a výdaje, Jízdy a PHM, Roční přehled a Profil OSVČ, Průvodce prvním spuštěním, Zálohy, Instalace a aktualizace, Jiné]

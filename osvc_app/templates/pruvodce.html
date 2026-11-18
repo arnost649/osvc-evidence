@@ -1,0 +1,76 @@
+{% extends 'base.html' %}{% block content %}
+{# I3/A2: průvodce prvním spuštěním, strana 1 – jen když v aplikaci ještě není účet (samostatná instalace). #}
+{% macro radio(name, value, text, help='') %}<label class="checkline"><input type="radio" name="{{ name }}" value="{{ value }}"{% if f[name] == value %} checked{% endif %}><span>{{ text }}{% if help %}<small class="settings-help">{{ help }}</small>{% endif %}</span></label>{% endmacro %}
+<section class="pruvodce" data-pruvodce>
+  <h1>Vítejte v evidenci OSVČ</h1>
+  <p class="settings-help">Pár otázek, aby vám aplikace hned správně počítala daně a pojištění za rok {{ rok }}. Všechno jde později změnit v Nastavení → Profil OSVČ.</p>
+  {% if pravidla_chybi %}<p class="flash error" data-pravidla-chybi>{{ pravidla_chybi }}</p>{% endif %}
+  <form method="post" action="{{ url_for('pruvodce.formular') }}" autocomplete="off" data-pruvodce-form data-rok="{{ rok }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <fieldset class="pruvodce-krok"><legend>1. Kdo podniká</legend>
+      <div class="pruvodce-ico"><label>IČO<input name="ico" value="{{ f.ico or '' }}" required inputmode="numeric" pattern="\s*(\d\s*){8}" maxlength="12" data-pruvodce-ico></label>
+        <button type="button" class="secondary" data-pruvodce-ares data-url="{{ url_for('pruvodce.ares') }}">Doplnit z ARES</button></div>
+      <p class="settings-help" data-pruvodce-ares-stav role="status">ARES údaje jen předvyplní – vše můžete zadat i ručně.</p>
+      <label>Jméno / obchodní název<input name="name" value="{{ f.name or '' }}" required maxlength="200"></label>
+      <div class="pruvodce-radek"><label>Ulice<input name="street" value="{{ f.street or '' }}" maxlength="200"></label>
+        <label>Číslo domu<input name="number" value="{{ f.number or '' }}" required maxlength="20"></label></div>
+      <div class="pruvodce-radek"><label>Obec<input name="city" value="{{ f.city or '' }}" required maxlength="200"></label>
+        <label>PSČ<input name="zip" value="{{ f.zip or '' }}" required inputmode="numeric" maxlength="10"></label></div>
+      <div class="pruvodce-radek"><label>Stát<input name="country" value="{{ f.country or '' }}" maxlength="60"></label>
+        <label>DIČ (nepovinné)<input name="dic" value="{{ f.dic or '' }}" maxlength="20" placeholder="CZ12345678"></label></div>
+    </fieldset>
+    <fieldset class="pruvodce-krok"><legend>2. Přihlášení do aplikace</legend>
+      <label>Uživatelské jméno<input name="username" value="{{ f.username or '' }}" required minlength="3" maxlength="50" autocomplete="username"></label>
+      <div class="pruvodce-radek"><label>Heslo (aspoň 8 znaků)<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+        <label>Heslo znovu<input type="password" name="password2" required minlength="8" autocomplete="new-password"></label></div>
+      <p class="settings-help">Aplikace heslo nezná, ukládá jen jeho otisk. Zapamatujte si ho.</p>
+    </fieldset>
+    <fieldset class="pruvodce-krok"><legend>3. Podnikání v roce {{ rok }}</legend>
+      <label>Od kdy letos podnikáte?<input type="date" name="podnikani_od" value="{{ f.podnikani_od or '' }}" min="{{ rok }}-01-01" max="{{ rok }}-12-31"></label>
+      <p class="settings-help" data-od-pomoc>Podnikáte-li už z loňska, nechte 1. 1. {{ rok }}. Po „Doplnit z ARES“ se datum předvyplní samo.</p>
+      <div class="pruvodce-volby"><span>Plánujete letos podnikání ukončit nebo přerušit?</span>{{ radio('podnikani_konec', 'ne', 'Ne') }}{{ radio('podnikani_konec', 'ano', 'Ano, k datu:') }}
+        <label class="pruvodce-odsazeni" data-ukaz="podnikani_konec=ano">Poslední den podnikání<input type="date" name="podnikani_do" value="{{ f.podnikani_do or '' }}" min="{{ rok }}-01-01" max="{{ rok }}-12-31"></label></div>
+      <div class="pruvodce-volby" data-prvni><span data-prvni-otazka>Je to vaše první podnikání? (Nikdy dřív jste nepodnikal(a), nebo je to déle než 20 let.)</span>
+        {{ radio('prvni_zahajeni', 'ano', 'Ano, je to moje první podnikání') }}{{ radio('prvni_zahajeni', 'ne', 'Ne, podnikal(a) jsem už dříve') }}
+        <small class="settings-help">Začínající podnikatelé platí první roky nižší minimální sociální pojištění.</small></div>
+    </fieldset>
+    <fieldset class="pruvodce-krok"><legend>4. Zaměstnání a vedlejší činnost</legend>
+      <div class="pruvodce-volby"><span>Máte vedle podnikání zaměstnání?</span>{{ radio('zamestnani', 'ne', 'Ne') }}{{ radio('zamestnani', 'ano', 'Ano', 'Pracovní smlouva, případně dohoda, ze které vám zaměstnavatel strhává pojištění.') }}</div>
+      <div class="pruvodce-detail" data-ukaz="zamestnani=ano">
+        <label>Zaměstnavatel (nepovinné)<span class="pruvodce-ico"><input name="zamestnavatel_hledat" value="{{ f.zamestnavatel or '' }}" placeholder="název firmy" data-zam-hledat>
+          <button type="button" class="secondary" data-zam-tlacitko data-url="{{ url_for('pruvodce.zamestnavatel') }}">Najít v ARES</button></span></label>
+        <input type="hidden" name="zamestnavatel" value="{{ f.zamestnavatel or '' }}" data-zam-nazev><input type="hidden" name="zamestnavatel_token" value="{{ f.zamestnavatel_token or '' }}" data-zam-token>
+        <div data-zam-vysledky class="pruvodce-vysledky"></div><p class="settings-help" data-zam-stav role="status">{% if f.zamestnavatel %}Vybráno: {{ f.zamestnavatel }}{% endif %}</p>
+        <div class="pruvodce-radek"><label>Zaměstnán(a) od<input type="date" name="zamestnani_od" value="{{ f.zamestnani_od or '' }}" min="{{ rok }}-01-01" max="{{ rok }}-12-31"></label>
+          <label>do (prázdné = trvá)<input type="date" name="zamestnani_do" value="{{ f.zamestnani_do or '' }}" min="{{ rok }}-01-01" max="{{ rok }}-12-31"></label></div>
+        <div class="pruvodce-volby"><span>Strhává vám zaměstnavatel ze mzdy sociální pojištění?</span>{{ radio('zamestnani_socialni', 'yes', 'Ano', 'Na výplatní pásce je řádek „sociální pojištění“. U pracovní smlouvy téměř vždy. Podnikání je pak vedlejší činnost.') }}{{ radio('zamestnani_socialni', 'no', 'Ne', 'Např. malá dohoda bez odvodů.') }}</div>
+        <div class="pruvodce-volby"><span>Je zaměstnání váš hlavní příjem a máte v něm celý měsíc aspoň minimální mzdu?</span>{{ radio('zamestnani_zdravotni', 'yes', 'Ano', 'Pak za podnikání neplatíte minimální zdravotní pojištění – platí se jen z toho, co skutečně vyděláte.') }}{{ radio('zamestnani_zdravotni', 'no', 'Ne / nevím', 'Bezpečnější volba – spočítá se minimum.') }}</div>
+      </div>
+      <label>Pobíráte důchod, studujete, jste na rodičovské nebo pečujete o blízkou osobu?<select name="vedlejsi_jine"><option value="">Nic z toho</option>{% for k, t in vedlejsi_jine.items() %}<option value="{{ k }}"{% if f.vedlejsi_jine == k %} selected{% endif %}>Ano – {{ t }}</option>{% endfor %}</select></label>
+      <p class="settings-help" data-ukaz="vedlejsi_jine!=">Podnikání je pak vedlejší činnost. Pokud zisk nepřekročí zákonnou hranici, sociální pojištění neplatíte; jinak aplikace výpočet označí k ruční kontrole.</p>
+    </fieldset>
+    <fieldset class="pruvodce-krok"><legend>5. Pojištění</legend>
+      <label>U které zdravotní pojišťovny jste?<select name="pojistovna" required><option value="">– vyberte –</option>{% for p in pojistovny %}<option value="{{ p.insurance_code }}"{% if f.pojistovna == p.insurance_code %} selected{% endif %}>{{ p.insurance_code }} – {{ p.short_name }}</option>{% endfor %}</select></label>
+      <p class="pruvodce-nadpis"><strong>Zálohy, které platíte sami jako OSVČ</strong> (ne pojištění strhávané z platu)</p>
+      <p class="settings-help" data-zalohy-prvni-rok hidden>U vedlejší činnosti se v prvním roce zálohy obvykle neplatí.</p>
+      {% for klic, nazev, kde in [('social', 'Sociální pojištění (ČSSZ)', 'Přehled plateb najdete na ePortálu ČSSZ.'), ('health', 'Zdravotní pojištění', 'Výši záloh najdete v přehledu od pojišťovny.')] %}
+      <div class="pruvodce-volby" data-zalohy><span>{{ nazev }} – platíte sami zálohy?</span>{{ radio(klic ~ '_zalohy', 'plati', 'Ano, měsíčně:') }}
+        <label class="pruvodce-odsazeni" data-ukaz="{{ klic }}_zalohy=plati">Částka za měsíc (Kč)<input name="{{ klic }}_mesicne" value="{{ f[klic ~ '_mesicne'] or '' }}" inputmode="decimal" placeholder="např. 5 005"></label>
+        {{ radio(klic ~ '_zalohy', 'neplati', 'Ne, neplatím', 'Např. při vedlejší činnosti vedle zaměstnání s nízkým ziskem.') }}<small class="settings-help">{{ kde }} Roční úhrn se odhadne z měsíční částky; skutečný úhrn upřesníte v Profilu.</small></div>
+      {% endfor %}
+    </fieldset>
+    <fieldset class="pruvodce-krok"><legend>6. Daně</legend>
+      <div class="pruvodce-volby"><span>Jak uplatníte výdaje?</span><small class="settings-help">Nevíte? Paušál je jednodušší; skutečné výdaje se vyplatí, když máte vysoké náklady.</small>{{ radio('vydaje', 'actual', 'Skutečné výdaje', 'Evidujete účtenky a faktury; daň se počítá z rozdílu příjmů a výdajů.') }}{{ radio('vydaje', 'percentage', 'Výdajový paušál (procentem z příjmů)', 'Účtenky na výdaje nepotřebujete; výdaje = pevné procento příjmů.') }}
+        <div class="pruvodce-odsazeni" data-ukaz="vydaje=percentage">{% for k, label, popis in sazby %}{{ radio('pausal', k, label, popis) }}{% endfor %}</div></div>
+      <div class="pruvodce-volby"><span>Jak danit?</span>{{ radio('dane_rezim', 'standard', 'Běžně – nejsem plátce DPH ani v paušálním režimu', 'Platí pro většinu živnostníků; daň se počítá z ročního přiznání.') }}{{ radio('dane_rezim', 'other', 'Jinak – jsem plátce DPH, v paušálním režimu nebo mám více činností s různým paušálem', 'Aplikace pak výsledek označí k ruční kontrole.') }}</div>
+      <label class="checkline"><input type="checkbox" name="potvrzeni" value="ano"{% if f.potvrzeni == 'ano' %} checked{% endif %}><span>Potvrzuji, že budu evidovat všechny příjmy a výdaje a že údaje výše jsou správné.<small class="settings-help">Bez potvrzení můžete pokračovat – daňový výsledek pak zůstane označený „doplníte později“.</small></span></label>
+    </fieldset>
+    <fieldset class="pruvodce-krok"><legend>7. Co chcete používat</legend>
+      {% for klic, m in moduly_info.items() %}<label class="checkline"><input type="checkbox" name="modul_{{ klic }}" value="1"{% if f['modul_' ~ klic] == '1' %} checked{% endif %}><span><strong>{{ m.nazev }}</strong> – {{ m.popis }}</span></label>{% endfor %}
+      <p class="settings-help">Se zapnutým modulem přijde ještě krátká strana 2 (vozidlo, zdroj příjmů).</p>
+    </fieldset>
+    <button type="submit">Pokračovat</button>
+  </form>
+</section>
+<script src="{{ url_for('static', filename='pruvodce.js') }}" defer></script>
+{% endblock %}

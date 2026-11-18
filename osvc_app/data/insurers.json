@@ -1,0 +1,83 @@
+{
+  "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+  "verified_at": "2026-09-27T13:57:59.681282+00:00",
+  "entries": [
+    {
+      "insurance_code": "111",
+      "name": "Všeobecná zdravotní pojišťovna České republiky",
+      "short_name": "VZP",
+      "ico": "41197518",
+      "address": "Orlická 2020/4, Vinohrady 130 00 Praha 3",
+      "data_box": "i48ae3q",
+      "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+      "verified_at": "2026-09-27T13:57:59.681282+00:00",
+      "active": true
+    },
+    {
+      "insurance_code": "201",
+      "name": "Vojenská zdravotní pojišťovna České republiky",
+      "short_name": "VoZP",
+      "ico": "47114975",
+      "address": "Drahobejlova 1404/4 190 00 Praha 9",
+      "data_box": "p3aaext",
+      "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+      "verified_at": "2026-09-27T13:57:59.681282+00:00",
+      "active": true
+    },
+    {
+      "insurance_code": "205",
+      "name": "Česká průmyslová zdravotní pojišťovna",
+      "short_name": "ČPZP",
+      "ico": "47672234",
+      "address": "Jeremenkova 161/11, Vítkovice 703 00 Ostrava",
+      "data_box": "mk5ab8i",
+      "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+      "verified_at": "2026-09-27T13:57:59.681282+00:00",
+      "active": true
+    },
+    {
+      "insurance_code": "207",
+      "name": "Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví",
+      "short_name": "OZP",
+      "ico": "47114321",
+      "address": "Roškotova 1225/1 140 00 Praha 4",
+      "data_box": "q9iadw9",
+      "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+      "verified_at": "2026-09-27T13:57:59.681282+00:00",
+      "active": true
+    },
+    {
+      "insurance_code": "209",
+      "name": "Zaměstnanecká pojišťovna Škoda",
+      "short_name": "ZPŠ",
+      "ico": "46354182",
+      "address": "Husova 302 293 01 Mladá Boleslav",
+      "data_box": "5kpadkp",
+      "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+      "verified_at": "2026-09-27T13:57:59.681282+00:00",
+      "active": true
+    },
+    {
+      "insurance_code": "211",
+      "name": "Zdravotní pojišťovna ministerstva vnitra České republiky",
+      "short_name": "ZP MV ČR",
+      "ico": "47114304",
+      "address": "Vinohradská 2577/178, Vinohrady 130 00 Praha 3",
+      "data_box": "9swaix3",
+      "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+      "verified_at": "2026-09-27T13:57:59.681282+00:00",
+      "active": true
+    },
+    {
+      "insurance_code": "213",
+      "name": "RBP, zdravotní pojišťovna",
+      "short_name": "RBP",
+      "ico": "47673036",
+      "address": "Michálkovická 967/108, Slezská Ostrava 710 00 Ostrava",
+      "data_box": "edyadmh",
+      "source_url": "https://www.vzp.cz/poskytovatele/ciselniky/zdravotni-pojistovny",
+      "verified_at": "2026-09-27T13:57:59.681282+00:00",
+      "active": true
+    }
+  ]
+}

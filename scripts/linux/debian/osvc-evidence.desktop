@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=OSVČ evidence
+Comment=Evidence příjmů, výdajů a podkladů pro daně OSVČ
+Exec=/usr/bin/osvc-evidence
+Icon=osvc-evidence
+Terminal=false
+Categories=Office;Finance;

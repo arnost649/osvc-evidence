@@ -1,0 +1,17 @@
+(()=>{
+const drafts=()=>Object.fromEntries(Object.keys(localStorage).filter(k=>k.startsWith('osvc-draft:')).map(k=>[k,localStorage.getItem(k)]));
+const message=(status,text,error=false)=>{status.hidden=!text;status.textContent=text;status.classList.toggle('is-error',error);};
+document.addEventListener('change',e=>{if(!e.target.matches('[data-backup-validate] input[type=file]'))return;const card=e.target.closest('.backup-card');card.querySelector('[data-backup-result]').replaceChildren();message(card.querySelector('[data-backup-status]'),'Po výběru souboru klikněte na Ověřit zálohu.');});
+document.addEventListener('submit',async e=>{
+ const form=e.target;if(!form.matches('[data-backup-export],[data-backup-restore],[data-backup-validate]'))return;
+ e.preventDefault();const card=form.closest('.backup-card'),button=form.querySelector('button'),status=card.querySelector('[data-backup-status]'),validating=form.hasAttribute('data-backup-validate');
+ button.disabled=true;form.setAttribute('aria-busy','true');message(status,validating?'Ověřuji obsah zálohy…':'Probíhá zpracování…');
+ const input=validating?form.querySelector('input[type=file]'):null;
+ try{const body=new FormData(form);if(input)input.disabled=true;
+ if(validating){card.querySelector('[data-backup-result]').replaceChildren();const response=await fetch(form.action,{method:'POST',body,headers:{'X-Backup-Fragment':'1'}});const html=await response.text();if(response.redirected||(!response.ok&&response.status!==400)||!html.includes('backup-'))throw Error('Zálohu se nepodařilo ověřit. Obnovte stránku a zkuste to znovu.');card.querySelector('[data-backup-result]').innerHTML=html;message(status,'');return;}
+ body.set('drafts',JSON.stringify(drafts()));const response=await fetch(form.action,{method:'POST',body});if(!response.ok){const result=await response.json().catch(()=>({error:'Operace selhala.'}));throw Error(result.error);}
+ if(form.hasAttribute('data-backup-export')){if(!response.headers.get('content-type')?.includes('application/zip'))throw Error('Zálohu se nepodařilo stáhnout. Obnovte stránku.');const blob=await response.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='osvc-'+new Date().toISOString().slice(0,10)+'.zip';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);const warnings=Number(response.headers.get('X-Backup-Warnings'));message(status,warnings?`Záloha byla vytvořena, ale kontrola dokumentů zjistila ${warnings} problémů. Podrobnosti jsou v manifest.json.`:'Kompletní záloha byla vytvořena.');const meta=card.querySelector('[data-backup-export-meta]');meta.replaceChildren();for(const [label,value] of [['Právě vytvořená záloha',new Date().toLocaleString('cs-CZ')],['Velikost ZIPu',(blob.size/1048576).toLocaleString('cs-CZ',{maximumFractionDigits:2})+' MB']]){const wrap=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;wrap.append(dt,dd);meta.append(wrap);}meta.hidden=false;}
+ else{const result=await response.json();for(const key of Object.keys(localStorage))if(key.startsWith('osvc-draft:'))localStorage.removeItem(key);for(const [key,value] of Object.entries(result.drafts))localStorage.setItem(key,value);location.href='/settings#backup';}
+ }catch(error){message(status,error.message,true);}finally{button.disabled=false;if(input)input.disabled=false;form.removeAttribute('aria-busy');}
+});
+})();

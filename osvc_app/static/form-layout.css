@@ -1,0 +1,54 @@
+/* Shared entry rhythm. Existing names identify specialized groups, not separate grids. */
+:root{--form-gap:1rem;--form-label-height:36px;--form-label-gap:4px;--form-control-height:44px;--profile-field-gap:var(--form-gap);--profile-label-height:var(--form-label-height)}
+.form-grid,.address-workspace .address-form-grid,.vehicle-edit-panel form,.vehicle-create-panel form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--form-gap);align-items:start;min-width:0}
+.profile-panel :is(.profile-fields,.profile-form-grid,.profile-period,.profile-identity-values),.address-workspace .address-form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--form-gap)}
+:is(.form-grid,.address-form-grid,.vehicle-edit-panel form,.vehicle-create-panel form)>label:not(.checkline),.trip-field-dates>label,.trip-field-end,.trip-field-meta>label{display:grid;grid-template-rows:minmax(var(--form-label-height),auto) var(--form-control-height);align-content:start;gap:var(--form-label-gap);min-width:0;margin:0;font-size:.84rem;line-height:18px}
+:is(.form-grid,.address-form-grid,.vehicle-edit-panel form,.vehicle-create-panel form)>label>:is(label,span):first-child{margin:0;min-width:0;line-height:18px;font-size:inherit}
+:is(.form-grid,.address-form-grid,.vehicle-edit-panel form,.vehicle-create-panel form) :is(input:not([type=checkbox]):not([type=hidden]),select),.address-search input{height:var(--form-control-height);min-height:var(--form-control-height);max-width:100%;min-width:0;width:100%;box-sizing:border-box;margin:0}
+:is(.form-grid,.address-form-grid,.vehicle-edit-panel form,.vehicle-create-panel form) :is(.combobox,.select-control){margin:0;min-width:0;width:100%;height:var(--form-control-height)}
+.form-grid label .help-trigger{vertical-align:middle;margin-block:-8px}
+.form-grid>.form-tax-group{grid-column:1/-1;margin:0;padding:0;border:0;border-radius:0;min-width:0}
+.form-tax-group>.tax-share-error{grid-column:1/-1}
+.income-entry .payment-upload,.expense-entry .payment-upload{grid-column:2;grid-row:2}
+.expense-entry>.form-tax-group{grid-row:3}
+.profile-panel :is(.profile-fields>label,.profile-paid>label:first-child,.profile-form-grid>label,.profile-form-field){gap:var(--form-label-gap)}
+.vehicle-edit-panel form>.checkline{align-self:end;display:flex;align-items:center;gap:.5rem;min-height:var(--form-control-height)}
+.vehicle-edit-panel form>.checkline input{width:auto}
+.trip-entry.form-grid{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"vehicle dates cost" "origin destination cost" "purpose meta cost"}
+.trip-field-dates,.trip-field-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--form-gap);min-width:0;align-items:start}
+.trip-entry .trip-field-end{padding:0}
+.trip-entry .trip-end-heading{min-height:var(--form-label-height);margin:0;align-items:start}
+.trip-entry .trip-end-heading label{font-size:.84rem;line-height:18px}
+.trip-cost-field{grid-template-rows:var(--form-label-height) auto;gap:var(--form-label-gap)}
+.trip-cost-label{margin:0;font-size:.84rem;line-height:18px}
+.form-grid.fuel-entry .fuel-upload{grid-row:3;grid-column:1}
+@media(max-width:1100px){
+ .trip-entry.form-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"vehicle dates" "origin destination" "purpose meta" "cost cost"}
+}
+@media(max-width:800px){
+ .form-grid,.address-workspace .address-form-grid,.vehicle-edit-panel form,.vehicle-create-panel form,.profile-panel :is(.profile-fields,.profile-form-grid,.profile-period,.profile-identity-values){grid-template-columns:minmax(0,1fr)}
+ .income-entry .payment-upload,.expense-entry .payment-upload,.expense-entry>.form-tax-group{grid-column:1;grid-row:auto}
+ .trip-entry.form-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"vehicle" "dates" "origin" "destination" "purpose" "meta" "cost"}
+ .trip-field-vehicle{grid-area:vehicle}.trip-field-dates{grid-area:dates}.trip-field-origin{grid-area:origin}.trip-field-destination{grid-area:destination}.trip-field-purpose{grid-area:purpose}.trip-field-meta{grid-area:meta}.trip-cost-field{grid-area:cost}
+ .form-grid.fuel-entry .fuel-upload{grid-column:1;grid-row:auto}
+ .address-form-grid label:first-child{grid-column:auto}
+}
+@media(max-width:500px){.trip-field-dates,.trip-field-meta{grid-template-columns:minmax(0,1fr)}}
+.address-add-panel>form,.address-edit-panel>form{display:block;width:100%;min-width:0}
+.address-form-grid+.form-actions,.address-form-grid+.address-edit-actions{margin-top:var(--form-gap)}
+.settings-tab-panel :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select){height:var(--form-control-height);min-height:var(--form-control-height);max-width:100%;box-sizing:border-box}
+.backup-upload input[type=file]{padding:.25rem}
+
+/* Keep shared label tracks for wrapped captions, but seat captions next to controls. */
+:is(.form-grid,.address-form-grid,.vehicle-edit-panel form,.vehicle-create-panel form)>label:not(.checkline),.trip-field-dates>label,.trip-field-end,.trip-field-meta>label,
+.profile-panel :is(.profile-fields>label,.profile-paid>label:first-child,.profile-form-grid>label,.profile-form-field){align-items:end}
+.trip-entry .trip-end-heading{align-items:end}
+.trip-cost-label{align-self:end}
+
+/* Náklad cesty na počítači (3 sloupce): rámeček lícuje s poli 1. až 3. řady a řádky uvnitř jsou rozložené rovnoměrně.
+   Rozpis (dl) je podmřížka, takže každý jeho řádek je samostatná stopa jako ostatní řádky rámečku. Mobil a 2 sloupce beze změny. */
+@media(min-width:1101px){
+ .trip-entry .trip-cost-field{align-self:stretch;grid-template-rows:var(--form-label-height) minmax(0,1fr)}
+ .trip-entry .trip-cost-field>.trip-cost{height:100%;box-sizing:border-box;grid-template-columns:minmax(0,1fr);align-content:space-between;gap:0}
+ .trip-entry .trip-cost-field .trip-cost-values{grid-template-rows:subgrid;grid-row:span 5;row-gap:0;grid-auto-rows:auto}
+}

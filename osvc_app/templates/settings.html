@@ -1,0 +1,125 @@
+{% from '_section_actions.html' import save_action %}
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% from '_tax_classification.html' import tax_fields %}
+{% block content %}
+<div class="page-header"><h1>Nastavení</h1></div>
+<div class="settings-tabs" data-settings-tabs>
+  <div class="settings-tablist" role="tablist" aria-label="Sekce nastavení">
+    <button type="button" class="settings-tab is-active" id="settings-tab-account" role="tab" aria-selected="true" aria-controls="settings-panel-account" data-settings-tab="account">{{ icon('lock') }}<span>Účet / Přihlášení</span></button>
+    <button type="button" class="settings-tab" id="settings-tab-modules" role="tab" aria-selected="false" aria-controls="settings-panel-modules" data-settings-tab="modules">{{ icon('check') }}<span>Moduly</span></button>
+    {% if moduly_zapnute.doprava %}    <button type="button" class="settings-tab" id="settings-tab-vehicles" role="tab" aria-selected="false" aria-controls="settings-panel-vehicles" data-settings-tab="vehicles">{{ icon('trip') }}<span>Vozidla</span></button>{% endif %}
+    <button type="button" class="settings-tab" id="settings-tab-categories" role="tab" aria-selected="false" aria-controls="settings-panel-categories" data-settings-tab="categories">{{ icon('file') }}<span>Názvy typů</span></button>
+    {% if moduly_zapnute.externi_web %}    <button type="button" class="settings-tab" id="settings-tab-sources" role="tab" aria-selected="false" aria-controls="settings-panel-sources" data-settings-tab="sources">{{icon('income')}}<span>Zdroje příjmů</span></button>{% endif %}
+    <button type="button" class="settings-tab" id="settings-tab-appearance" role="tab" aria-selected="false" aria-controls="settings-panel-appearance" data-settings-tab="appearance">{{ icon('settings') }}<span>Vzhled</span></button>
+    <button type="button" class="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel-profile" data-settings-tab="profile">{{ icon("user") }}<span>Profil OSVČ</span></button>
+    <nav class="profile-subnav" data-profile-subnav aria-label="Profil OSVČ" hidden>
+{% for key,label in [('overview','Přehled'),('business','Podnikání'),('employment','Zaměstnání'),('social','ČSSZ'),('health','Zdravotní pojištění'),('tax','Daňové nastavení'),('vehicle','Vozidlo a doprava'),('advanced','Pokročilé')] %}<a href="#profile-{{ key }}" data-profile-section="{{ key }}">{{ label }}</a>{% endfor %}
+    </nav>
+    <button type="button" class="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel-backup" data-settings-tab="backup">{{ icon("save") }}<span>Záloha a obnova</span></button>
+    {% if sit_info %}<button type="button" class="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel-sit" data-settings-tab="sit">{{ icon("settings") }}<span>Síťový přístup</span></button>{% endif %}
+  </div>
+  <div class="settings-tab-content">
+{% if moduly_zapnute.externi_web %}{% include "income_sources.html" %}{% endif %}
+{% include "backup_settings.html" %}
+{% if sit_info %}{% include "sit_settings.html" %}{% endif %}
+{% include "profile_settings.html" %}
+<section class="settings-card settings-tab-panel" id="settings-panel-appearance" role="tabpanel" aria-labelledby="settings-tab-appearance" data-settings-panel="appearance" hidden>
+  <div class="settings-card-head"><div class="settings-icon">{{ icon('settings') }}</div><div><h2>Vzhled</h2></div></div><h3>Barevný motiv</h3>
+  <div class="theme-picker" data-theme-picker data-save-url="{{ url_for('main.update_appearance') }}" data-csrf="{{ csrf_token() }}">
+  {% for skupina,motivy in theme_groups %}<h4 class="theme-group-title" id="theme-group-{{ loop.index }}">{{ skupina }} <small>({{ motivy|length }})</small></h4>
+  <div class="theme-grid" role="group" aria-labelledby="theme-group-{{ loop.index }}">
+  {% for theme in motivy %}<button type="button" class="theme-card" data-theme-choice="{{ theme.id }}" aria-pressed="{{ 'true' if selected_theme == theme.id else 'false' }}">
+    <span class="theme-preview" aria-hidden="true">{% for key in ['primary','surface','accent','bg'] %}<span style="background:{{ theme.tokens[key] }}"></span>{% endfor %}</span>
+    <span>{{ theme.name }}</span><span class="theme-check" aria-hidden="true">✓</span>
+  </button>{% endfor %}
+  </div>{% endfor %}
+  </div><p data-theme-message role="status" aria-live="polite"></p>
+</section>
+<section class="settings-card settings-account settings-tab-panel" id="settings-panel-account" role="tabpanel" aria-labelledby="settings-tab-account" data-settings-panel="account">
+  <div class="settings-card-head"><div class="settings-icon">{{ icon('lock') }}</div><div><h2>Účet / Přihlášení</h2><p class="settings-help">Přístup do lokální evidence OSVČ.</p></div></div>
+  {# I2: účet je uložený v aplikaci, heslo jen jako otisk; změna vždy s ověřením současného hesla. #}
+  <dl class="settings-account-details" data-account><div><dt>Uživatelské jméno</dt><dd><code>{{ ucet_jmeno }}</code></dd></div><div><dt>Heslo</dt><dd>nastavené (z bezpečnostních důvodů se nezobrazuje){% if ucet_zmena %} · změněno {{ ucet_zmena|cz_datetime }}{% endif %}</dd></div></dl>
+  <form method="post" action="{{ url_for('main.update_account') }}" class="account-form" data-account-form autocomplete="off">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Uživatelské jméno<input name="username" value="{{ ucet_jmeno }}" required minlength="3" maxlength="50" autocomplete="username"></label>
+    <label>Současné heslo<input type="password" name="current_password" required autocomplete="current-password"></label>
+    <label>Nové heslo<input type="password" name="new_password" minlength="8" autocomplete="new-password"></label>
+    <label>Nové heslo znovu<input type="password" name="new_password2" minlength="8" autocomplete="new-password"></label>
+    <button type="submit">Uložit přihlášení</button>
+  </form>
+  <p class="settings-help">Při změně jen jména nechte nové heslo prázdné. Heslo musí mít aspoň 8 znaků. Aplikace heslo nezná, ukládá jen jeho otisk. Po změně hesla se odhlásí ostatní přihlášená zařízení.</p>
+  {% if config.OSVC_SAMOSTATNA %}{% set akt = aktualizace_prehled() %}{# V2: upozornění na novou verzi – jen samostatná instalace #}
+  <h3 id="aktualizace">Aktualizace</h3>
+  <p class="settings-help" data-verze-aplikace>Verze aplikace <strong>{{ akt.verze }}</strong>.{% if akt.dostupne and akt.zapnuto %} Poslední kontrola: {{ akt.kontrola|cz_datetime if akt.kontrola else 'zatím neproběhla' }}{% if akt.chyba %} (GitHub neodpověděl, zkusí se znovu zítra){% endif %}.{% endif %}</p>
+  <form method="post" action="{{ url_for('main.update_aktualizace') }}" class="account-form" data-aktualizace-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="checkline"><input type="checkbox" name="kontrolovat" value="1"{% if akt.zapnuto %} checked{% endif %}> Upozorňovat na nové verze</label>
+    <button type="submit">Uložit</button>
+  </form>
+  <p class="settings-help">Jednou denně se aplikace zeptá GitHubu, jestli nevyšla nová verze, a ukáže upozornění s odkazem ke stažení. Nic sama nestahuje ani neinstaluje a neposílá žádné vaše údaje.</p>
+  {% endif %}
+</section>
+{# moduly – zapnutí/vypnutí jen mění volbu v instance/moduly.json, data zůstávají. #}
+<section class="settings-card settings-modules settings-tab-panel" id="settings-panel-modules" role="tabpanel" aria-labelledby="settings-tab-modules" data-settings-panel="modules" hidden>
+  <div class="settings-card-head"><div class="settings-icon">{{ icon('check') }}</div><div><h2>Moduly</h2><p class="settings-help">Části aplikace, které nepoužíváte, můžete vypnout. Vypnutí ani zapnutí nic nesmaže a nezmění – po zapnutí bude vše zpět.</p></div></div>
+  <div class="module-list">{% for m in moduly %}
+    <article class="module-card{% if not m.zapnuto %} is-off{% endif %}" id="modul-{{ m.klic }}" data-module="{{ m.klic }}">
+      <div class="module-card-text"><h3>{{ m.nazev }}</h3><p>{{ m.popis }}</p><p class="settings-help" data-module-obsah>Obsahuje: {{ m.obsah }}</p>
+      {% if not m.zapnuto and m.ma_data %}<form method="post" action="{{ url_for('main.update_module', klic=m.klic) }}" class="module-zapocitat" data-module-zapocitat>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="zapocitat" value="{{ '0' if m.zapocitat else '1' }}">
+        <span>Ve výpočtech: <strong>{{ 'započítané' if m.zapocitat else 'nezapočítané' }}</strong></span>
+        <button type="submit" class="secondary module-zapocitat-button">{{ 'Nezapočítávat' if m.zapocitat else 'Započítat' }}</button>
+      </form>{% endif %}</div>
+      {% if potvrdit_modul == m.klic and m.zapnuto and m.ma_data %}
+      <form method="post" action="{{ url_for('main.update_module', klic=m.klic) }}" class="module-confirm" role="alertdialog" aria-modal="false" aria-labelledby="modul-otazka-{{ m.klic }}" data-module-confirm>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="zapnuto" value="0">
+        <p id="modul-otazka-{{ m.klic }}"><strong>Vypnout modul {{ m.nazev }}?</strong> Obsahuje {{ m.obsah }}. Co s nimi ve výpočtech?</p>
+        <label class="module-choice"><input type="radio" name="zapocitat" value="1" required> <span><strong>Ponechat existující záznamy ve výpočtech</strong><small>Přehled a Roční přehled je počítají dál, modul jen nebude vidět.</small></span></label>
+        <label class="module-choice"><input type="radio" name="zapocitat" value="0" required> <span><strong>Nezapočítávat je</strong><small>Vynechají se z příjmů a výdajů na Přehledu i v Ročním přehledu.</small></span></label>
+        <p class="annual-notice">Pozor: „Nezapočítávat“ změní součty, daňový základ i pojistné v Ročním přehledu. Záznamy se nesmažou a volbu změníte tady kdykoli.</p>
+        <div class="module-confirm-actions"><a class="button" href="{{ url_for('main.settings', tab='modules') }}" autofocus data-module-cancel>Zrušit</a><button type="submit" class="secondary">Vypnout modul</button></div>
+      </form>
+      {% else %}
+      <form method="post" action="{{ url_for('main.update_module', klic=m.klic) }}" class="module-switch">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="zapnuto" value="{{ '0' if m.zapnuto else '1' }}">
+        <span class="module-state" data-module-state>{{ 'Zapnuto' if m.zapnuto else 'Vypnuto' }}</span>
+        <button type="submit" class="secondary" data-module-toggle>{{ 'Vypnout' if m.zapnuto else 'Zapnout' }}</button>
+      </form>
+      {% endif %}
+    </article>{% endfor %}
+  </div>
+</section>
+{% if moduly_zapnute.doprava %}<section class="settings-card settings-vehicles settings-tab-panel" id="settings-panel-vehicles" role="tabpanel" aria-labelledby="settings-tab-vehicles" data-settings-panel="vehicles" hidden>
+  <div class="settings-card-head"><div class="settings-icon">{{ icon('trip') }}</div><div><h2>Vozidla</h2><p class="settings-help">Deaktivované vozidlo zůstane u historických jízd a PHM.</p></div><button type="button" class="secondary category-new" data-open-vehicle>{{ icon('plus') }}<span>Přidat vozidlo</span></button></div>
+  <div class="settings-list">
+    {% for x in vehicles %}
+    <article class="settings-item vehicle-item" id="vehicle-{{ x.id }}">
+      <details class="vehicle-edit">
+        <summary class="vehicle-header">
+          <div class="vehicle-summary"><strong>{{ x.name }}</strong><div class="settings-meta">SPZ: {{ x.registration_plate or 'neuvedena' }} · {{ x.fuel_type or 'palivo neuvedeno' }} · {% if x.normalized_consumption_l_100km is not none %}{{ x.normalized_consumption_l_100km|cz_decimal(1) }} l/100 km{% else %}spotřeba není nastavena{% endif %}</div>{% if active_vehicle_count == 1 and x.active %}<span class="status-chip">Výchozí</span>{% elif not x.active %}<span class="status-chip muted-chip">Neaktivní</span>{% endif %}</div>
+          <span class="vehicle-edit-trigger">{{ icon('edit') }}<span>Upravit</span></span>
+        </summary>
+        <div class="vehicle-edit-panel"><form method="post" action="{{ url_for('main.update_vehicle', ident=x.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Název<input name="name" value="{{ x.name }}" required></label><label>SPZ<input name="registration_plate" value="{{ x.registration_plate or '' }}"></label><label>Palivo<input name="fuel_type" value="{{ x.fuel_type or '' }}"></label><label>Normovaná spotřeba<input name="normalized_consumption_l_100km" inputmode="decimal" value="{{ x.normalized_consumption_l_100km or '' }}" placeholder="l/100 km"></label><label class="checkline"><input type="checkbox" name="active" value="1"{% if x.active %} checked{% endif %}> Aktivní</label>{{ save_action() }}</form></div>
+      </details>
+    </article>
+    {% else %}<p class="empty-state">Zatím nemáte žádné vozidlo.</p>{% endfor %}
+  </div>
+  <details class="settings-add-panel vehicle-create-panel" data-vehicle-panel><summary hidden>Formulář pro přidání vozidla</summary><form method="post" action="{{ url_for('main.create_vehicle') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Název<input name="name" required></label><label>SPZ<input name="registration_plate"></label><label>Palivo<input name="fuel_type" placeholder="Natural 95"></label><label>Normovaná spotřeba<input name="normalized_consumption_l_100km" inputmode="decimal" placeholder="např. 4,7"></label>{{ save_action() }}</form></details>
+</section>{% endif %}
+<section class="settings-card settings-categories settings-tab-panel" id="settings-panel-categories" role="tabpanel" aria-labelledby="settings-tab-categories" data-settings-panel="categories" hidden>
+<div class="settings-card-head system-types-heading"><div class="settings-icon">{{ icon('file') }}</div><div><h2>Názvy typů záznamů</h2><p class="settings-help">Jak se v aplikaci jmenují druhy příjmů, výdajů a dalších záznamů. Název můžete přepsat, význam záznamů zůstává stejný.</p></div>{{ save_action('system-types-form') }}</div>
+<form id="system-types-form" method="post" action="/settings/system-types" data-dirty-guard>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<div class="system-types-columns" aria-hidden="true"><span>Význam</span><span id="system-types-label-heading">Zobrazovat jako</span></div>
+{% for type in system_types %}
+<div class="system-type-row" >
+<small id="system-type-{{ type.key }}">{{ type.description }}</small>
+<label><span class="system-type-mobile-label">Zobrazovat jako</span><input name="label_{{ type.key }}" aria-label="Zobrazovat jako: {{ type.description }}" value="{{ type.label }}" maxlength="100" required>{% if type.label!=type.default %}<small class="muted" data-type-default>výchozí: {{ type.default }}</small>{% endif %}</label>
+</div>
+{% endfor %}
+</form>
+</section>
+  </div>
+</div>
+{% endblock %}

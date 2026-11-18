@@ -1,0 +1,10 @@
+{% macro pagination(pager, position='top') -%}
+{% if pager and pager.pages > 1 %}
+<nav class="pagination pagination-{{position}}" aria-label="Stránkování {{'nad' if position=='top' else 'pod'}} tabulkou">
+  {% if pager.page > 1 %}<a href="{{pager.url(pager.page-1)}}" rel="prev" aria-label="Předchozí stránka">‹</a>{% else %}<span class="pagination-disabled" aria-disabled="true">‹</span>{% endif %}
+  {% for number in pager.numbers %}{% if number is none %}<span class="pagination-number pagination-ellipsis">…</span>{% elif number==pager.page %}<span class="pagination-number pagination-current" aria-current="page" aria-label="Stránka {{number}}">{{number}}</span>{% else %}<a class="pagination-number" href="{{pager.url(number)}}" aria-label="Stránka {{number}}">{{number}}</a>{% endif %}{% endfor %}
+  <span class="pagination-mobile" aria-label="Stránka {{pager.page}} z {{pager.pages}}">{{pager.page}} / {{pager.pages}}</span>
+  {% if pager.page < pager.pages %}<a href="{{pager.url(pager.page+1)}}" rel="next" aria-label="Další stránka">›</a>{% else %}<span class="pagination-disabled" aria-disabled="true">›</span>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}

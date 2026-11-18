@@ -1,0 +1,7 @@
+Flask
+Flask-WTF
+PyMySQL
+python-dotenv
+waitress
+paramiko
+reportlab
