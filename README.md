@@ -1,5 +1,10 @@
 # OSVČ evidence
 
+[![Stáhnout pro Windows](https://img.shields.io/badge/St%C3%A1hnout-pro%20Windows-2563EB?style=for-the-badge)](../../releases/latest/download/osvc-evidence-windows.exe)
+[![Stáhnout pro Linux (.deb)](https://img.shields.io/badge/St%C3%A1hnout-pro%20Linux%20%28.deb%29-2563EB?style=for-the-badge)](../../releases/latest/download/osvc-evidence-linux.deb)
+
+Všechny verze a popis změn: [Releases](../../releases)
+
 OSVČ evidence – příjmy, výdaje, jízdy a Roční přehled pro daně, ČSSZ a zdravotní pojišťovnu. Windows a Linux.
 Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 
@@ -19,15 +24,15 @@ Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 | ![Průvodce](obrazky/pruvodce.png) | ![Roční přehled](obrazky/rocni-prehled.png) |
 
 ## Instalace
-Stáhněte poslední verzi z **[Releases](../../releases/latest)**.
+Stáhněte poslední verzi tlačítkem nahoře, nebo z **[Releases](../../releases/latest)**.
 
-**Windows 10 / 11** – `osvc-evidence-X.Y.Z-windows.exe`
+**Windows 10 / 11** – `osvc-evidence-windows.exe` (totéž jako `osvc-evidence-X.Y.Z-windows.exe`)
 - Instalace jen pro vašeho uživatele, **bez práv správce**. Po instalaci je v nabídce Start zástupce **OSVČ evidence**.
 - Data: `%LOCALAPPDATA%\OSVC evidence` (mimo složku programu).
 
-**Ubuntu 24.04+ / Debian 13+** – `osvc-evidence_X.Y.Z_amd64.deb`
+**Ubuntu 24.04+ / Debian 13+** – `osvc-evidence-linux.deb` (totéž jako `osvc-evidence_X.Y.Z_amd64.deb`)
 ```
-sudo apt install ./osvc-evidence_X.Y.Z_amd64.deb
+sudo apt install ./osvc-evidence-linux.deb
 ```
 - Běží jako služba `osvc-evidence`, zástupce je v nabídce aplikací. Data: `/var/lib/osvc-evidence`.
 
