@@ -8,16 +8,7 @@
 
 Všechny verze a popis změn: [Releases](../../releases) · [Code signing policy](#code-signing-policy)
 
-> **Instalace ve Windows – upozornění**
->
-> Windows při spuštění instalátoru ukáže modré okno **„Systém Windows ochránil váš počítač“**.
-> Klikněte na **„Další informace“** a pak na **„Přesto spustit“**.
->
-> <img alt="Krok 1: Další informace" src="obrazky/smartscreen-1.svg" width="330"> <img alt="Krok 2: Přesto spustit" src="obrazky/smartscreen-2.svg" width="330">
->
-> Aplikace je nová a zatím nemá digitální podpis – ten se uděluje až rozšířenějším programům. Varování neznamená, že je program
-> nebezpečný: zdrojový kód je veřejný a instalátor se sestavuje automaticky na GitHubu. Jakmile se program víc rozšíří, podpis
-> doplníme a varování zmizí. Pro pokročilé: [kontrolní součty SHA256SUMS.txt](../../releases/latest/download/SHA256SUMS.txt).
+Windows může při instalaci zobrazit varování – jak ho přeskočit, najdete v části [Instalace](#instalace).
 
 OSVČ evidence – příjmy, výdaje, jízdy a Roční přehled pro daně, ČSSZ a zdravotní pojišťovnu. Windows a Linux.
 Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
@@ -41,6 +32,18 @@ Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 Stáhněte poslední verzi tlačítkem nahoře, nebo z **[Releases](../../releases/latest)**.
 
 **Windows 10 / 11** – `osvc-evidence-windows.exe`
+
+> **Instalace ve Windows – upozornění**
+>
+> Windows při spuštění instalátoru může ukázat okno s nadpisem **„Systém Windows ochránil váš počítač“**.
+> Klikněte na **„Další informace“** a pak na **„Přesto spustit“**.
+>
+> <img alt="Krok 1: Další informace" src="obrazky/smartscreen-1.svg" width="330"> <img alt="Krok 2: Přesto spustit" src="obrazky/smartscreen-2.svg" width="330">
+>
+> Aplikace je nová a zatím nemá digitální podpis – ten se uděluje až rozšířenějším programům. Varování neznamená, že je program
+> nebezpečný: zdrojový kód je veřejný a instalátor se sestavuje automaticky na GitHubu. Jakmile se program víc rozšíří, podpis
+> doplníme a varování zmizí. Pro pokročilé: [kontrolní součty SHA256SUMS.txt](../../releases/latest/download/SHA256SUMS.txt).
+
 - Instalace jen pro vašeho uživatele, **bez práv správce**. Po instalaci je v nabídce Start zástupce **OSVČ evidence**.
 - Data: `%LOCALAPPDATA%\OSVC evidence` (mimo složku programu).
 
