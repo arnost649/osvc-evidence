@@ -38,7 +38,7 @@ Stáhněte poslední verzi tlačítkem nahoře, nebo z **[Releases](../../releas
 > Windows při spuštění instalátoru může ukázat okno s nadpisem **„Systém Windows ochránil váš počítač“**.
 > Klikněte na **„Další informace“** a pak na **„Přesto spustit“**.
 >
-> <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/smartscreen-1-tmavy.svg"><img alt="Krok 1: Další informace" src="obrazky/smartscreen-1.svg" width="330"></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/smartscreen-2-tmavy.svg"><img alt="Krok 2: Přesto spustit" src="obrazky/smartscreen-2.svg" width="330"></picture>
+> <img alt="Krok 1: Další informace" src="obrazky/smartscreen-1.svg" width="330"> <img alt="Krok 2: Přesto spustit" src="obrazky/smartscreen-2.svg" width="330">
 >
 > Aplikace je nová a zatím nemá digitální podpis – ten se uděluje až rozšířenějším programům. Varování neznamená, že je program
 > nebezpečný: zdrojový kód je veřejný a instalátor se sestavuje automaticky na GitHubu. Jakmile se program víc rozšíří, podpis
