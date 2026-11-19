@@ -46,6 +46,8 @@ jobs:
             # verze jen třímístné vX.Y.Z (1.0.1, 1.0.2, větší změny 1.1.0), volitelně předběžné -něco; čtvrté číslo ne
             [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$ ]] || { echo "CHYBA: tag $GITHUB_REF_NAME není ve tvaru vX.Y.Z"; exit 1; }
             V="${GITHUB_REF_NAME#v}"
+            ZDROJ=$(python -c "from osvc_app import verze; print(verze.VERZE)")   # verze.py musí mít číslo tohoto vydání
+            [ "$ZDROJ" = "${V%%-*}" ] || { echo "CHYBA: osvc_app/verze.py má $ZDROJ, tag je $GITHUB_REF_NAME – před vydáním nastavte VERZE"; exit 1; }
             python scripts/ci/popis_vydani.py "$GITHUB_REF_NAME" > /dev/null   # bez popisu v CHANGELOG.md se nevydá
           else
             V="${{ inputs.verze }}"

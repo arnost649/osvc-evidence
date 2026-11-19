@@ -78,6 +78,8 @@ Name: "{userstartup}\{#Nazev}"; Filename: "{app}\python\pythonw.exe"; Parameters
 
 [Run]
 Filename: "{app}\python\pythonw.exe"; Parameters: "{#Spust} --otevrit"; WorkingDir: "{app}\app"; Description: "Spustit {#Nazev}"; Flags: postinstall nowait skipifsilent
+; aktualizace z aplikace (tichá instalace /SPUSTIT=1): po instalaci aplikaci znovu spustit, stránka v prohlížeči se obnoví sama
+Filename: "{app}\python\pythonw.exe"; Parameters: "{#Spust}"; WorkingDir: "{app}\app"; Flags: nowait; Check: SpustitPoAktualizaci
 
 [UninstallRun]
 Filename: "{app}\python\python.exe"; Parameters: "-X utf8 -m osvc_app.spoustec zastav --config ""{#Konf}"""; WorkingDir: "{app}\app"; Flags: runhidden waituntilterminated; RunOnceId: "zastavit"
@@ -102,6 +104,11 @@ var
   Kod: Integer;
 begin
   Result := Python('zastav --config "' + ExpandConstant('{#Konf}') + '"', Kod);
+end;
+
+function SpustitPoAktualizaci(): Boolean;
+begin
+  Result := ExpandConstant('{param:SPUSTIT|0}') = '1';
 end;
 
 // Před aktualizací ukončit běžící aplikaci (jinak by byly soubory Pythonu zamčené). Data jsou mimo {app} a zůstávají.

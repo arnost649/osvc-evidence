@@ -156,6 +156,44 @@ def update_sit():
  nova=f"http://{data['ip']}:{port}/" if rezim=='domaci' else None
  return render_template('sit_restart.html',nova=nova,lokalni=f'http://localhost:{port}/',firewall=data['firewall'],restart=bool(restart))
 
+@bp.get('/aktualizace/okno')
+@login_required
+def aktualizace_okno():
+ """Okénko s verzí na Přehledu (server: jen verze a text o osvc-nasad)."""
+ from . import aktualizace
+ return jsonify(aktualizace.okno())
+
+@bp.post('/aktualizace/zkontrolovat')
+@login_required
+def aktualizace_zkontrolovat():
+ """„Zkontrolovat teď“ – i při vypnuté automatické kontrole (jen samostatná instalace)."""
+ if not current_app.config.get('OSVC_SAMOSTATNA'): abort(404)
+ from . import aktualizace
+ stav=aktualizace.zkontroluj(vynutit=True) or {}
+ if request.accept_mimetypes.best=='application/json':return jsonify(aktualizace.okno())
+ if stav.get('chyba'):flash('GitHub teď neodpověděl. Zkuste to později.','error')
+ elif aktualizace.nova_verze(stav):flash(f"Je k dispozici nová verze {stav['nejnovejsi']} – otevřete okénko s verzí na Přehledu.",'info')
+ else:flash('Máte nejnovější verzi.','success')
+ return redirect(url_for('main.settings',tab='aktualizace'))
+
+@bp.post('/aktualizace/instalovat')
+@login_required
+def aktualizace_instalovat():
+ """Stáhnout, ověřit a spustit instalátor nové verze (jen Windows); průběh přes /aktualizace/prubeh."""
+ if not (current_app.config.get('OSVC_SAMOSTATNA') and current_app.config.get('OSVC_WINDOWS')): abort(404)
+ from . import aktualizace
+ if not aktualizace.aktualizuj(current_app._get_current_object()):
+  return jsonify(ok=False,prubeh=aktualizace.prubeh(),chyba='Aktualizaci teď nejde spustit (už probíhá, nebo není nová verze).'),409
+ current_app.logger.info('aktualizace: spuštěna uživatelem')
+ return jsonify(ok=True,prubeh=aktualizace.prubeh())
+
+@bp.get('/aktualizace/prubeh')
+@login_required
+def aktualizace_prubeh():
+ if not current_app.config.get('OSVC_SAMOSTATNA'): abort(404)
+ from . import aktualizace
+ return jsonify(prubeh=aktualizace.prubeh(),verze=aktualizace.verze_text())
+
 @bp.post('/settings/aktualizace')
 @login_required
 def update_aktualizace():
@@ -163,8 +201,8 @@ def update_aktualizace():
  if not current_app.config.get('OSVC_SAMOSTATNA'): abort(404)
  from . import aktualizace
  zap=request.form.get('kontrolovat')=='1'; aktualizace.nastav(zap)
- flash('Upozornění na nové verze je zapnuté.' if zap else 'Upozornění na nové verze je vypnuté.','success')
- return redirect(url_for('main.settings')+'#aktualizace')
+ flash('Automatická kontrola nových verzí je zapnutá.' if zap else 'Automatická kontrola nových verzí je vypnutá.','success')
+ return redirect(url_for('main.settings',tab='aktualizace'))
 
 @bp.post('/settings/account')
 @login_required

@@ -1,0 +1,21 @@
+{# Nastavení → Aktualizace: samostatná instalace – automatická kontrola a „Zkontrolovat teď“; server majitele – jen verze a osvc-nasad. #}
+{% set akt = aktualizace_okno() %}
+<section class="settings-card settings-tab-panel" id="settings-panel-aktualizace" role="tabpanel" data-settings-panel="aktualizace" hidden>
+  <div class="settings-card-head"><div class="settings-icon">{{ icon('save') }}</div><div><h2 id="aktualizace">Aktualizace</h2><p class="settings-help">Verze aplikace a kontrola nových verzí.</p></div></div>
+  <p data-verze-aplikace>Verze aplikace: <strong>{{ akt.verze }}</strong>{% if akt.nova %} · k dispozici je nová verze <strong>{{ akt.nejnovejsi }}</strong>{% endif %}</p>
+  {% if akt.samostatna %}
+  <form method="post" action="{{ url_for('main.update_aktualizace') }}" class="account-form" data-aktualizace-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="checkline"><input type="checkbox" name="kontrolovat" value="1"{% if akt.zapnuto %} checked{% endif %}> Automaticky kontrolovat nové verze (jednou denně)</label>
+    <button type="submit">Uložit</button>
+  </form>
+  <form method="post" action="{{ url_for('main.aktualizace_zkontrolovat') }}" class="account-form" data-zkontrolovat-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="secondary">Zkontrolovat teď</button>
+    <p class="settings-help">Poslední kontrola: {{ akt.kontrola|cz_datetime if akt.kontrola else 'zatím neproběhla' }}{% if akt.chyba %} (GitHub neodpověděl){% endif %}.</p>
+  </form>
+  <p class="settings-help">Aplikace se ptá GitHubu na poslední vydání; neposílá žádné vaše údaje. Nová verze se instaluje jen po vašem kliknutí na „Aktualizovat“ v okénku s verzí na Přehledu.</p>
+  {% else %}
+  <p class="settings-help" data-server-aktualizace>Server se aktualizuje přes osvc-nasad.</p>
+  {% endif %}
+</section>

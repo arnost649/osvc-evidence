@@ -27,7 +27,7 @@
 </header>
 {% endif %}
 {% set messages=get_flashed_messages(with_categories=true) %}
-{% if session.user %}{% set akt = aktualizace_upozorneni() %}{% if akt %}<p class="flash info aktualizace-lista" data-aktualizace role="status">Je k dispozici nová verze <strong>{{ akt.verze }}</strong>. <a href="{{ akt.odkaz }}" target="_blank" rel="noopener noreferrer">Stáhnout z GitHubu</a> · <a href="{{ url_for('main.settings') }}#aktualizace">vypnout upozornění</a></p>{% endif %}{% endif %}
+{% if session.user %}{% set akt = aktualizace_upozorneni() %}{% if akt %}<p class="flash info aktualizace-lista" data-aktualizace role="status">Je k dispozici nová verze <strong>{{ akt.verze }}</strong>. <a href="{{ akt.odkaz }}" target="_blank" rel="noopener noreferrer">Stáhnout z GitHubu</a> · <a href="{{ url_for('main.settings', tab='aktualizace') }}">vypnout upozornění</a></p>{% endif %}{% endif %}
 <div class="global-notifications toast-stack" aria-live="polite">{% for c,m in messages %}{% if c=='saved' %}<span hidden data-save-result="success"></span>{% else %}<p class="flash {{c}}" {% if c=='success' %}data-toast role="status"{% else %}role="alert"{% endif %}>{{m}}</p>{% endif %}{% endfor %}</div>
 <main class="page-shell">
   {% block content %}{% endblock %}

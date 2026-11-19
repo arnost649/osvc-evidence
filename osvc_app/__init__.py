@@ -127,7 +127,8 @@ def create_app(test_config=None):
     app.jinja_env.globals['income_sync_block']=sync_block_reason
     from . import aktualizace as _akt   # V2: lišta „nová verze“ a karta v Nastavení (jen samostatná instalace)
     app.jinja_env.globals['aktualizace_upozorneni']=_akt.upozorneni
-    app.jinja_env.globals['aktualizace_prehled']=_akt.prehled   # called only by templates with a Synchronize button
+    app.jinja_env.globals['aktualizace_prehled']=_akt.prehled
+    app.jinja_env.globals['aktualizace_okno']=_akt.okno   # called only by templates with a Synchronize button
     # Přechod na SQLite (S3–S7): převod dat a srovnání. Spouští správce (skript S6), ne webová aplikace.
     import click as _click
 

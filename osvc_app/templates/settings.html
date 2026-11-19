@@ -17,12 +17,14 @@
 {% for key,label in [('overview','Přehled'),('business','Podnikání'),('employment','Zaměstnání'),('social','ČSSZ'),('health','Zdravotní pojištění'),('tax','Daňové nastavení'),('vehicle','Vozidlo a doprava'),('advanced','Pokročilé')] %}<a href="#profile-{{ key }}" data-profile-section="{{ key }}">{{ label }}</a>{% endfor %}
     </nav>
     <button type="button" class="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel-backup" data-settings-tab="backup">{{ icon("save") }}<span>Záloha a obnova</span></button>
+    <button type="button" class="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel-aktualizace" data-settings-tab="aktualizace">{{ icon("save") }}<span>Aktualizace</span></button>
     {% if sit_info %}<button type="button" class="settings-tab" role="tab" aria-selected="false" aria-controls="settings-panel-sit" data-settings-tab="sit">{{ icon("settings") }}<span>Síťový přístup</span></button>{% endif %}
   </div>
   <div class="settings-tab-content">
 {% if moduly_zapnute.externi_web %}{% include "income_sources.html" %}{% endif %}
 {% include "backup_settings.html" %}
 {% if sit_info %}{% include "sit_settings.html" %}{% endif %}
+{% include "aktualizace_settings.html" %}
 {% include "profile_settings.html" %}
 <section class="settings-card settings-tab-panel" id="settings-panel-appearance" role="tabpanel" aria-labelledby="settings-tab-appearance" data-settings-panel="appearance" hidden>
   <div class="settings-card-head"><div class="settings-icon">{{ icon('settings') }}</div><div><h2>Vzhled</h2></div></div><h3>Barevný motiv</h3>
@@ -49,16 +51,6 @@
     <button type="submit">Uložit přihlášení</button>
   </form>
   <p class="settings-help">Při změně jen jména nechte nové heslo prázdné. Heslo musí mít aspoň 8 znaků. Aplikace heslo nezná, ukládá jen jeho otisk. Po změně hesla se odhlásí ostatní přihlášená zařízení.</p>
-  {% if config.OSVC_SAMOSTATNA %}{% set akt = aktualizace_prehled() %}{# V2: upozornění na novou verzi – jen samostatná instalace #}
-  <h3 id="aktualizace">Aktualizace</h3>
-  <p class="settings-help" data-verze-aplikace>Verze aplikace <strong>{{ akt.verze }}</strong>.{% if akt.dostupne and akt.zapnuto %} Poslední kontrola: {{ akt.kontrola|cz_datetime if akt.kontrola else 'zatím neproběhla' }}{% if akt.chyba %} (GitHub neodpověděl, zkusí se znovu zítra){% endif %}.{% endif %}</p>
-  <form method="post" action="{{ url_for('main.update_aktualizace') }}" class="account-form" data-aktualizace-form>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label class="checkline"><input type="checkbox" name="kontrolovat" value="1"{% if akt.zapnuto %} checked{% endif %}> Upozorňovat na nové verze</label>
-    <button type="submit">Uložit</button>
-  </form>
-  <p class="settings-help">Jednou denně se aplikace zeptá GitHubu, jestli nevyšla nová verze, a ukáže upozornění s odkazem ke stažení. Nic sama nestahuje ani neinstaluje a neposílá žádné vaše údaje.</p>
-  {% endif %}
 </section>
 {# moduly – zapnutí/vypnutí jen mění volbu v instance/moduly.json, data zůstávají. #}
 <section class="settings-card settings-modules settings-tab-panel" id="settings-panel-modules" role="tabpanel" aria-labelledby="settings-tab-modules" data-settings-panel="modules" hidden>

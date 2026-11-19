@@ -31,7 +31,8 @@ class Cisla(unittest.TestCase):
     def test_porovnani(self):
         self.assertGreater(aktualizace.cislo('v1.2.10'), aktualizace.cislo('1.2.9'))
         self.assertGreater(aktualizace.cislo('v1.0.0'), aktualizace.cislo('1.0.0-test'))
-        self.assertGreater(aktualizace.cislo('0.1.0'), aktualizace.cislo(verze.VERZE))
+        self.assertGreater(aktualizace.cislo('0.1.0'), aktualizace.cislo('0.0.9'))
+        self.assertRegex(verze.VERZE, r'^\d+\.\d+\.\d+$', 'verze.py = číslo vydání X.Y.Z (bez čtvrtého čísla)')
         self.assertIsNone(aktualizace.cislo('nesmysl'))
 
 
@@ -66,7 +67,7 @@ class Samostatna(unittest.TestCase):
         self.assertEqual(set(k.lower() for k in req.headers), {'user-agent', 'accept'}); self.assertEqual(req.get_header('User-agent'), f'osvc-evidence/{verze.VERZE}')
         html = self.k.get('/').get_data(as_text=True)
         self.assertIn('data-aktualizace', html); self.assertIn('https://github.com/vlastnik/osvc/releases/tag/v9.9.9', html); self.assertIn('9.9.9', html)
-        self.assertIn('Upozorňovat na nové verze', self.k.get('/settings').get_data(as_text=True))
+        self.assertIn('Automaticky kontrolovat nové verze', self.k.get('/settings').get_data(as_text=True))
 
     def test_stejna_nebo_starsi_verze_bez_listy(self):
         with self.app.app_context(), mock.patch.object(verze, 'VERZE', '1.2.0'):

@@ -84,7 +84,9 @@ class RozdeleniRoutes(unittest.TestCase):
                       ['/pruvodce', 'pruvodce.formular', ['GET', 'POST']], ['/pruvodce/ares', 'pruvodce.ares', ['POST']],   # I3: průvodce
                       ['/pruvodce/zamestnavatel', 'pruvodce.zamestnavatel', ['POST']], ['/pruvodce/dalsi', 'pruvodce.dalsi', ['GET', 'POST']],   # A2
                       ['/settings/aktualizace', 'main.update_aktualizace', ['POST']],   # V2: upozornění na novou verzi
-                      ['/settings/sit', 'main.update_sit', ['POST']], ['/settings/sit/adaptery', 'main.sit_adaptery', ['GET']]]   # síťový přístup
+                      ['/settings/sit', 'main.update_sit', ['POST']], ['/settings/sit/adaptery', 'main.sit_adaptery', ['GET']],   # síťový přístup
+                      ['/aktualizace/okno', 'main.aktualizace_okno', ['GET']], ['/aktualizace/zkontrolovat', 'main.aktualizace_zkontrolovat', ['POST']],
+                      ['/aktualizace/instalovat', 'main.aktualizace_instalovat', ['POST']], ['/aktualizace/prubeh', 'main.aktualizace_prubeh', ['GET']]]   # aktualizace
         self.assertEqual([r for r in now if r not in nove_po_3d], before)
 
     def test_moduly_oblasti(self):
