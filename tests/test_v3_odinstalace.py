@@ -51,6 +51,18 @@ class SkriptInstalatoru(unittest.TestCase):
             self.assertIn(text, self.iss)
         self.assertLess(self.iss.index('ZalohaZip(ExpandConstant(\'{param:ZALOHA'), self.iss.index("DelTree("), 'tichý režim maže jen po záloze')
 
+    def test_metadata_a_soukromi(self):
+        """Podmínky SignPath: název produktu a verze v metadatech, zásady soukromí ukázané při instalaci."""
+        for radek in ('VersionInfoProductName={#Nazev}', 'VersionInfoVersion={#VerzeCislo}', 'VersionInfoProductVersion={#VerzeCislo}',
+                      'VersionInfoTextVersion={#Verze}', 'VersionInfoProductTextVersion={#Verze}', 'InfoBeforeFile=soukromi.txt', '#define VerzeCislo "0.0.0.0"'):
+            self.assertIn(radek, self.iss)
+        soukromi = (KOREN / 'scripts' / 'windows' / 'soukromi.txt').read_text(encoding='utf-8-sig')
+        for text in ('ARES', 'GitHub', 'Nastavení → Účet / Přihlášení → Aktualizace'): self.assertIn(text, soukromi)
+        readme = (KOREN / 'README.md').read_text(encoding='utf-8')
+        for text in ('## Code signing policy', 'Free code signing provided by [SignPath.io]', 'certificate by [SignPath Foundation]', 'Committers and reviewers',
+                     'Approvers', 'will not transfer any information to other networked systems', '[Code signing policy](#code-signing-policy)'):
+            self.assertIn(text, readme)
+
     def test_zadna_sluzba_planovac_ani_firewall(self):
         for zakazane in ('add rule', 'schtasks', 'sc.exe', 'New-NetFirewallRule', '{app}\\data', 'PrivilegesRequired=admin'):
             self.assertNotIn(zakazane, self.iss)

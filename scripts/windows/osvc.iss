@@ -1,9 +1,10 @@
-; Instalátor OSVČ evidence pro Windows (krok I4) – Inno Setup 6. Sestavení: scripts/windows/sestav.py, pak ve složce windows-VERZE:
+﻿; Instalátor OSVČ evidence pro Windows (krok I4) – Inno Setup 6. Sestavení: scripts/windows/sestav.py, pak ve složce windows-VERZE:
 ;   ISCC.exe osvc.iss        (verzi doplní sestav.py; ručně /DVerze=…)
 ; Instaluje jen pro přihlášeného uživatele (bez práv správce) do %LOCALAPPDATA%\Programs\OSVC evidence.
 ; Data a nastavení: %LOCALAPPDATA%\OSVC evidence (místní disk – SQLite nesmí být na síťové/roamingové složce).
 ; Odinstalace data NEMAŽE. Aktualizace = spustit novější instalátor (běžící aplikaci nejdřív ukončí).
 #define Verze "0.0.0"
+#define VerzeCislo "0.0.0.0"   ; číselná verze souboru (doplní sestav.py z tagu, bez přípony -test)
 #define Nazev "OSVČ evidence"
 #define Konf "{localappdata}\OSVC evidence\osvc.conf"
 #define Data "{localappdata}\OSVC evidence\data"
@@ -16,6 +17,17 @@ AppName={#Nazev}
 AppVersion={#Verze}
 AppVerName={#Nazev} {#Verze}
 AppPublisher={#Nazev}
+; Metadata souboru (podmínka SignPath: název produktu a verze ve všech atributech)
+VersionInfoProductName={#Nazev}
+VersionInfoDescription={#Nazev} – instalátor
+VersionInfoCompany={#Nazev}
+VersionInfoCopyright=EUPL-1.2
+VersionInfoVersion={#VerzeCislo}
+VersionInfoProductVersion={#VerzeCislo}
+VersionInfoTextVersion={#Verze}
+VersionInfoProductTextVersion={#Verze}
+; Zásady soukromí ukázané při instalaci (aplikace se připojuje k ARES a GitHubu – podmínka SignPath)
+InfoBeforeFile=soukromi.txt
 DefaultDirName={localappdata}\Programs\OSVC evidence
 DisableDirPage=yes
 DefaultGroupName={#Nazev}

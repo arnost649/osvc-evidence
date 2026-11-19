@@ -6,7 +6,7 @@
   <a href="../../releases/latest/download/osvc-evidence-linux.deb"><img alt="Stáhnout pro Linux" src="obrazky/stahnout-linux.svg"></a>
 </p>
 
-Všechny verze a popis změn: [Releases](../../releases)
+Všechny verze a popis změn: [Releases](../../releases) · [Code signing policy](#code-signing-policy)
 
 OSVČ evidence – příjmy, výdaje, jízdy a Roční přehled pro daně, ČSSZ a zdravotní pojišťovnu. Windows a Linux.
 Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
@@ -101,22 +101,38 @@ Stránky jsou na blueprintu `main`, ostatní části mají vlastní blueprint.
 | Databáze: `query()`/`execute()` sdílí jedno spojení na požadavek, `connection()` = vlastní transakce | `osvc_app/db.py` |
 | Český čas (uložené časy jsou UTC) | `osvc_app/cas.py` |
 
-## Podepisování kódu (Code signing policy)
-Instalátor pro Windows se podepisuje automaticky v GitHub Actions z kódu tohoto repozitáře – nic se nepodepisuje ručně
-ani mimo sestavení. Podepisuje se jen vydání vytvořené z tagu `vX.Y.Z` po úspěšných testech.
+## Code signing policy
+*Zásady podepisování kódu.*
 
 Free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
-*(Platí po schválení přihlášky do SignPath Foundation.)*
+*(Podpis instalátoru se zapne po schválení projektu SignPath Foundation.)*
 
-- Autor a schvalovatel vydání (committer, reviewer, approver): vlastník repozitáře.
-- Každé vydání musí výslovně schválit vlastník (vytvoření tagu).
+Instalátor pro Windows se podepisuje automaticky v GitHub Actions z kódu tohoto repozitáře (`.github/workflows/vydani.yml`)
+– nic se nepodepisuje ručně ani mimo toto sestavení. Podepisuje se jen vydání z tagu `vX.Y.Z` po úspěšných testech.
 
-**Ochrana soukromí (Privacy policy):** Aplikace neposílá žádná data jiným systémům, pokud o to uživatel sám nepožádá nebo
-to výslovně nezapne: dotaz do veřejného rejstříku ARES (tlačítko „Doplnit z ARES“), synchronizace e-shopu (modul Externí web)
-a jednou denně dotaz na novou verzi na GitHubu bez osobních údajů (vypnutelné v Nastavení).
+**Role v projektu (team roles)**
+- Committers and reviewers – autoři a kontrola změn: vlastník repozitáře.
+- Approvers – schvalování podpisu každého vydání: vlastník repozitáře.
+
+Každé vydání musí vlastník výslovně schválit (vytvoření tagu a schválení podpisu v SignPath). Účet vlastníka má zapnuté
+dvoufázové ověření.
+
+### Privacy policy
+*Zásady ochrany soukromí.*
+
 This program will not transfer any information to other networked systems unless specifically requested by the user or the
-person installing or operating it (ARES lookup on request, optional e-shop synchronisation, daily update check without personal
-data that can be turned off in Settings).
+person installing or operating it.
+
+Aplikace neposílá vaše data jinam. Připojuje se jen v těchto případech:
+- **ARES** – veřejný rejstřík Ministerstva financí ([ares.gov.cz](https://ares.gov.cz/)), jen když kliknete na „Doplnit z ARES“
+  nebo hledáte firmu; posílá se jen zadané IČO nebo název.
+- **GitHub – kontrola nové verze:** jednou denně se aplikace zeptá na poslední vydání tohoto repozitáře. Neposílá žádné vaše
+  údaje (jen obecný identifikátor programu a číslo verze). **Vypnutí:** Nastavení → Účet / Přihlášení → Aktualizace → zrušte
+  „Upozorňovat na nové verze“ a uložte. Platí zásady GitHubu:
+  [GitHub General Privacy Statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement).
+- **Váš e-shop** – jen pokud zapnete modul Externí web a nastavíte zdroj příjmů (připojení k vašemu vlastnímu serveru).
+
+Tyto informace ukazuje i instalátor pro Windows před instalací.
 
 ## Licence
 [EUPL-1.2](LICENSE) – Evropská veřejná licence EU. Oficiální znění je ve všech jazycích EU včetně češtiny:

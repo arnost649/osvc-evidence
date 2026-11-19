@@ -1,0 +1,14 @@
+﻿OSVČ evidence – soukromí a síť
+
+Vaše data (databáze, doklady, zálohy) zůstávají jen na tomto počítači ve složce %LOCALAPPDATA%\OSVC evidence.
+
+Aplikace se připojuje k jiným systémům jen v těchto případech:
+- ARES (veřejný rejstřík Ministerstva financí) – jen když kliknete na „Doplnit z ARES“ nebo hledáte firmu.
+- GitHub – jednou denně zjistí, zda vyšla nová verze. Neposílá žádné vaše údaje.
+  Vypnete v aplikaci: Nastavení → Účet / Přihlášení → Aktualizace → zrušte „Upozorňovat na nové verze“.
+- Váš e-shop – jen pokud zapnete modul Externí web a nastavíte zdroj příjmů.
+
+Výchozí přístup k aplikaci je jen z tohoto počítače. Zpřístupnění v domácí síti je vaše volba v Nastavení;
+Windows se pak zeptá na oprávnění správce kvůli pravidlu ve firewallu.
+
+Instalace nepotřebuje práva správce. Odinstalace se zeptá, zda data ponechat, nebo je po záloze smazat.

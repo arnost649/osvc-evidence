@@ -11,6 +11,7 @@ a VYSTUP/osvc-evidence-VERZE-windows-prenosna.zip (totéž zabalené). Instalát
 """
 import argparse
 import os
+import re
 import hashlib
 import shutil
 import subprocess
@@ -110,7 +111,9 @@ def main(argv=None):
     kod_aplikace(cil / 'app')
     (cil / 'app' / 'osvc_app' / 'verze.py').write_text(verze_py(a.verze, a.repo), encoding='utf-8')
     ikona(cil / 'osvc.ico')
-    iss = (TADY / 'osvc.iss').read_text(encoding='utf-8-sig').replace('#define Verze "0.0.0"', f'#define Verze "{a.verze}"')
+    cislo = '.'.join((re.match(r'v?(\d+(?:\.\d+){0,3})', a.verze).group(1).split('.') + ['0'] * 4)[:4])   # 1.0.0-test → 1.0.0.0
+    iss = (TADY / 'osvc.iss').read_text(encoding='utf-8-sig').replace('#define Verze "0.0.0"', f'#define Verze "{a.verze}"').replace('#define VerzeCislo "0.0.0.0"', f'#define VerzeCislo "{cislo}"')
+    shutil.copy(TADY / 'soukromi.txt', cil / 'soukromi.txt')
     (cil / 'osvc.iss').write_text(iss, encoding='utf-8-sig')   # Inno Setup potřebuje UTF-8 s BOM kvůli diakritice
     (cil / 'Spustit OSVC evidence.cmd').write_bytes(SPUSTIT_CMD.encode('ascii'))
     balik = vystup / f'osvc-evidence-{a.verze}-windows-prenosna.zip'

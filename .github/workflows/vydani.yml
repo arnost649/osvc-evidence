@@ -79,6 +79,15 @@ jobs:
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "sestaveni\windows-$env:VERZE\osvc.iss"
           if ($LASTEXITCODE) { throw "ISCC skončil chybou $LASTEXITCODE" }
           Move-Item "sestaveni\windows-$env:VERZE\osvc-evidence-$env:VERZE-windows.exe" sestaveni\
+      - name: Metadata instalátoru (název produktu a verze – podmínka SignPath)
+        run: |
+          $v = (Get-Item "sestaveni\osvc-evidence-$env:VERZE-windows.exe").VersionInfo
+          $cislo = (($env:VERZE -replace '-.*$','').Split('.') + @('0','0','0','0'))[0..3] -join '.'
+          Write-Output "ProductName=$($v.ProductName) ProductVersion=$($v.ProductVersion) FileVersion=$($v.FileVersion) číselně=$($v.ProductMajorPart).$($v.ProductMinorPart).$($v.ProductBuildPart).$($v.ProductPrivatePart)"
+          if ($v.ProductName -ne 'OSVČ evidence') { throw "ProductName: $($v.ProductName)" }
+          if ($v.ProductVersion -ne $env:VERZE -or $v.FileVersion -ne $env:VERZE) { throw 'textová verze nesedí s tagem' }
+          if ("$($v.ProductMajorPart).$($v.ProductMinorPart).$($v.ProductBuildPart).$($v.ProductPrivatePart)" -ne $cislo) { throw 'číselná verze produktu nesedí' }
+          if ("$($v.FileMajorPart).$($v.FileMinorPart).$($v.FileBuildPart).$($v.FilePrivatePart)" -ne $cislo) { throw 'číselná verze souboru nesedí' }
       # Podpis instalátoru (SignPath Foundation, zdarma pro open source). Zapne se nastavením proměnné repozitáře
       # SIGNPATH_ORGANIZATION_ID a tajného údaje SIGNPATH_API_TOKEN po schválení přihlášky; do té doby se kroky přeskočí.
       - name: Nepodepsaný instalátor pro SignPath
