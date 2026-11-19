@@ -127,7 +127,7 @@ jobs:
             if (Get-NetTCPConnection -State Listen -LocalPort 8765 -ErrorAction SilentlyContinue) { throw 'port aplikace je stále obsazený' }
           }
           # 1) aktualizace: předchozí vydání s daty → nová verze (bez předchozího vydání: přeinstalace stejné verze)
-          if ($env:PREDCHOZI) { gh release download $env:PREDCHOZI --repo $env:GITHUB_REPOSITORY --pattern 'osvc-evidence-[0-9]*-windows.exe' --dir stara; Instaluj (Get-ChildItem stara\*.exe)[0].FullName }
+          if ($env:PREDCHOZI) { gh release download $env:PREDCHOZI --repo $env:GITHUB_REPOSITORY --pattern 'osvc-evidence-windows.exe' --dir stara; Instaluj (Get-ChildItem stara\*.exe)[0].FullName }
           else { Instaluj $Nova }
           Spust; $Url = python scripts/ci/zkouska_instalace.py port --config $Konf
           python scripts/ci/zkouska_instalace.py pripravit --url $Url --otisk otisk.json
@@ -187,7 +187,7 @@ jobs:
           set -euo pipefail
           DEB=$(ls sestaveni/osvc-evidence_*.deb); Z=scripts/ci/zkouska_instalace.py
           # 1) aktualizace: předchozí vydání s daty → nová verze (bez předchozího vydání: přeinstalace stejné verze)
-          if [ -n "$PREDCHOZI" ]; then gh release download "$PREDCHOZI" --repo "$GITHUB_REPOSITORY" --pattern 'osvc-evidence_*_amd64.deb' --dir stara; sudo apt-get install -y ./stara/*.deb
+          if [ -n "$PREDCHOZI" ]; then gh release download "$PREDCHOZI" --repo "$GITHUB_REPOSITORY" --pattern 'osvc-evidence-linux.deb' --dir stara; sudo apt-get install -y ./stara/*.deb
           else sudo apt-get install -y "./$DEB"; fi
           URL=$(sudo python3 $Z port --config /etc/osvc-evidence/osvc.conf); PORT=${URL##*:}
           python $Z pripravit --url "$URL" --otisk otisk.json
@@ -247,9 +247,10 @@ jobs:
       - name: Release s popisem změn a kontrolními součty
         run: |
           set -euo pipefail
-          # stálé názvy bez čísla verze – odkazy „Stáhnout“ v README přes /releases/latest/download/… platí pro každé vydání
-          cp vydani/osvc-evidence-"$VERZE"-windows.exe vydani/osvc-evidence-windows.exe
-          cp vydani/osvc-evidence_"$VERZE"_amd64.deb vydani/osvc-evidence-linux.deb
+          # ve vydání jen stálé názvy bez čísla verze – tlačítka „Stáhnout“ v README (/releases/latest/download/…) platí pro každé vydání
+          mv vydani/osvc-evidence-"$VERZE"-windows.exe vydani/osvc-evidence-windows.exe
+          mv vydani/osvc-evidence_"$VERZE"_amd64.deb vydani/osvc-evidence-linux.deb
+          ls vydani
           cd vydani && sha256sum osvc-evidence* > SHA256SUMS.txt && cd ..
           python3 scripts/ci/popis_vydani.py "$GITHUB_REF_NAME" > popis.md
           PRED=""; case "$VERZE" in *-*) PRED="--prerelease";; esac

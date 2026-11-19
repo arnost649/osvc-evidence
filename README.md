@@ -1,7 +1,10 @@
 # OSVČ evidence
 
-[![Stáhnout pro Windows](https://img.shields.io/badge/St%C3%A1hnout-pro%20Windows-2563EB?style=for-the-badge)](../../releases/latest/download/osvc-evidence-windows.exe)
-[![Stáhnout pro Linux (.deb)](https://img.shields.io/badge/St%C3%A1hnout-pro%20Linux%20%28.deb%29-2563EB?style=for-the-badge)](../../releases/latest/download/osvc-evidence-linux.deb)
+<p>
+  <a href="../../releases/latest/download/osvc-evidence-windows.exe"><img alt="Stáhnout pro Windows" height="56" src="https://img.shields.io/badge/St%C3%A1hnout-pro%20Windows-2563EB?style=for-the-badge"></a>
+  &nbsp;
+  <a href="../../releases/latest/download/osvc-evidence-linux.deb"><img alt="Stáhnout pro Linux" height="56" src="https://img.shields.io/badge/St%C3%A1hnout-pro%20Linux-2563EB?style=for-the-badge"></a>
+</p>
 
 Všechny verze a popis změn: [Releases](../../releases)
 
@@ -26,11 +29,11 @@ Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 ## Instalace
 Stáhněte poslední verzi tlačítkem nahoře, nebo z **[Releases](../../releases/latest)**.
 
-**Windows 10 / 11** – `osvc-evidence-windows.exe` (totéž jako `osvc-evidence-X.Y.Z-windows.exe`)
+**Windows 10 / 11** – `osvc-evidence-windows.exe`
 - Instalace jen pro vašeho uživatele, **bez práv správce**. Po instalaci je v nabídce Start zástupce **OSVČ evidence**.
 - Data: `%LOCALAPPDATA%\OSVC evidence` (mimo složku programu).
 
-**Ubuntu 24.04+ / Debian 13+** – `osvc-evidence-linux.deb` (totéž jako `osvc-evidence_X.Y.Z_amd64.deb`)
+**Ubuntu 24.04+ / Debian 13+** – `osvc-evidence-linux.deb`
 ```
 sudo apt install ./osvc-evidence-linux.deb
 ```
