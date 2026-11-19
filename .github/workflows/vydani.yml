@@ -43,6 +43,8 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = push ]; then
+            # verze jen třímístné vX.Y.Z (1.0.1, 1.0.2, větší změny 1.1.0), volitelně předběžné -něco; čtvrté číslo ne
+            [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$ ]] || { echo "CHYBA: tag $GITHUB_REF_NAME není ve tvaru vX.Y.Z"; exit 1; }
             V="${GITHUB_REF_NAME#v}"
             python scripts/ci/popis_vydani.py "$GITHUB_REF_NAME" > /dev/null   # bez popisu v CHANGELOG.md se nevydá
           else
@@ -82,12 +84,13 @@ jobs:
       - name: Metadata instalátoru (název produktu a verze – podmínka SignPath)
         run: |
           $v = (Get-Item "sestaveni\osvc-evidence-$env:VERZE-windows.exe").VersionInfo
-          $cislo = (($env:VERZE -replace '-.*$','').Split('.') + @('0','0','0','0'))[0..3] -join '.'
-          Write-Output "ProductName=$($v.ProductName) ProductVersion=$($v.ProductVersion) FileVersion=$($v.FileVersion) číselně=$($v.ProductMajorPart).$($v.ProductMinorPart).$($v.ProductBuildPart).$($v.ProductPrivatePart)"
-          if ($v.ProductName -ne 'OSVČ evidence') { throw "ProductName: $($v.ProductName)" }
-          if ($v.ProductVersion -ne $env:VERZE -or $v.FileVersion -ne $env:VERZE) { throw 'textová verze nesedí s tagem' }
-          if ("$($v.ProductMajorPart).$($v.ProductMinorPart).$($v.ProductBuildPart).$($v.ProductPrivatePart)" -ne $cislo) { throw 'číselná verze produktu nesedí' }
-          if ("$($v.FileMajorPart).$($v.FileMinorPart).$($v.FileBuildPart).$($v.FilePrivatePart)" -ne $cislo) { throw 'číselná verze souboru nesedí' }
+          $cislo = $env:VERZE -replace '-.*$',''   # X.Y.Z (čtvrté číslo nepoužíváme; Windows ho ukládá jako 0)
+          $jmeno = "$($v.ProductName)".Trim(); $produkt = "$($v.ProductVersion)".Trim(); $soubor = "$($v.FileVersion)".Trim()   # Inno doplňuje mezery
+          Write-Output "ProductName=$jmeno ProductVersion=$produkt FileVersion=$soubor číselně=$($v.ProductMajorPart).$($v.ProductMinorPart).$($v.ProductBuildPart).$($v.ProductPrivatePart)"
+          if ($jmeno -ne 'OSVČ evidence') { throw "ProductName: $jmeno" }
+          if ($produkt -ne $env:VERZE -or $soubor -ne $env:VERZE) { throw 'textová verze nesedí s tagem' }
+          if ("$($v.ProductMajorPart).$($v.ProductMinorPart).$($v.ProductBuildPart)" -ne $cislo -or $v.ProductPrivatePart -ne 0) { throw 'číselná verze produktu nesedí' }
+          if ("$($v.FileMajorPart).$($v.FileMinorPart).$($v.FileBuildPart)" -ne $cislo -or $v.FilePrivatePart -ne 0) { throw 'číselná verze souboru nesedí' }
       # Podpis instalátoru (SignPath Foundation, zdarma pro open source). Zapne se nastavením proměnné repozitáře
       # SIGNPATH_ORGANIZATION_ID a tajného údaje SIGNPATH_API_TOKEN po schválení přihlášky; do té doby se kroky přeskočí.
       - name: Nepodepsaný instalátor pro SignPath

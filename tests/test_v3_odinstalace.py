@@ -54,8 +54,10 @@ class SkriptInstalatoru(unittest.TestCase):
     def test_metadata_a_soukromi(self):
         """Podmínky SignPath: název produktu a verze v metadatech, zásady soukromí ukázané při instalaci."""
         for radek in ('VersionInfoProductName={#Nazev}', 'VersionInfoVersion={#VerzeCislo}', 'VersionInfoProductVersion={#VerzeCislo}',
-                      'VersionInfoTextVersion={#Verze}', 'VersionInfoProductTextVersion={#Verze}', 'InfoBeforeFile=soukromi.txt', '#define VerzeCislo "0.0.0.0"'):
+                      'VersionInfoTextVersion={#Verze}', 'VersionInfoProductTextVersion={#Verze}', 'InfoBeforeFile=soukromi.txt', '#define VerzeCislo "0.0.0"'):
             self.assertIn(radek, self.iss)
+        sestav = (KOREN / 'scripts' / 'windows' / 'sestav.py').read_text(encoding='utf-8')
+        self.assertIn("replace('#define VerzeCislo \"0.0.0\"'", sestav, 'sestavení musí číselnou verzi opravdu doplnit')
         soukromi = (KOREN / 'scripts' / 'windows' / 'soukromi.txt').read_text(encoding='utf-8-sig')
         for text in ('ARES', 'GitHub', 'Nastavení → Účet / Přihlášení → Aktualizace'): self.assertIn(text, soukromi)
         readme = (KOREN / 'README.md').read_text(encoding='utf-8')

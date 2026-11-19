@@ -4,7 +4,7 @@
 ; Data a nastavení: %LOCALAPPDATA%\OSVC evidence (místní disk – SQLite nesmí být na síťové/roamingové složce).
 ; Odinstalace data NEMAŽE. Aktualizace = spustit novější instalátor (běžící aplikaci nejdřív ukončí).
 #define Verze "0.0.0"
-#define VerzeCislo "0.0.0.0"   ; číselná verze souboru (doplní sestav.py z tagu, bez přípony -test)
+#define VerzeCislo "0.0.0"   ; číselná verze X.Y.Z (doplní sestav.py z tagu, bez přípony -test; čtvrté číslo nepoužíváme)
 #define Nazev "OSVČ evidence"
 #define Konf "{localappdata}\OSVC evidence\osvc.conf"
 #define Data "{localappdata}\OSVC evidence\data"
