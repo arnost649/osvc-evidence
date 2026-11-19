@@ -13,7 +13,7 @@ Windows může při instalaci zobrazit varování – jak ho přeskočit, najdet
 OSVČ evidence – příjmy, výdaje, jízdy a Roční přehled pro daně, ČSSZ a zdravotní pojišťovnu. Windows a Linux.
 Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/prehled-tmavy.png"><img alt="Přehled" src="obrazky/prehled.png"></picture>
+<img alt="Přehled" src="obrazky/prehled.png#gh-light-mode-only"><img alt="Přehled" src="obrazky/prehled-tmavy.png#gh-dark-mode-only">
 
 ## Co umí
 - **Příjmy a výdaje** s doklady a přílohami, daňové posouzení výdajů, rychlé akce na Přehledu.
@@ -26,7 +26,7 @@ Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 
 | Průvodce prvním spuštěním | Roční přehled |
 |---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/pruvodce-tmavy.png"><img alt="Průvodce" src="obrazky/pruvodce.png"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/rocni-prehled-tmavy.png"><img alt="Roční přehled" src="obrazky/rocni-prehled.png"></picture> |
+| <img alt="Průvodce" src="obrazky/pruvodce.png#gh-light-mode-only"><img alt="Průvodce" src="obrazky/pruvodce-tmavy.png#gh-dark-mode-only"> | <img alt="Roční přehled" src="obrazky/rocni-prehled.png#gh-light-mode-only"><img alt="Roční přehled" src="obrazky/rocni-prehled-tmavy.png#gh-dark-mode-only"> |
 
 ## Instalace
 Stáhněte poslední verzi tlačítkem nahoře, nebo z **[Releases](../../releases/latest)**.
@@ -66,7 +66,7 @@ používat. Na druhé straně případně vozidlo a zdroj příjmů. Všechno jd
 - **ZIP záloha** všech dat, dokladů a nastavení: Nastavení → Záloha a obnova. Po obnově aplikace ukáže srovnávací tabulku.
 - Zálohy jsou na stejném disku jako data – ZIP si proto občas uložte i jinam (flash disk, cloud).
 
-<picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/zalohy-tmavy.png"><img alt="Zálohy" src="obrazky/zalohy.png"></picture>
+<img alt="Zálohy" src="obrazky/zalohy.png#gh-light-mode-only"><img alt="Zálohy" src="obrazky/zalohy-tmavy.png#gh-dark-mode-only">
 
 ## Aktualizace
 Nová verze se instaluje **přes starou** (stejný instalátor / balíček) – data zůstanou. Před úpravou struktury databáze
