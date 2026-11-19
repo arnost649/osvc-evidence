@@ -8,6 +8,17 @@
 
 Všechny verze a popis změn: [Releases](../../releases) · [Code signing policy](#code-signing-policy)
 
+> **Instalace ve Windows – upozornění**
+>
+> Windows při spuštění instalátoru ukáže modré okno **„Systém Windows ochránil váš počítač“**.
+> Klikněte na **„Další informace“** a pak na **„Přesto spustit“**.
+>
+> <img alt="Krok 1: Další informace" src="obrazky/smartscreen-1.svg" width="330"> <img alt="Krok 2: Přesto spustit" src="obrazky/smartscreen-2.svg" width="330">
+>
+> Aplikace je nová a zatím nemá digitální podpis – ten se uděluje až rozšířenějším programům. Varování neznamená, že je program
+> nebezpečný: zdrojový kód je veřejný a instalátor se sestavuje automaticky na GitHubu. Jakmile se program víc rozšíří, podpis
+> doplníme a varování zmizí. Pro pokročilé: [kontrolní součty SHA256SUMS.txt](../../releases/latest/download/SHA256SUMS.txt).
+
 OSVČ evidence – příjmy, výdaje, jízdy a Roční přehled pro daně, ČSSZ a zdravotní pojišťovnu. Windows a Linux.
 Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 

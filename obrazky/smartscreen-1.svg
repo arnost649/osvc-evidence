@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="250" viewBox="0 0 440 250" role="img" aria-label="Ilustrace: okno Systém Windows ochránil váš počítač, krok 1 – kliknout na Další informace">
+  <title>Krok 1: klikněte na „Další informace“ (ilustrační obrázek)</title>
+  <rect width="440" height="250" rx="6" fill="#0a5bbd"/>
+  <text x="408" y="30" fill="#fff" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18">×</text>
+  <text x="24" y="52" fill="#fff" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="19" font-weight="300">Systém Windows ochránil váš počítač</text>
+  <text fill="#fff" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5"><tspan x="24" y="88">Filtr SmartScreen zabránil spuštění nerozpoznané aplikace.</tspan><tspan x="24" y="106">Spuštění této aplikace by mohlo ohrozit váš počítač.</tspan></text>
+  <rect x="18" y="122" width="112" height="26" rx="4" fill="none" stroke="#ffd43b" stroke-width="3"/>
+  <text x="26" y="140" fill="#fff" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" text-decoration="underline">Další informace</text>
+  <circle cx="146" cy="135" r="11" fill="#ffd43b"/><text x="146" y="140" text-anchor="middle" fill="#0a5bbd" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700">1</text>
+  <rect x="310" y="198" width="110" height="32" fill="#fff" fill-opacity=".15" stroke="#fff"/>
+  <text x="365" y="219" text-anchor="middle" fill="#fff" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">Nespouštět</text>
+  <text x="24" y="232" fill="#cfe0f7" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10">ilustrační obrázek</text>
+</svg>
