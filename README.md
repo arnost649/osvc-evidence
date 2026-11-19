@@ -1,9 +1,9 @@
 # OSVČ evidence
 
 <p>
-  <a href="../../releases/latest/download/osvc-evidence-windows.exe"><img alt="Stáhnout pro Windows" height="56" src="https://img.shields.io/badge/St%C3%A1hnout-pro%20Windows-2563EB?style=for-the-badge"></a>
+  <a href="../../releases/latest/download/osvc-evidence-windows.exe"><img alt="Stáhnout pro Windows" src="obrazky/stahnout-windows.svg"></a>
   &nbsp;
-  <a href="../../releases/latest/download/osvc-evidence-linux.deb"><img alt="Stáhnout pro Linux" height="56" src="https://img.shields.io/badge/St%C3%A1hnout-pro%20Linux-2563EB?style=for-the-badge"></a>
+  <a href="../../releases/latest/download/osvc-evidence-linux.deb"><img alt="Stáhnout pro Linux" src="obrazky/stahnout-linux.svg"></a>
 </p>
 
 Všechny verze a popis změn: [Releases](../../releases)
