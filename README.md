@@ -13,7 +13,7 @@ Windows může při instalaci zobrazit varování – jak ho přeskočit, najdet
 OSVČ evidence – příjmy, výdaje, jízdy a Roční přehled pro daně, ČSSZ a zdravotní pojišťovnu. Windows a Linux.
 Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 
-![Přehled](obrazky/prehled.png)
+<picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/prehled-tmavy.png"><img alt="Přehled" src="obrazky/prehled.png"></picture>
 
 ## Co umí
 - **Příjmy a výdaje** s doklady a přílohami, daňové posouzení výdajů, rychlé akce na Přehledu.
@@ -26,7 +26,7 @@ Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 
 | Průvodce prvním spuštěním | Roční přehled |
 |---|---|
-| ![Průvodce](obrazky/pruvodce.png) | ![Roční přehled](obrazky/rocni-prehled.png) |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/pruvodce-tmavy.png"><img alt="Průvodce" src="obrazky/pruvodce.png"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/rocni-prehled-tmavy.png"><img alt="Roční přehled" src="obrazky/rocni-prehled.png"></picture> |
 
 ## Instalace
 Stáhněte poslední verzi tlačítkem nahoře, nebo z **[Releases](../../releases/latest)**.
@@ -38,7 +38,7 @@ Stáhněte poslední verzi tlačítkem nahoře, nebo z **[Releases](../../releas
 > Windows při spuštění instalátoru může ukázat okno s nadpisem **„Systém Windows ochránil váš počítač“**.
 > Klikněte na **„Další informace“** a pak na **„Přesto spustit“**.
 >
-> <img alt="Krok 1: Další informace" src="obrazky/smartscreen-1.svg" width="330"> <img alt="Krok 2: Přesto spustit" src="obrazky/smartscreen-2.svg" width="330">
+> <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/smartscreen-1-tmavy.svg"><img alt="Krok 1: Další informace" src="obrazky/smartscreen-1.svg" width="330"></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/smartscreen-2-tmavy.svg"><img alt="Krok 2: Přesto spustit" src="obrazky/smartscreen-2.svg" width="330"></picture>
 >
 > Aplikace je nová a zatím nemá digitální podpis – ten se uděluje až rozšířenějším programům. Varování neznamená, že je program
 > nebezpečný: zdrojový kód je veřejný a instalátor se sestavuje automaticky na GitHubu. Jakmile se program víc rozšíří, podpis
@@ -66,7 +66,7 @@ používat. Na druhé straně případně vozidlo a zdroj příjmů. Všechno jd
 - **ZIP záloha** všech dat, dokladů a nastavení: Nastavení → Záloha a obnova. Po obnově aplikace ukáže srovnávací tabulku.
 - Zálohy jsou na stejném disku jako data – ZIP si proto občas uložte i jinam (flash disk, cloud).
 
-![Zálohy](obrazky/zalohy.png)
+<picture><source media="(prefers-color-scheme: dark)" srcset="obrazky/zalohy-tmavy.png"><img alt="Zálohy" src="obrazky/zalohy.png"></picture>
 
 ## Aktualizace
 Nová verze se instaluje **přes starou** (stejný instalátor / balíček) – data zůstanou. Před úpravou struktury databáze
