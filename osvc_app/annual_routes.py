@@ -87,9 +87,21 @@ def preview_profile():
   return jsonify(months=p['months'],missing=profile_periods.source_missing(p),view=view,overview_html=render_template('_profile_overview.html',profile_view=view))
  except ValueError as exc:return jsonify(error=str(exc)),400
 
+def roky_prehledu():
+ """Roky, pro které jsou nějaká data (platby, jízdy, PHM, uložený roční profil), sestupně."""
+ from .db import roky_zaznamu
+ roky=roky_zaznamu([('payments','payment_date','deleted_at IS NULL',()),('trips','trip_date','deleted_at IS NULL',()),
+                    ('fuel_purchases','purchase_date','deleted_at IS NULL',()),('osvc_year_profiles','tax_year','1=1',())])
+ return [y for y in roky if 2000<=y<=2100]
+
 @bp.get('/annual')
 @login_required
-def overview():return render_template('annual.html',display=annual.display,**context(year_arg()))
+def overview():
+ years=roky_prehledu()
+ if request.values.get('year'):year=year_arg()
+ else:year=cas.today().year if cas.today().year in years or not years else years[0]   # bez zvoleného roku: letošní, nemá-li data, poslední rok s daty
+ if year not in years:years=sorted(set(years)|{year},reverse=True)   # zvolený rok (odkaz) musí být v nabídce; bez dat vůbec = jen letošní
+ return render_template('annual.html',display=annual.display,profile_years=years,**context(year))
 
 @bp.get('/annual/pdf')
 @login_required

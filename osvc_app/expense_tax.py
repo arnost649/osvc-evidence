@@ -13,7 +13,7 @@ def classification(row):
 
 def parse_ratio(form):
     mode=form.get('tax_mode')
-    if mode in ('0','100'):return Decimal(mode)
+    if mode in ('0','50','100'):return Decimal(mode)
     if mode!='custom':raise ValueError('Vyberte daňové uplatnění.')
     try:value=Decimal(form.get('tax_pct','').replace(',','.'))
     except InvalidOperation:raise ValueError('Zadejte daňový podíl 0 až 100 %.')

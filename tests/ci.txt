@@ -39,3 +39,6 @@ test_v4_deb.py
 test_year_periods.py
 test_sit.py
 test_aktualizace_okno.py
+test_rok_v_zahlavi.py
+test_vydaj_formular.py
+test_adresar_formular.py

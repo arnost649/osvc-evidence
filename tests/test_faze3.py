@@ -86,7 +86,8 @@ class RozdeleniRoutes(unittest.TestCase):
                       ['/settings/aktualizace', 'main.update_aktualizace', ['POST']],   # V2: upozornění na novou verzi
                       ['/settings/sit', 'main.update_sit', ['POST']], ['/settings/sit/adaptery', 'main.sit_adaptery', ['GET']],   # síťový přístup
                       ['/aktualizace/okno', 'main.aktualizace_okno', ['GET']], ['/aktualizace/zkontrolovat', 'main.aktualizace_zkontrolovat', ['POST']],
-                      ['/aktualizace/instalovat', 'main.aktualizace_instalovat', ['POST']], ['/aktualizace/prubeh', 'main.aktualizace_prubeh', ['GET']]]   # aktualizace
+                      ['/aktualizace/instalovat', 'main.aktualizace_instalovat', ['POST']], ['/aktualizace/prubeh', 'main.aktualizace_prubeh', ['GET']],   # aktualizace
+                      ['/address-book/ares/<ico>', 'main.address_ares', ['GET']]]   # Adresář: doplnit kontakt z ARES
         self.assertEqual([r for r in now if r not in nove_po_3d], before)
 
     def test_moduly_oblasti(self):

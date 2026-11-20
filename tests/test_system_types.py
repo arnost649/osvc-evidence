@@ -39,7 +39,7 @@ class SystemTypeTests(unittest.TestCase):
   db.execute("UPDATE categories SET tax_deductible_pct=100,tax_default_mode='ratio'")
   row=db.query('SELECT * FROM payments WHERE id=21',one=True);self.assertEqual(expense_tax.classification(row)['state'],'pending')
   self.assertIsNone(self.total());html=self.client.get('/payments/expense/21').text
-  self.assertIn('Vyberte režim',html);self.assertNotIn('name="category_id"',html)
+  self.assertIn('<option value="100" selected>100 %</option>',html);self.assertNotIn('name="category_id"',html)
  def test_legacy_snapshot_retained_edit(self):
   row=db.query("SELECT * FROM payments WHERE direction='expense' AND fuel_purchase_id IS NULL AND tax_deductible_pct IS NOT NULL ORDER BY id LIMIT 1",one=True)
   db.execute("UPDATE payments SET tax_mode='category' WHERE id=%s",(row['id'],));db.execute('UPDATE categories SET tax_deductible_pct=0')

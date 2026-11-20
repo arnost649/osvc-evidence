@@ -99,3 +99,19 @@ def execute(sql, params=()):
         conn.commit(); return ident
     except: conn.rollback(); raise
     finally: conn.close()
+
+
+def roky_zaznamu(zdroje, navic=()):
+    """Roky, ve kterých jsou záznamy, sestupně – pro výběr roku v záhlaví seznamu. zdroje = [(tabulka, sloupec_data, podmínka, parametry)].
+    SUBSTR(datum,1,4) funguje pro DATE v MySQL i pro text v SQLite. navic = rok vždy v nabídce (aktuální, zvolený)."""
+    vysledek = set()
+    for tabulka, sloupec, podminka, parametry in zdroje:
+        for r in query(f'SELECT DISTINCT SUBSTR({sloupec},1,4) y FROM {tabulka} WHERE {podminka}', parametry):
+            try: vysledek.add(int(r['y']))
+            except (TypeError, ValueError): pass
+    for y in navic:
+        try:
+            y = int(str(y).strip())
+            if 1 <= y <= 9998: vysledek.add(y)
+        except (TypeError, ValueError): pass
+    return sorted(vysledek, reverse=True)

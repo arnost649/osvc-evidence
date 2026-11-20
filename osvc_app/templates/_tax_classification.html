@@ -1,6 +1,12 @@
-{% from '_annual_helpers.html' import help %}
-{% macro tax_fields(value,mode=none,custom=none) %}
-{% set selected=mode if mode is not none else '' if value is none else '100' if value==100 else '0' if value==0 else 'custom' %}
-<label><span>Daňové uplatnění * {{ help('expense-tax-mode','Zvolte daňové uplatnění tohoto výdaje. Potvrzený podíl se uloží přímo k záznamu.') }}</span><select name="tax_mode" data-tax-mode aria-label="Daňové uplatnění" required>{% for key,label in [('', 'Vyberte režim'),('100','100 %'),('0','0 %'),('custom','Vlastní podíl')] %}<option value="{{ key }}"{% if selected==key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
-<label><span>Vlastní podíl (%) {{ help('expense-tax-share','Zadejte procento výdaje použité pro podnikání: 0 až 100 %, nejvýše dvě desetinná místa.') }}</span><input type="text" inputmode="decimal" name="tax_pct" data-tax-share {% if selected!='custom' %}disabled{% else %}required{% endif %} value="{{ custom if custom is not none else value if value is not none and value not in [0,100] else '' }}" placeholder="Pouze pro vlastní podíl"><small class="tax-share-error" data-tax-share-error role="alert" hidden></small></label>
+{# Daňové uplatnění jako jedno pole: výběr 100 % (výchozí) / 50 % / Vlastní…; po „Vlastní…“ se na stejném místě ukáže číselné pole s % a vpravo šipkou ▾, která otevře stejnou nabídku (přepnutí zpět). #}
+{% macro tax_fields(value,mode=none,custom=none,errors=[]) %}
+{% set selected=mode if mode else '100' if value is none or value==100 else '50' if value==50 else 'custom' %}
+<div class="tax-field{% if selected=='custom' %} is-custom{% endif %}" role="group" aria-labelledby="tax-field-label" data-tax-field>
+<span><span id="tax-field-label">Daňové uplatnění</span></span>
+<span class="tax-field-control">
+<span class="tax-pct-box" data-tax-custom{% if selected!='custom' %} hidden{% endif %}><input type="text" inputmode="decimal" name="tax_pct" data-tax-share aria-label="Vlastní podíl v procentech" {% if selected!='custom' %}disabled{% else %}required{% endif %} value="{{ custom if custom is not none else value if value is not none and value not in [0,100] else '' }}" placeholder="0–100"><span class="tax-pct-unit" aria-hidden="true">%</span></span>
+<span class="tax-mode-pick" data-tax-pick><select name="tax_mode" data-tax-mode aria-label="Daňové uplatnění" required>{% for key,label in [('100','100 %'),('50','50 %'),('custom','Vlastní…')] %}<option value="{{ key }}"{% if selected==key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></span>
+</span>
+<span class="tax-field-errors"><small class="tax-share-error" data-tax-share-error role="alert" hidden></small>{% for error in errors %}<small class="tax-share-error" role="alert" data-tax-server-error>{{ error }}</small>{% endfor %}</span>
+</div>
 {% endmacro %}

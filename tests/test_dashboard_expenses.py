@@ -27,7 +27,7 @@ class DashboardExpenses(unittest.TestCase):
    values,html=self.dashboard()
   for key,field,expected in [('income','income','3040'),('expense','expenses','15664.83'),('balance','result','-12624.83')]:
    self.assertEqual(values[key],v[field]);self.assertEqual(values[key],D(expected))
-  self.assertIn('dashboard-expenses',html)
+  self.assertNotIn('dashboard-expenses',html)   # okénko (i) u Výdajů odstraněno
  def test_purchase_shares(self):
   rows=expense_tax.rows(2026)
   card=next(r for r in rows if r['amount']==D('10000'))

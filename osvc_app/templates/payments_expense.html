@@ -2,12 +2,12 @@
 {% from '_attachment.html' import document_icon %}
 {% from '_combobox.html' import counterparty_combobox %}
 {% from '_icons.html' import icon %}
-{% from '_section_actions.html' import form_heading, edit_toggle %}
+{% from '_section_actions.html' import form_heading, form_footer, list_title, list_end, edit_toggle %}
 {% from '_tax_classification.html' import tax_fields %}
 {% block content %}
 <div class="page-header"><h1>Výdaje</h1></div>
 <section class="section-panel">
-  {{form_heading('Upravit nákup' if editing else 'Zapsat nákup','expense-form')}}
+  {{form_heading('Upravit nákup' if editing else 'Zapsat nákup','expense-form',save=false)}}
   <form id="expense-form" class="entry form-grid expense-entry" method="post" enctype="multipart/form-data" data-draft-form data-dirty-guard data-draft-key="{{ draft_key }}">
     {{ form.hidden_tag() }}
     <label>{{ form.payment_date.label }}{{ form.payment_date }}{% for e in form.payment_date.errors %}<small>{{ e }}</small>{% endfor %}</label>
@@ -15,22 +15,21 @@
     <label>{{ form.description.label }}{{ form.description }}{% for e in form.description.errors %}<small>{{ e }}</small>{% endfor %}</label>
     <label>{{ form.amount.label }}{{ form.amount }}{% for e in form.amount.errors %}<small>{{ e }}</small>{% endfor %}</label>
     <label class="payment-upload">{{ form.upload.label }}{{ form.upload }}{% for e in form.upload.errors %}<small>{{ e }}</small>{% endfor %}</label>
-    <fieldset class="form-grid form-tax-group" aria-label="Daňové uplatnění výdaje">
-      {{ tax_fields(none, form.tax_mode.data or '', form.tax_pct.data or '') }}
-      {% for error in form.tax_mode.errors + form.tax_pct.errors %}<small class="tax-share-error" role="alert">{{ error }}</small>{% endfor %}
-    </fieldset>
+    <div class="expense-tax-save">
+      {{ tax_fields(none, form.tax_mode.data or '', form.tax_pct.data or '', form.tax_mode.errors + form.tax_pct.errors) }}
+      {{ form_footer() }}
+    </div>
   </form>
   {% if current_attachment %}
   <div class="current-document compact-current-document"><strong>Stávající doklad</strong>{{ document_icon(current_attachment.id, current_attachment.mime_type) }}<small>Nový soubor slouží pouze k případné náhradě.</small></div>
   {% endif %}
 </section>
-<form class="filter"><label>Rok <input name="year" value="{{ year }}"></label><button>{{ icon('filter') }}<span>Filtrovat</span></button></form>
 {% if missing_count %}<p class="annual-missing">{{ missing_count }} výdajů nemá určené daňové uplatnění.</p>{% endif %}
 <section>
-  <div class="list-heading section-heading payment-list-heading{% if pager.pages > 1 %} has-pagination{% endif %}"><h2>Všechny výdaje</h2>{{pagination(pager)}}{% if rows %}{{ edit_toggle() }}{% endif %}</div>
+  <div class="list-heading section-heading payment-list-heading{% if pager.pages > 1 %} has-pagination{% endif %}">{{list_title('Všechny výdaje',year,years)}}{{pagination(pager)}}{{ list_end(soucet|czk, rows) }}</div>
 <div class="table-wrap">
   <table class="responsive-table payments-expense-table">
-    <thead><tr><th class="expense-tax-status" aria-label="Daňový stav"></th><th>Datum</th><th>Dodavatel</th><th>Popis</th><th class="numeric-column">Částka</th><th>Doklad</th><th>Zdroj</th><th class="akce-sloupec">Akce</th></tr></thead>
+    <thead><tr><th class="expense-tax-status" aria-label="Daňový stav"></th><th>Datum</th><th>Dodavatel</th><th>Popis</th><th class="numeric-column" data-sum-column>Částka</th><th>Doklad</th><th>Zdroj</th><th class="akce-sloupec">Akce</th></tr></thead>
     <tbody>
     {% for r in rows %}
       <tr>

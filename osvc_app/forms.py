@@ -17,7 +17,7 @@ class PaymentForm(FlaskForm):
     note=TextAreaField('Poznámka', validators=[Optional()])
 
 class ManualExpenseForm(PaymentForm):
-    tax_mode=SelectField('Daňové uplatnění',choices=[('','Vyberte režim'),('100','100 %'),('0','0 %'),('custom','Vlastní podíl')],validators=[DataRequired()])
+    tax_mode=SelectField('Daňové uplatnění',choices=[('100','100 %'),('50','50 %'),('custom','Vlastní…')],default='100',validators=[DataRequired()])
     tax_pct=StringField('Vlastní podíl (%)')
 
     def validate(self, extra_validators=None):
@@ -39,7 +39,7 @@ class TripForm(FlaskForm):
     trip_date=DateField('Datum', validators=[DataRequired()]); trip_end_date=DateField('Datum ukončení', validators=[Optional()]); vehicle_id=SelectField('Vozidlo', coerce=int, validators=[DataRequired()]); origin=StringField('Odkud', validators=[DataRequired(),Length(max=255)]); destination=StringField('Kam', validators=[DataRequired(),Length(max=255)]); purpose=StringField('Účel', validators=[DataRequired(),Length(max=255)]); distance_km=DecimalField('Km', validators=[Optional(),NumberRange(min=0)]); fuel_purchase_id=SelectField('Cena PHM', coerce=int, validators=[Optional()]); note=TextAreaField('Poznámka', validators=[Optional()])
 
 class FuelForm(FlaskForm):
-    purchase_date=DateField('Datum', validators=[DataRequired()]); vehicle_id=SelectField('Vozidlo', coerce=int, validators=[DataRequired()]); liters=DecimalField('Litry', validators=[Optional()], render_kw={'readonly':True}); price_per_liter=DecimalField('Cena/l', validators=[DataRequired(),NumberRange(min=0)]); total_amount=DecimalField('Celkem', validators=[DataRequired(),NumberRange(min=0)]); counterparty_name=StringField('Čerpací stanice', validators=[DataRequired(),Length(max=200)]); counterparty_id=HiddenField(validators=[Optional()]); upload=FileField('Účtenka (PDF/JPG/PNG)'); note=TextAreaField('Poznámka', validators=[Optional()])
+    purchase_date=DateField('Datum', validators=[DataRequired()]); vehicle_id=SelectField('Vozidlo', coerce=int, validators=[DataRequired()]); liters=DecimalField('Litry', places=None, validators=[Optional()]); price_per_liter=DecimalField('Cena/l', validators=[DataRequired(),NumberRange(min=0)]); total_amount=DecimalField('Celkem', validators=[DataRequired(),NumberRange(min=0)]); counterparty_name=StringField('Čerpací stanice', validators=[DataRequired(),Length(max=200)]); counterparty_id=HiddenField(validators=[Optional()]); upload=FileField('Účtenka (PDF/JPG/PNG)'); note=TextAreaField('Poznámka', validators=[Optional()])
 
     def process(self, *args, **kwargs):
         super().process(*args, **kwargs)
@@ -50,7 +50,8 @@ class FuelForm(FlaskForm):
                     field.process_errors=[]
                 except ValueError:
                     pass
-        # Liters are derived even when the request omits or tampers with them.
+        # Litry ve formuláři nejsou: vždy Cena celkem ÷ Cena za litr (2 des. místa); odeslaná hodnota se ignoruje.
+        # U úpravy beze změny ceny zůstanou uložené litry (řeší trasa uložení).
         self.liters.raw_data=None
         self.liters.process_errors=[]
         self.liters.data=None

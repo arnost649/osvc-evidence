@@ -232,7 +232,7 @@ def persist_manual_payment(cur,form,direction,ident,staged):
   if not old: raise ValueError('Platba nebyla nalezena.')
  if direction=='expense':
   tax_ratio=expense_tax.resolve_submission({'tax_mode':form.tax_mode.data,'tax_pct':form.tax_pct.data or ''})
-  stored_tax_mode='category' if old and old.get('tax_mode')=='category' and old.get('tax_deductible_pct')==tax_ratio else form.tax_mode.data
+  stored_tax_mode='category' if old and old.get('tax_mode')=='category' and old.get('tax_deductible_pct')==tax_ratio else 'custom'   # vede se jen procento (tax_deductible_pct, 2 des. místa); 100 % a 50 % jsou jen rychlá volba
  role='supplier' if direction=='expense' else 'customer'; name=' '.join((form.counterparty_name.data or '').split())
  if not name: raise ValueError('Vyplňte dodavatele.' if role=='supplier' else 'Vyplňte odběratele.')
  cp=int(form.counterparty_id.data) if str(form.counterparty_id.data or '').isdigit() else None
@@ -357,7 +357,7 @@ def payments(direction,ident=None):
   return redirect(url_for('main.payments',direction=direction,ident=ident,year=request.args.get('year')))
  form=ManualExpenseForm() if direction=='expense' else PaymentForm()
  form.counterparty_name.label.text=('Odběratel' if direction=='income' else 'Dodavatel')
- form.description.label.text=('Za co' if direction=='income' else 'Co jsem koupil')
+ form.description.label.text='Popis'
  form.upload.label.text='Doklad (PDF/JPG/PNG)'
  form.payment_date.label.text=('Datum přijetí' if direction=='income' else 'Datum')
  payment_choices(form,direction)
@@ -368,8 +368,8 @@ def payments(direction,ident=None):
  if request.method=='GET' and existing: form.process(data=existing); form.counterparty_name.data=existing.get('counterparty_name') or ''; form.counterparty_id.data=str(existing.get('counterparty_id') or '')
  if direction=='expense' and request.method=='GET' and existing:
   pct=existing.get('tax_deductible_pct')
-  form.tax_mode.data='' if pct is None else existing.get('tax_mode') if existing.get('tax_mode') in ('100','0','custom') else str(int(pct)) if pct in (0,100) else 'custom'
-  form.tax_pct.data=str(pct) if pct is not None else ''
+  form.tax_mode.data='100' if pct is None or pct==100 else '50' if pct==50 else 'custom'   # nabídka 100 % / 50 % / Vlastní…; 0 % a ostatní = vlastní
+  form.tax_pct.data=str(pct) if form.tax_mode.data=='custom' else ''
  if form.validate_on_submit():
   draft_key=f'{direction}-{ident}' if ident else direction
   try: result=save_manual_payment(form,direction,ident)
@@ -412,7 +412,15 @@ def payments(direction,ident=None):
   for row in rows: row['source_kind']='payment';row['tax_missing']=row['id'] in missing_ids
   rows+=derived_trip_expenses(year,trip_ids)
   rows.sort(key=lambda row:(row['payment_date'],row['id']),reverse=True)
- return render_template('payments.html' if direction=='income' else 'payments_expense.html',form=form,rows=rows,pager=pager,type_labels=system_types.labels(),missing_count=len(missing_ids) if direction=='expense' else 0,existing=existing,direction=direction,year=year,editing=bool(ident),draft_key=f'{direction}-{ident}' if ident else direction,wc_configured=wc_configured(),wc_sync_ready=wc_sync_ready(),last_sync=last_sync(),current_attachment=current_attachment(existing.get('document_id')) if existing else None)
+ # součet za vybraný rok – stejné záznamy jako seznam (výdaje: nákupy + jízdy, bez tankování)
+ # sčítá se v Pythonu: v SQLite jsou částky celá čísla převedená na Decimal až podle typu sloupce (SUM by vrátil haléře)
+ soucet=sum((Decimal(r['amount']) for r in query("SELECT p.amount FROM payments p WHERE "+payment_where,(direction,*rok(year))) if r['amount'] is not None),Decimal(0))
+ if direction=='expense' and moduly.zapnuto('doprava'): soucet+=sum((Decimal(r['amount']) for r in derived_trip_expenses(year)),Decimal(0))
+ from .db import roky_zaznamu
+ zdroje=[('payments','payment_date','direction=%s AND deleted_at IS NULL',(direction,))]
+ if direction=='expense' and moduly.zapnuto('doprava'): zdroje+=[('trips','trip_date','deleted_at IS NULL',()),('fuel_purchases','purchase_date','deleted_at IS NULL',())]
+ years=roky_zaznamu(zdroje,(cas.today().year,year))
+ return render_template('payments.html' if direction=='income' else 'payments_expense.html',soucet=soucet,years=years,form=form,rows=rows,pager=pager,type_labels=system_types.labels(),missing_count=len(missing_ids) if direction=='expense' else 0,existing=existing,direction=direction,year=year,editing=bool(ident),draft_key=f'{direction}-{ident}' if ident else direction,wc_configured=wc_configured(),wc_sync_ready=wc_sync_ready(),last_sync=last_sync(),current_attachment=current_attachment(existing.get('document_id')) if existing else None)
 
 # Synchronizace zdroje příjmů: /settings/income-sources/<id>/sync.
 

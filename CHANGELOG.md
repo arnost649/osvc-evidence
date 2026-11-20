@@ -2,6 +2,21 @@
 
 Popis každého vydání (`## vX.Y.Z`) se při vydání vloží do GitHub Releases. Bez popisu se vydání nevytvoří.
 
+## v1.0.2
+- **Formuláře Příjmy, Výdaje, Jízdy a PHM:** nové přehledné rozvržení v mřížce, Uložit vpravo dole. Tabulátor jde zleva
+  doprava a shora dolů, Uložit naposledy. Na mobilu jsou pole pod sebou.
+- **Tlačítko Uložit** je šedé, dokud nejsou vyplněné všechny povinné údaje; kliknutím se ukáže, co chybí.
+- **Výdaje:** pole „Popis“ a jedno pole „Daňové uplatnění“ – předvybráno 100 %, rychlá volba 50 %, nebo vlastní procento.
+- **Příjmy:** pole „Za co“ se jmenuje „Popis“.
+- **Jízdy:** Náklad cesty se spočítá sám; výpočet a sazby jsou v ikonce (i).
+- **PHM:** litry se spočítají samy z ceny (Cena celkem ÷ Cena za litr) a ukazují se v seznamu.
+- **Seznamy:** výběr roku vedle nadpisu (jen roky se záznamy) a součet za rok přímo nad sloupcem částky. Při vypnutém
+  přepínači Upravit jsou ikonky akcí šedé a neaktivní.
+- **Adresář:** úprava kontaktu přímo v seznamu; po zadání IČO se název, DIČ a adresa doplní z ARES („Ověřeno v ARES“).
+  Role Dodavatel / Odběratel jako přepínací štítky. Adresář drží jen veřejné údaje (bez e-mailu, telefonu a poznámky).
+- **Přehled:** větší souhrnné karty; **Roční přehled** nabízí jen roky, ke kterým jsou data.
+- README: návod, jak projít varováním Windows při instalaci; obrázky ve světlé i tmavé verzi.
+
 ## v1.0.1
 - **Verze na Přehledu:** malým písmem dole; po kliknutí okénko „Máte nejnovější verzi“, nebo nová verze se stručným popisem.
 - **Aktualizace jedním kliknutím (Windows):** tlačítko „Aktualizovat“ stáhne instalátor z GitHubu s ukazatelem průběhu, ověří

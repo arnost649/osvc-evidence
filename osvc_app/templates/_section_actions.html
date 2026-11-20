@@ -2,8 +2,20 @@
 {% macro save_action(form_id=none, disabled=false) -%}
 <button type="submit" {% if form_id %}form="{{form_id}}"{% endif %} class="section-action save-button"  aria-label="Uložit"{% if disabled %} disabled{% endif %}>{{icon('save')}}</button>
 {%- endmacro %}
-{% macro form_heading(title,form_id,disabled=false) -%}
-<div class="list-heading section-heading"><h2>{{title}}</h2>{{save_action(form_id,disabled)}}</div>
+{% macro form_heading(title,form_id,disabled=false,save=true) -%}
+<div class="list-heading section-heading"><h2>{{title}}</h2>{% if save %}{{save_action(form_id,disabled)}}{% endif %}</div>
+{%- endmacro %}
+{# Nadpis seznamu s malým výběrem roku vedle něj: filtruje hned po změně; bez JavaScriptu odešle ikonka filtru uvnitř pole. #}
+{% macro list_title(title, year, years) -%}
+<div class="list-title"><h2>{{title}}</h2><form class="year-filter" method="get"><select name="year" aria-label="Rok" onchange="this.form.requestSubmit()">{% for y in years %}<option value="{{y}}"{% if y|string == year|string %} selected{% endif %}>{{y}}</option>{% endfor %}</select><noscript><button class="year-filter-go" aria-label="Filtrovat">{{icon('filter')}}</button></noscript></form></div>
+{%- endmacro %}
+{# Pravý konec záhlaví seznamu: součet za vybraný rok (styl nadpisu) a přepínač Upravit. #}
+{% macro list_end(sum_text, toggle=false) -%}
+<div class="list-heading-end">{% if sum_text %}<p class="list-sum">Součet: <span class="list-sum-value">{{sum_text}}</span></p>{% endif %}{% if toggle %}{{ edit_toggle() }}{% endif %}</div>
+{%- endmacro %}
+{# Uložit dole pod poli formuláře, vpravo – stejné ve formulářích Příjmy, Výdaje, PHM a Jízdy. Patří dovnitř <form>. #}
+{% macro form_footer(disabled=false) -%}
+<div class="form-save">{{save_action(none,disabled)}}</div>
 {%- endmacro %}
 
 {# Režim úprav: přepínač v záhlaví seznamu; vypnutý = sloupec Akce (.akce-sloupec) v téže sekci je schovaný (CSS :has). Po načtení stránky vždy vypnutý. #}

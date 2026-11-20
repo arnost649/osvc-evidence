@@ -340,6 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var fuelChoiceLabel = costBox.querySelector('[data-fuel-choice-label]');
     var fuelClear = costBox.querySelector('[data-fuel-clear]');
     var values = costBox.querySelector('.trip-cost-values');
+    var calc = costBox.querySelector('[data-cost-calc]');
     var timer, previewRevision=0;
     function money(value) { return Number(value).toLocaleString('cs-CZ', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Kč'; }
     function decimal(value, digits) { return Number(value).toLocaleString('cs-CZ', {minimumFractionDigits: digits, maximumFractionDigits: digits}); }
@@ -372,7 +373,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       if (!data.total) {
         var emptyTotalHead = costBox.querySelector('[data-cost-total-head]');
-        if (emptyTotalHead) emptyTotalHead.textContent = '—';
+        if (emptyTotalHead) { emptyTotalHead.textContent = 'spočítá se samo'; emptyTotalHead.classList.add('is-empty'); }
+        if (calc) { calc.hidden = true; calc.textContent = ''; }
         values.hidden = true; costBox.querySelectorAll('.trip-cost-values dd').forEach(function (value) { value.textContent='—'; }); message.hidden = !(data.message && tripForm.elements.trip_date.value && tripForm.elements.vehicle_id.value && (tripForm.elements.distance_km.value || data.needs_consumption)); messageText.textContent = message.hidden ? '' : data.message;
         consumptionLink.hidden = !data.needs_consumption;
         consumptionLink.href = '/settings' + (data.vehicle_id ? '#vehicle-' + data.vehicle_id : '');
@@ -386,7 +388,12 @@ document.addEventListener('DOMContentLoaded', function () {
       costBox.querySelector('[data-cost-fuel]').textContent = money(data.fuel);
       costBox.querySelector('[data-cost-total]').textContent = money(data.total);
       var totalHead = costBox.querySelector('[data-cost-total-head]');
-      if (totalHead) totalHead.textContent = money(data.total);
+      if (totalHead) { totalHead.textContent = money(data.total); totalHead.classList.remove('is-empty'); }
+      if (calc) {   // jeden řádek výpočtu: „50 km × 5,60 Kč + PHM 1,56 Kč/km“
+        var km = Number(String(tripForm.elements.distance_km.value || '0').replace(/\s/g, '').replace(',', '.'));
+        calc.textContent = decimal(km, km % 1 ? 1 : 0) + ' km × ' + money(data.base_rate) + ' + PHM ' + money(Number(data.consumption) * Number(data.fuel_price) / 100) + '/km';
+        calc.hidden = false;
+      }
     }
     function updateCost() {
       var revision=++previewRevision;
@@ -395,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var params = new URLSearchParams({vehicle_id: tripForm.elements.vehicle_id.value, trip_date: tripForm.elements.trip_date.value, trip_end_date: tripForm.elements.trip_end_date.value || tripForm.elements.trip_date.value, distance_km: tripForm.elements.distance_km.value, fuel_purchase_id: source.value || '0'});
         fetch(costBox.dataset.previewUrl + '?' + params.toString(), {headers: {'Accept': 'application/json'}})
           .then(function (response) { return response.json(); }).then(function(data){if(revision===previewRevision)renderCost(data);})
-          .catch(function () { if(revision!==previewRevision)return; values.hidden = true; costBox.querySelectorAll('.trip-cost-values dd').forEach(function (value) { value.textContent='—'; }); message.hidden = false; messageText.textContent = 'Výpočet se nepodařilo načíst.'; consumptionLink.hidden = true; });
+          .catch(function () { if(revision!==previewRevision)return; if (calc) calc.hidden = true; values.hidden = true; costBox.querySelectorAll('.trip-cost-values dd').forEach(function (value) { value.textContent='—'; }); message.hidden = false; messageText.textContent = 'Výpočet se nepodařilo načíst.'; consumptionLink.hidden = true; });
       }, 180);
     }
     ['vehicle_id', 'trip_date', 'trip_end_date', 'distance_km', 'fuel_purchase_id'].forEach(function (name) {
@@ -537,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function () {
           var ico = row && row.querySelector('.address-main small');
           if (nameNode) nameNode.textContent = data.supplier.name;
           if (ico && data.supplier.ico) { ico.textContent = 'IČO ' + data.supplier.ico; ico.hidden = false; }
-          var editForm = row && row.querySelector('.address-edit-panel form');
+          var editForm = row && row.querySelector('.address-edit-form');
           if (editForm && editForm.elements.name) editForm.elements.name.value = data.supplier.name;
         }
         closeVerification();
@@ -580,3 +587,70 @@ window.addEventListener('load', function () { var c = document.querySelector('[d
 })();
 // Režim úprav: po návratu tlačítkem Zpět (stránka z mezipaměti prohlížeče) je přepínač „Upravit“ zase vypnutý.
 window.addEventListener('pageshow', function () { document.querySelectorAll('[data-edit-toggle]').forEach(function (c) { c.checked = false; }); });
+
+/* Součet v záhlaví seznamu: pravý okraj čísla lícuje s obsahem sloupce [data-sum-column] (Kč pod Kč). Na mobilu (karty) bez posunu. */
+(function () {
+  var sums = [].slice.call(document.querySelectorAll('.list-heading .list-sum'));
+  if (!sums.length) return;
+  function align() {
+    sums.forEach(function (sum) {
+      sum.style.marginRight = '';
+      var section = sum.closest('section'), th = section && section.querySelector('th[data-sum-column]');
+      if (!th || !th.offsetParent || window.matchMedia('(max-width: 700px)').matches) return;
+      var target = th.getBoundingClientRect().right - parseFloat(getComputedStyle(th).paddingRight || 0);
+      var shift = sum.getBoundingClientRect().right - target;
+      if (shift > 0) sum.style.marginRight = shift + 'px';
+    });
+  }
+  align();
+  window.addEventListener('resize', align);
+  window.addEventListener('load', align);
+  if (window.ResizeObserver) sums.forEach(function (sum) { var t = sum.closest('section') && sum.closest('section').querySelector('table'); if (t) new ResizeObserver(align).observe(t); });
+  document.addEventListener('change', function (e) { if (e.target.matches && e.target.matches('[data-edit-toggle]')) align(); });
+})();
+
+/* Přepínač Upravit vypnutý: akce v seznamech se součtem a v adresářích jsou šedé a neaktivní (inert), zapnutý: normální. */
+(function () {
+  function sync(toggle) {
+    var section = toggle.closest('section');
+    if (!section || !(section.querySelector('.list-heading .list-sum') || section.classList.contains('address-section'))) return;
+    section.querySelectorAll('td.akce-sloupec, .address-actions.akce-sloupec').forEach(function (cell) {
+      if (!toggle.checked) cell.querySelectorAll('details[open]').forEach(function (d) { d.open = false; });
+      cell.inert = !toggle.checked;
+      if (toggle.checked) cell.removeAttribute('aria-disabled'); else cell.setAttribute('aria-disabled', 'true');
+    });
+  }
+  function all() { document.querySelectorAll('.list-heading [data-edit-toggle]').forEach(sync); }
+  all();
+  window.addEventListener('pageshow', all);
+  document.addEventListener('change', function (e) { if (e.target.matches && e.target.matches('[data-edit-toggle]')) sync(e.target); });
+})();
+
+/* Tlačítka Uložit (všude): šedá, dokud ve formuláři nejsou vyplněné všechny povinné a platné údaje. Kliknout jde dál –
+   prohlížeč pak ukáže, co chybí. Platnost se čte z validity polí (bez checkValidity, aby nevznikaly události „invalid“). */
+(function () {
+  var buttons = [].slice.call(document.querySelectorAll('button.save-button'));
+  if (!buttons.length) return;
+  function complete(form) {
+    for (var i = 0; i < form.elements.length; i++) {
+      var el = form.elements[i];
+      if (el.willValidate && !el.disabled && !el.validity.valid) return false;
+    }
+    return true;
+  }
+  var pending = false;
+  function refresh() {
+    pending = false;
+    buttons.forEach(function (b) {
+      var form = b.form; if (!form || b.disabled) return;
+      var ok = complete(form);
+      b.classList.toggle('is-incomplete', !ok);
+      b.title = ok ? '' : 'Doplňte povinné údaje';
+    });
+  }
+  function later() { if (!pending) { pending = true; requestAnimationFrame(refresh); } }
+  refresh();
+  ['input', 'change', 'reset', 'combobox:choose'].forEach(function (t) { document.addEventListener(t, later, true); });
+  window.addEventListener('load', later); window.addEventListener('pageshow', later);
+  setTimeout(later, 300);
+})();

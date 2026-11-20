@@ -1,19 +1,4 @@
 (() => {
- const form=document.querySelector('form.fuel-entry');if(!form)return;
- const liters=form.elements.liters,price=form.elements.price_per_liter,total=form.elements.total_amount;
- function calculate(){
-  const priceValue=Number(price.value.trim().replace(',','.')),totalValue=Number(total.value.trim().replace(',','.'));
-  const value=totalValue/priceValue;
-  const scaled=value*100;
-  liters.value=price.value.trim()&&total.value.trim()&&Number.isFinite(priceValue)&&priceValue>0&&Number.isFinite(totalValue)&&totalValue>=0&&Number.isFinite(scaled)?(Math.round(scaled+Number.EPSILON*Math.max(1,scaled))/100).toFixed(2):'';
- }
- [price,total].forEach(field=>{field.addEventListener('input',calculate);field.addEventListener('change',calculate);});
- calculate();
- // Drafts are restored by ui.js during DOMContentLoaded.
- window.addEventListener('load',calculate);
-})();
-
-(() => {
  const button=document.querySelector('[data-fuel-verify]');if(!button)return;
  const box=button.closest('[data-combobox]'),input=box.querySelector('input[role=combobox]'),result=box.querySelector('[data-fuel-check-results]');
  const form=button.closest('form');let revision=0;

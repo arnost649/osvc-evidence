@@ -33,7 +33,9 @@ def simple_crud(kind,formcls,table,datefield):
   if end_date<form.trip_date.data:
    form.trip_end_date.errors.append('Datum ukončení nesmí být před datem začátku.')
    y=request.args.get('year',str(cas.today().year)); rows,pager=paginate(f"SELECT x.*,v.name vehicle FROM {table} x JOIN vehicles v ON v.id=x.vehicle_id WHERE x.deleted_at IS NULL AND x.{datefield}>=%s AND x.{datefield}<%s ORDER BY x.{datefield} DESC,x.id DESC",rok(y)); total=km_celkem(*rok(y))
-   return render_template('records.html',form=form,rows=rows,pager=pager,kind=kind,year=y,total=total,editing=bool(ident),draft_key=f'trip-{ident}' if ident else 'trip-new',trip_cost_ready=True,initial_cost=None,vehicle_needs_consumption=False,selected_vehicle_id=form.vehicle_id.data)
+   from .db import roky_zaznamu
+   years=roky_zaznamu([(table,datefield,'deleted_at IS NULL',())],(cas.today().year,y))
+   return render_template('records.html',years=years,form=form,rows=rows,pager=pager,kind=kind,year=y,total=total,editing=bool(ident),draft_key=f'trip-{ident}' if ident else 'trip-new',trip_cost_ready=True,initial_cost=None,vehicle_needs_consumption=False,selected_vehicle_id=form.vehicle_id.data)
   conflict=trip_interval_conflict(form.trip_date.data,end_date,ident)
   if conflict:
    flash(conflict,'error')
@@ -65,7 +67,8 @@ def simple_crud(kind,formcls,table,datefield):
   if current.get('total') is not None: initial_cost={'calculation_consumption_l_100km':current['consumption'],'calculation_base_rate_per_km':current['base_rate'],'calculation_fuel_price_per_liter':current['fuel_price'],'base_compensation':current['base'],'fuel_compensation':current['fuel'],'travel_cost_total':current['total']}
  selected_vehicle_id=existing.get('vehicle_id') if existing else form.vehicle_id.data
  selected_vehicle=query('SELECT id,normalized_consumption_l_100km FROM vehicles WHERE id=%s',(selected_vehicle_id,),one=True) if selected_vehicle_id else None
- return render_template('records.html',form=form,rows=rows,pager=pager,kind=kind,year=y,total=total,editing=bool(ident),draft_key=f'trip-{ident}' if ident else 'trip-new',trip_cost_ready=True,initial_cost=initial_cost,vehicle_needs_consumption=bool(selected_vehicle and selected_vehicle['normalized_consumption_l_100km'] is None),selected_vehicle_id=selected_vehicle_id,trip_has_snapshot=bool(existing and initial_cost and current.get('snapshot')))
+ from .db import roky_zaznamu
+ return render_template('records.html',years=roky_zaznamu([('trips','trip_date','deleted_at IS NULL',())],(cas.today().year,y)),form=form,rows=rows,pager=pager,kind=kind,year=y,total=total,editing=bool(ident),draft_key=f'trip-{ident}' if ident else 'trip-new',trip_cost_ready=True,initial_cost=initial_cost,vehicle_needs_consumption=bool(selected_vehicle and selected_vehicle['normalized_consumption_l_100km'] is None),selected_vehicle_id=selected_vehicle_id,trip_has_snapshot=bool(existing and initial_cost and current.get('snapshot')))
 
 @bp.get('/trips/cost-preview')
 @login_required
@@ -142,7 +145,9 @@ def fuels(ident=None):
   station_name=' '.join(form.counterparty_name.data.split())
   fields=['vehicle_id','counterparty_id','event_id','document_id','purchase_date','liters','price_per_liter','total_amount','station','station_name','note']
   event_id=fuel.get('event_id') if fuel else None
-  values=[form.vehicle_id.data,counterparty_id,event_id,document_id,form.purchase_date.data,form.liters.data,form.price_per_liter.data,form.total_amount.data,station,station_name,(fuel.get('note') if fuel else val(form.note.data))]
+  liters=form.liters.data
+  if fuel and fuel.get('liters') is not None and fuel.get('price_per_liter')==form.price_per_liter.data and fuel.get('total_amount')==form.total_amount.data: liters=fuel['liters']   # uložené litry beze změny ceny neměnit
+  values=[form.vehicle_id.data,counterparty_id,event_id,document_id,form.purchase_date.data,liters,form.price_per_liter.data,form.total_amount.data,station,station_name,(fuel.get('note') if fuel else val(form.note.data))]
   draft_key=f'fuel-{ident}' if ident else 'fuel-new'
   if ident:
    old=fuel; execute('UPDATE fuel_purchases SET '+','.join(f'{f}=%s' for f in fields)+' WHERE id=%s',tuple(values+[ident])); fuel=query('SELECT * FROM fuel_purchases WHERE id=%s',(ident,),one=True); audit('fuel_purchase',ident,'update',old,fuel)
@@ -151,7 +156,10 @@ def fuels(ident=None):
   sync_fuel_payment(fuel)
   flash('PHM uloženo a výdaj aktualizován.','success'); return redirect(url_for('main.fuels',draft_saved=draft_key))
  y=request.args.get('year',str(cas.today().year)); rows,pager=paginate("SELECT f.*,v.name vehicle,c.name counterparty_name,(SELECT a.id FROM attachments a WHERE a.document_id=f.document_id AND a.deleted_at IS NULL ORDER BY a.id DESC LIMIT 1) attachment_id,(SELECT a.mime_type FROM attachments a WHERE a.document_id=f.document_id AND a.deleted_at IS NULL ORDER BY a.id DESC LIMIT 1) attachment_mime FROM fuel_purchases f JOIN vehicles v ON v.id=f.vehicle_id LEFT JOIN counterparties c ON c.id=f.counterparty_id WHERE f.deleted_at IS NULL AND f.purchase_date>=%s AND f.purchase_date<%s ORDER BY f.purchase_date DESC,f.id DESC",rok(y))
- return render_template('records.html',form=form,rows=rows,pager=pager,kind='fuel',year=y,total=None,editing=bool(ident),draft_key=f'fuel-{ident}' if ident else 'fuel-new',current_attachment=current_attachment(fuel['document_id']) if fuel else None)
+ from .db import roky_zaznamu
+ from decimal import Decimal   # sčítá se v Pythonu (SQLite: SUM nad převáděným sloupcem by vrátil haléře)
+ soucet=sum((Decimal(r['total_amount']) for r in query("SELECT total_amount FROM fuel_purchases WHERE deleted_at IS NULL AND purchase_date>=%s AND purchase_date<%s",rok(y)) if r['total_amount'] is not None),Decimal(0))
+ return render_template('records.html',soucet=soucet,years=roky_zaznamu([('fuel_purchases','purchase_date','deleted_at IS NULL',())],(cas.today().year,y)),form=form,rows=rows,pager=pager,kind='fuel',year=y,total=None,editing=bool(ident),draft_key=f'fuel-{ident}' if ident else 'fuel-new',current_attachment=current_attachment(fuel['document_id']) if fuel else None)
 
 @bp.route('/trips',methods=['GET','POST'])
 @bp.route('/trips/<int:ident>/edit',methods=['GET','POST'])

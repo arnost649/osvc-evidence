@@ -41,6 +41,8 @@ def _subject(data):
         'number': str(address.get('cisloDomovni') or '') + (('/' + str(address['cisloOrientacni']) + str(address.get('cisloOrientacniPismeno') or '')) if address.get('cisloOrientacni') else ''),
         'zip': str(address.get('psc') or ''),
         'country': address.get('nazevStatu') or '',
+        'country_code': address.get('kodStatu') or '',
+        'part': address.get('nazevCastiObce') or '',
         'vznik': str(data.get('datumVzniku') or '')[:10],   # datum vzniku subjektu (IČO), RRRR-MM-DD
     }
 

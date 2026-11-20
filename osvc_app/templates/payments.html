@@ -2,11 +2,11 @@
 {% from '_combobox.html' import counterparty_combobox %}
 {% from '_attachment.html' import document_icon %}
 {% from '_icons.html' import icon %}
-{% from '_section_actions.html' import form_heading, edit_toggle %}
+{% from '_section_actions.html' import form_heading, form_footer, list_title, list_end, edit_toggle %}
 {% block content %}
 <div class="page-header"><h1>Příjmy</h1></div>
 <section class="section-panel">
-  {{form_heading('Upravit ruční příjem' if editing else 'Zapsat ruční příjem','income-form')}}
+  {{form_heading('Upravit ruční příjem' if editing else 'Zapsat ruční příjem','income-form',save=false)}}
   <form id="income-form" class="entry form-grid income-entry" method="post" enctype="multipart/form-data" data-draft-form data-dirty-guard data-draft-key="{{ draft_key }}">
     {{ form.hidden_tag() }}
     <label>{{ form.payment_date.label }}{{ form.payment_date }}{% for e in form.payment_date.errors %}<small>{{ e }}</small>{% endfor %}</label>
@@ -14,24 +14,24 @@
     <label>{{ form.description.label }}{{ form.description }}{% for e in form.description.errors %}<small>{{ e }}</small>{% endfor %}</label>
     <label>{{ form.amount.label }}{{ form.amount }}{% for e in form.amount.errors %}<small>{{ e }}</small>{% endfor %}</label>
     <label class="payment-upload">{{ form.upload.label }}{{ form.upload }}{% for e in form.upload.errors %}<small>{{ e }}</small>{% endfor %}</label>
+    {{ form_footer() }}
   </form>
 </section>
-<form class="filter"><label>Rok <input name="year" value="{{ year }}"></label><button>{{ icon('filter') }}<span>Filtrovat</span></button></form>
 <section>
   <div class="list-heading section-heading payment-list-heading{% if pager.pages > 1 %} has-pagination{% endif %}">
-    <h2>Všechny příjmy</h2>{{pagination(pager)}}
-    {% if (rows|rejectattr('income_source_id')|list|length) > 0 %}{{ edit_toggle() }}{% endif %}
+    {{list_title('Všechny příjmy',year,years)}}{{pagination(pager)}}
+    {{ list_end(soucet|czk, (rows|rejectattr('income_source_id')|list|length) > 0) }}
   </div>
   <div class="table-wrap">
     {% set has_row_actions = (rows|rejectattr('income_source_id')|list|length) > 0 %}
     <table class="responsive-table income-table{% if not has_row_actions %} income-table-no-actions{% endif %}">
-      <thead><tr><th>Datum</th><th>Od koho</th><th>Za co</th><th class="numeric-column">Přijatá částka</th><th>Zdroj</th><th>Doklad</th>{% if has_row_actions %}<th class="akce-sloupec">Akce</th>{% endif %}</tr></thead>
+      <thead><tr><th>Datum</th><th>Od koho</th><th>Popis</th><th class="numeric-column" data-sum-column>Přijatá částka</th><th>Zdroj</th><th>Doklad</th>{% if has_row_actions %}<th class="akce-sloupec">Akce</th>{% endif %}</tr></thead>
       <tbody>
       {% for r in rows %}
         <tr>
           <td data-label="Datum">{{ r.payment_date|cz_date }}</td>
           <td data-label="Od koho"><span class="text-2r">{{ r.counterparty_name or '—' }}{% if r.income_source_id %}<small class="order-number">#{{ r.number }}</small>{% endif %}</span></td>
-          <td data-label="Za co"><span class="text-2r">{{ r.item_descriptions or r.description or '—' }}</span></td>
+          <td data-label="Popis"><span class="text-2r">{{ r.item_descriptions or r.description or '—' }}</span></td>
           <td class="numeric-column" data-label="Přijatá částka"><strong>{{ r.amount|czk }}</strong></td>
           <td data-label="Zdroj">{% if r.income_source_id %}<span class="source-badge">{{r.income_source_name}}</span>{% else %}<span class="source-badge manual-badge">{{ type_labels.income }}</span>{% endif %}</td>
           <td data-label="Doklad">

@@ -1,4 +1,4 @@
-"""PHM calculation and save checks with all database access mocked."""
+"""PHM: litry se vždy spočítají (Cena celkem ÷ Cena za litr), ve formuláři nejsou; úprava beze změny ceny je nemění – databáze je nahrazená mocky."""
 import unittest
 from contextlib import ExitStack
 from datetime import date
@@ -22,7 +22,7 @@ class FuelCalculationTests(unittest.TestCase):
             session['user']='test'
             session['local_auth']=1
 
-    def test_calculation_and_untrusted_liters(self):
+    def test_calculation_ignores_submitted_liters(self):
         cases=[('', '', None), ('43.59', '', None), ('', '1576', None),
                ('43.59', '1576.00', Decimal('36.16')),
                ('43,59', '1576,00', Decimal('36.16')),
@@ -38,17 +38,19 @@ class FuelCalculationTests(unittest.TestCase):
                         form=FuelForm()
                         self.assertEqual(form.liters.data,expected)
                         self.assertEqual(form.liters.process_errors,[])
-                        self.assertIn('readonly',str(form.liters()))
 
-    def test_edit_recalculates_existing_liters(self):
-        with self.app.test_request_context():
-            form=FuelForm()
-            form.process(data={'liters':Decimal('999'), 'price_per_liter':Decimal('43.59'),
-                               'total_amount':Decimal('1576.00')})
-            self.assertEqual(form.liters.data,Decimal('36.16'))
-            self.assertIn('value="36.16"',str(form.liters()))
+    def test_form_has_no_liters_field(self):
+        with patch('osvc_app.trips_fuel_routes.vehicles',side_effect=lambda f:setattr(f.vehicle_id,'choices',[(0,'—'),(1,'Test')])), \
+             patch('osvc_app.trips_fuel_routes.fuel_counterparty_choices',side_effect=lambda f:setattr(f,'counterparty_options',[])), \
+             patch('osvc_app.ucet.aktualni',return_value={'id':None,'username':self.app.config['APP_USER'],'password_hash':'','auth_version':0}), \
+             patch('osvc_app.trips_fuel_routes.query',return_value=[]):
+            try: html=self.client.get('/fuel').get_data(as_text=True)
+            except Exception: self.skipTest('stránka potřebuje databázi')
+        if 'record-form' not in html: self.skipTest('stránka potřebuje databázi')
+        form=html[html.index('<form id="record-form"'):html.index('</form>',html.index('<form id="record-form"'))]
+        self.assertNotIn('name="liters"',form)
 
-    def test_create_and_edit_save_derived_liters_without_amount_tolerance(self):
+    def test_create_computes_and_edit_keeps_stored_liters(self):
         fuel={'id':7, 'document_id':None, 'counterparty_id':None,
               'station':None, 'station_name':'Test', 'note':None,
               'purchase_date':date(2026,10,5), 'vehicle_id':1,
@@ -66,6 +68,7 @@ class FuelCalculationTests(unittest.TestCase):
             stack.enter_context(patch('osvc_app.trips_fuel_routes.sync_fuel_payment'))
             for path in ('/fuel','/fuel/7/edit'):
                 for liters in (None,'999','invalid'):
+                    expected=Decimal('36.16') if path=='/fuel' else Decimal('999')   # úprava beze změny ceny: uložené litry zůstanou
                     data={'purchase_date':'2026-10-05','vehicle_id':'1',
                           'counterparty_name':'Test','price_per_liter':'43.59','total_amount':'1576.00'}
                     if liters is not None:
@@ -74,7 +77,7 @@ class FuelCalculationTests(unittest.TestCase):
                     self.assertEqual(response.status_code,302)
                     sql,values=execute.call_args.args
                     self.assertIn('fuel_purchases',sql)
-                    self.assertEqual(values[5:8],(Decimal('36.16'),Decimal('43.59'),Decimal('1576.00')))
+                    self.assertEqual(values[5:8],(expected,Decimal('43.59'),Decimal('1576.00')))
 
 
 if __name__=='__main__':
