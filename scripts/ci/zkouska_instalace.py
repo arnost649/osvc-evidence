@@ -44,7 +44,7 @@ def kod_ze_stranky(adresa, html):
     """Stránka záchranného kódu (1.0.3): (kód, kam pokračovat). Jinde (None, adresa)."""
     if not adresa.split('?')[0].endswith('/ucet/zachranny-kod'): return None, adresa
     kod = re.search(r'data-zachranny-kod>([A-Z0-9-]+)<', html).group(1)
-    form = re.search(r'<form method="get" action="([^"]+)"[^>]*data-kod-hotovo>(.*?)</form>', html, re.S)
+    form = re.search(r'<form method="get" action="([^"]+)"[^>]*\bdata-kod-hotovo\b[^>]*>(.*?)</form>', html, re.S)
     parametry = re.findall(r'type="hidden" name="([^"]+)" value="([^"]*)"', form.group(2))
     return kod, form.group(1) + ('?' + urllib.parse.urlencode(parametry) if parametry else '')
 

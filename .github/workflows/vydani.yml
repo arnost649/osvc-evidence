@@ -23,20 +23,26 @@ concurrency:
 
 jobs:
   testy:
+    timeout-minutes: 15
     runs-on: ubuntu-24.04
     outputs:
       verze: ${{ steps.verze.outputs.verze }}
       predchozi: ${{ steps.verze.outputs.predchozi }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+        timeout-minutes: 10
+      - uses: actions/setup-python@v6
+        timeout-minutes: 10
         with:
           python-version: '3.14'
       - name: Knihovny
+        timeout-minutes: 10
         run: python -m pip install --disable-pip-version-check -r requirements.lock.txt
       - name: Testy (prázdná databáze ze schématu, bez dat ze serveru)
+        timeout-minutes: 20
         run: OSVC_PYTHON="$(command -v python)" bash tests/spust.sh --ci
       - name: Verze, popis změn a předchozí vydání
+        timeout-minutes: 5
         id: verze
         env:
           GH_TOKEN: ${{ github.token }}
@@ -58,6 +64,7 @@ jobs:
           echo "Verze $V, předchozí vydání: ${P:-žádné (aktualizace se zkusí přeinstalací stejné verze)}"
 
   windows:
+    timeout-minutes: 30
     needs: testy
     runs-on: windows-2022
     defaults:
@@ -69,21 +76,26 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       PYTHONUTF8: '1'   # konzole runneru je cp1252 – zkušební skript vypisuje česky
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+        timeout-minutes: 10
+      - uses: actions/setup-python@v6
+        timeout-minutes: 10
         with:
           python-version: '3.14'
       - name: Sestavení (vložitelný Python + knihovny + aplikace)
+        timeout-minutes: 15
         run: |
           python -m pip install --disable-pip-version-check pillow==12.3.0
           python scripts/windows/sestav.py --verze $env:VERZE --vystup sestaveni
       - name: Instalátor .exe (Inno Setup)
+        timeout-minutes: 15
         run: |
           choco install innosetup --no-progress -y
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "sestaveni\windows-$env:VERZE\osvc.iss"
           if ($LASTEXITCODE) { throw "ISCC skončil chybou $LASTEXITCODE" }
           Move-Item "sestaveni\windows-$env:VERZE\osvc-evidence-$env:VERZE-windows.exe" sestaveni\
       - name: Metadata instalátoru (název produktu a verze – podmínka SignPath)
+        timeout-minutes: 5
         run: |
           $v = (Get-Item "sestaveni\osvc-evidence-$env:VERZE-windows.exe").VersionInfo
           $cislo = $env:VERZE -replace '-.*$',''   # X.Y.Z (čtvrté číslo nepoužíváme; Windows ho ukládá jako 0)
@@ -96,14 +108,16 @@ jobs:
       # Podpis instalátoru (SignPath Foundation, zdarma pro open source). Zapne se nastavením proměnné repozitáře
       # SIGNPATH_ORGANIZATION_ID a tajného údaje SIGNPATH_API_TOKEN po schválení přihlášky; do té doby se kroky přeskočí.
       - name: Nepodepsaný instalátor pro SignPath
+        timeout-minutes: 10
         id: nepodepsany
         if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nepodepsany-instalator
           path: sestaveni/osvc-evidence-*-windows.exe
           if-no-files-found: error
       - name: Podpis (SignPath)
+        timeout-minutes: 20
         if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
         uses: signpath/github-action-submit-signing-request@v1
         with:
@@ -115,17 +129,25 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: sestaveni/podepsany
       - name: Podepsaný instalátor místo nepodepsaného
+        timeout-minutes: 5
         if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
         run: |
           $podpis = Get-AuthenticodeSignature (Get-ChildItem sestaveni\podepsany\*.exe)[0].FullName
           if ($podpis.Status -ne 'Valid') { throw "podpis není platný: $($podpis.Status)" }
           Move-Item -Force sestaveni\podepsany\*.exe sestaveni\
       - name: Zkouška instalace, aktualizace a odinstalace
+        timeout-minutes: 20
         run: |
           $ErrorActionPreference = 'Stop'; $PSNativeCommandUseErrorActionPreference = $true
           $App = "$env:LOCALAPPDATA\Programs\OSVC evidence"; $Koren = "$env:LOCALAPPDATA\OSVC evidence"
           $Konf = "$Koren\osvc.conf"; $Data = "$Koren\data"; $Nova = (Resolve-Path "sestaveni\osvc-evidence-$env:VERZE-windows.exe").Path
-          function Instaluj($exe, $navic = @()) { $p = Start-Process $exe -ArgumentList (@('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') + $navic) -Wait -PassThru; if ($p.ExitCode) { throw "instalace skončila $($p.ExitCode)" } }
+          # Start-Process -Wait čeká i na potomky – s /SPUSTIT=1 je potomkem instalátoru spuštěná aplikace a čekání by nikdy neskončilo.
+          # Proto čekáme jen na samotný instalátor (WaitForExit) a nejdéle 10 minut.
+          function Instaluj($exe, $navic = @()) {
+            $p = Start-Process $exe -ArgumentList (@('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') + $navic) -PassThru; $null = $p.Handle   # Handle: jinak ExitCode zůstane prázdný
+            if (-not $p.WaitForExit(600000)) { $p.Kill(); throw 'instalace nedoběhla do 10 minut' }
+            if ($p.ExitCode) { throw "instalace skončila $($p.ExitCode)" }
+          }
           function Spust { Start-Process "$App\python\pythonw.exe" -ArgumentList '-X','utf8','-m','osvc_app.spoustec','spust','--config',"`"$Konf`"",'--data',"`"$Data`"" -WorkingDirectory "$App\app"; Start-Sleep 3 }
           function Odinstaluj($param) {
             $p = Start-Process "$App\unins000.exe" -ArgumentList (@('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') + $param) -Wait -PassThru
@@ -176,13 +198,15 @@ jobs:
           if (Test-Path $Koren) { throw 'data se měla smazat' }
           if (-not (Get-ChildItem "$Zaloha\OSVC-evidence-zaloha-*.zip")) { throw 'před smazáním chybí ZIP záloha' }
           Write-Output 'Windows: instalace, aktualizace i obě odinstalace v pořádku.'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
+        timeout-minutes: 10
         with:
           name: balik-windows
           path: sestaveni/osvc-evidence-*-windows.exe
           if-no-files-found: error
 
   linux:
+    timeout-minutes: 20
     needs: testy
     runs-on: ubuntu-24.04
     env:
@@ -190,21 +214,26 @@ jobs:
       PREDCHOZI: ${{ needs.testy.outputs.predchozi }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+        timeout-minutes: 10
+      - uses: actions/setup-python@v6
+        timeout-minutes: 10
         with:
           python-version: '3.14'
       - name: Sestavení .deb
+        timeout-minutes: 10
         run: |
           python -m pip install --disable-pip-version-check pillow==12.3.0
           python scripts/linux/sestav_deb.py --verze "$VERZE" --vystup sestaveni
       - name: Čisté Ubuntu v kontejneru (závislosti a instalace bez systemd)
+        timeout-minutes: 15
         run: |
           docker run --rm -v "$PWD/sestaveni:/b:ro" ubuntu:24.04 bash -ec '
             apt-get update -qq; DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /b/osvc-evidence_*.deb >/dev/null
             test -x /opt/osvc-evidence/venv/bin/python; test -f /etc/osvc-evidence/osvc.conf; test -d /var/lib/osvc-evidence/data
             echo "kontejner: instalace v pořádku"'
       - name: Zkouška instalace, aktualizace a odinstalace (se službou)
+        timeout-minutes: 20
         run: |
           set -euo pipefail
           DEB=$(ls sestaveni/osvc-evidence_*.deb); Z=scripts/ci/zkouska_instalace.py
@@ -251,13 +280,15 @@ jobs:
           sudo tar -tzf "$ZAL" > obsah-zalohy.txt   # bez roury: grep -q by tar ukončil (SIGPIPE) a pipefail by hlásil chybu
           grep -q 'var/lib/osvc-evidence/data/osvc.sqlite3' obsah-zalohy.txt || chyba "záloha neobsahuje databázi"
           echo "Linux: instalace, aktualizace, remove i purge v pořádku (záloha $ZAL)."
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
+        timeout-minutes: 10
         with:
           name: balik-linux
           path: sestaveni/osvc-evidence_*.deb
           if-no-files-found: error
 
   vydani:
+    timeout-minutes: 10
     needs: [testy, windows, linux]
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
@@ -265,12 +296,15 @@ jobs:
       VERZE: ${{ needs.testy.outputs.verze }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v6
+        timeout-minutes: 10
+      - uses: actions/download-artifact@v7
+        timeout-minutes: 10
         with:
           path: vydani
           merge-multiple: true
       - name: Release s popisem změn a kontrolními součty
+        timeout-minutes: 10
         run: |
           set -euo pipefail
           # ve vydání jen stálé názvy bez čísla verze – tlačítka „Stáhnout“ v README (/releases/latest/download/…) platí pro každé vydání
@@ -282,6 +316,7 @@ jobs:
           PRED=""; case "$VERZE" in *-*) PRED="--prerelease";; esac
           gh release create "$GITHUB_REF_NAME" vydani/* --repo "$GITHUB_REPOSITORY" --title "OSVČ evidence $VERZE" --notes-file popis.md $PRED
       - name: Odkazy ke stažení opravdu stahují
+        timeout-minutes: 5
         run: |
           set -euo pipefail
           sleep 10
