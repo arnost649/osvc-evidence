@@ -90,6 +90,7 @@ def identita(form):
     if not ident['number'] or not ident['city'] or not ident['zip']: raise ValueError('Vyplňte adresu: číslo domu, obec a PSČ.')
     if ident['country'] == VYCHOZI_STAT and not re.fullmatch(r'\d{5}', ident['zip']): raise ValueError('PSČ musí mít 5 číslic.')
     if ident['dic'] and not re.fullmatch(r'[A-Z]{2}\d{8,10}', ident['dic']): raise ValueError('DIČ zadejte ve tvaru CZ12345678, nebo ho nechte prázdné.')
+    ident['pobyt_jinde'], ident['pobyt'] = profile.parse_pobyt(form, '')   # trvalý pobyt jinde (určuje FÚ a OSSZ)
     return ident
 
 
@@ -222,9 +223,10 @@ def formular():
             return render_template('pruvodce.html', **kontext(request.form)), 400
         session.clear()
         session['user'] = u['username']; session['auth'] = u['auth_version']; session['local_auth'] = 1
-        if any(zapnute.values()): return redirect(url_for('pruvodce.dalsi'))
+        from .obnova import zobraz_kod   # záchranný kód pro zapomenuté heslo se ukáže jednou, pak průvodce pokračuje
+        if any(zapnute.values()): return zobraz_kod(u['kod'], url_for('pruvodce.dalsi'))
         flash('Hotovo. Aplikace je připravená – vše můžete kdykoli změnit v Nastavení.', 'success')
-        return redirect(url_for('main.dashboard'))
+        return zobraz_kod(u['kod'], url_for('main.dashboard'))
     f = dict(VYCHOZI, podnikani_od=f'{rok_pruvodce()}-01-01')
     return render_template('pruvodce.html', **kontext(f))
 

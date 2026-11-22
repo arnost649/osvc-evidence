@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block content %}<section class="login obnova">
+<h1>{{ 'Nastavte si nové přihlášení' if rezim == 'docasne' else 'Nové jméno a heslo' }}</h1>
+{% if rezim == 'docasne' %}<p class="settings-help" data-obnova-docasne>Jste přihlášeni dočasně jako <code>osvc</code>. Než budete pokračovat, zvolte si nové uživatelské jméno a heslo. Potom se odhlásí všechna ostatní zařízení a dostanete nový záchranný kód.</p>
+{% else %}<p class="settings-help">Záchranný kód sedí. Zvolte si nové uživatelské jméno a heslo. Potom se odhlásí všechna zařízení a dostanete nový záchranný kód.</p>{% endif %}
+{% if chyba %}<p class="flash error" role="alert" data-obnova-chyba>{{ chyba }}</p>{% endif %}
+<form method="post" id="obnova-nove-prihlaseni" data-obnova-heslo-form>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="obnova-jmeno">Uživatelské jméno<input id="obnova-jmeno" name="username" value="{{ jmeno }}" required minlength="3" maxlength="50" autocomplete="username" autocapitalize="none" spellcheck="false"{% if rezim == 'docasne' %} pattern="(?![Oo][Ss][Vv][Cc]$)\S+" title="Jiné jméno než dočasné osvc, bez mezer"{% else %} pattern="\S+" title="Bez mezer"{% endif %}></label>
+  <label for="obnova-nove-heslo">Nové heslo<input type="password" id="obnova-nove-heslo" name="password" required minlength="8" maxlength="200" autocomplete="new-password"></label>
+  <label for="obnova-nove-heslo-znovu">Nové heslo znovu<input type="password" id="obnova-nove-heslo-znovu" name="password2" required minlength="8" maxlength="200" autocomplete="new-password"></label>
+  <button type="submit" data-ceka-na-vyplneni>Uložit a pokračovat</button>
+</form>
+<p class="settings-help">Jméno 3 až 50 znaků bez mezer, heslo aspoň 8 znaků. Data, doklady ani nastavení se nemění.</p>
+{% if rezim == 'docasne' %}<form action="/logout" method="post" class="obnova-odhlasit"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="secondary">Odhlásit</button></form>{% endif %}
+</section>{% endblock %}

@@ -125,7 +125,7 @@ jobs:
           $ErrorActionPreference = 'Stop'; $PSNativeCommandUseErrorActionPreference = $true
           $App = "$env:LOCALAPPDATA\Programs\OSVC evidence"; $Koren = "$env:LOCALAPPDATA\OSVC evidence"
           $Konf = "$Koren\osvc.conf"; $Data = "$Koren\data"; $Nova = (Resolve-Path "sestaveni\osvc-evidence-$env:VERZE-windows.exe").Path
-          function Instaluj($exe) { $p = Start-Process $exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait -PassThru; if ($p.ExitCode) { throw "instalace skončila $($p.ExitCode)" } }
+          function Instaluj($exe, $navic = @()) { $p = Start-Process $exe -ArgumentList (@('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') + $navic) -Wait -PassThru; if ($p.ExitCode) { throw "instalace skončila $($p.ExitCode)" } }
           function Spust { Start-Process "$App\python\pythonw.exe" -ArgumentList '-X','utf8','-m','osvc_app.spoustec','spust','--config',"`"$Konf`"",'--data',"`"$Data`"" -WorkingDirectory "$App\app"; Start-Sleep 3 }
           function Odinstaluj($param) {
             $p = Start-Process "$App\unins000.exe" -ArgumentList (@('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') + $param) -Wait -PassThru
@@ -145,9 +145,17 @@ jobs:
           else { Instaluj $Nova }
           Spust; $Url = python scripts/ci/zkouska_instalace.py port --config $Konf
           python scripts/ci/zkouska_instalace.py pripravit --url $Url --otisk otisk.json
-          Instaluj $Nova                                       # instalátor sám zastaví běžící starou verzi
+          # jako aktualizace z aplikace: skrytě (/VERYSILENT) a s /SPUSTIT=1 – instalátor zastaví starou verzi a novou sám spustí
+          Instaluj $Nova @('/SPUSTIT=1')
           if (-not (Test-Path "$Data\osvc.sqlite3")) { throw 'instalace smazala data' }
-          Spust; python scripts/ci/zkouska_instalace.py overit --url $Url --otisk otisk.json
+          python scripts/ci/zkouska_instalace.py cekej --url $Url   # bez ručního spuštění – musí naběhnout sama
+          python scripts/ci/zkouska_instalace.py overit --url $Url --otisk otisk.json
+          # zapomenuté heslo (1.0.3): soubor ve složce programu, zástupce v nabídce Start, nástroj (--ano) → osvc / osvc → vynucená změna → záchranný kód
+          if (-not (Test-Path "$App\Obnovit heslo.cmd")) { throw 'chybí Obnovit heslo.cmd ve složce programu' }
+          if (-not (Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\OSV* evidence * obnovit heslo.lnk" -ErrorAction SilentlyContinue)) { throw 'chybí zástupce Obnovit heslo v nabídce Start' }
+          Push-Location "$App\app"; & "$App\python\python.exe" -X utf8 -m osvc_app.spoustec obnovit-heslo --config $Konf --ano; Pop-Location
+          python scripts/ci/zkouska_instalace.py obnova --url $Url
+          python scripts/ci/zkouska_instalace.py overit --url $Url --otisk otisk.json
           # síťový přístup: zapnout → pravidlo firewallu (jen port, profil Soukromá) a odpověď na adrese runneru; vypnout → pravidlo pryč
           $Port = [int](($Url -split ':')[-1])
           python scripts/ci/zkouska_instalace.py sit --url $Url --rezim domaci
@@ -208,6 +216,10 @@ jobs:
           sudo dpkg -i "$DEB"
           python $Z overit --url "$URL" --otisk otisk.json
           systemctl is-active osvc-evidence
+          # zapomenuté heslo (1.0.3): sudo osvc-evidence obnovit-heslo (--ano) → osvc / osvc → vynucená změna → záchranný kód
+          sudo osvc-evidence obnovit-heslo --ano
+          python $Z obnova --url "$URL"
+          python $Z overit --url "$URL" --otisk otisk.json
           # síťový přístup: restart služby (systemd) a odpověď na adrese runneru; firewall se na Linuxu nemění
           python $Z sit --url "$URL" --rezim domaci; systemctl is-active osvc-evidence
           python $Z sit --url "$URL" --rezim lokalni; systemctl is-active osvc-evidence

@@ -40,7 +40,7 @@
   function sleduj(pruh,popisek,b,stara){
     const t=setInterval(async()=>{
       let v; try{v=await (await fetch(okno.dataset.prubeh,{headers:{'Accept':'application/json'}})).json();}catch(e){v=null;}
-      if(!v){popisek.textContent='Spouštím instalaci, aplikace se na chvíli zavře. Stránka se po aktualizaci obnoví sama.'; return;}   // aplikace se zavřela – čekáme
+      if(!v){popisek.textContent='Instaluji novou verzi – aplikace se na chvíli zavře a sama znovu spustí. Stránka se pak obnoví.'; return;}   // aplikace se zavřela – čekáme
       if(v.verze&&v.verze!==stara){clearInterval(t); location.reload(); return;}   // nová verze běží
       const p=v.prubeh||{}; if(p.procent!==undefined) pruh.value=p.procent; if(p.text) popisek.textContent=p.text+(p.faze==='stahuji'&&p.procent?' '+p.procent+' %':'');
       if(p.faze==='chyba'){clearInterval(t); b.disabled=false;}

@@ -42,15 +42,26 @@
   <div class="settings-card-head"><div class="settings-icon">{{ icon('lock') }}</div><div><h2>Účet / Přihlášení</h2><p class="settings-help">Přístup do lokální evidence OSVČ.</p></div></div>
   {# I2: účet je uložený v aplikaci, heslo jen jako otisk; změna vždy s ověřením současného hesla. #}
   <dl class="settings-account-details" data-account><div><dt>Uživatelské jméno</dt><dd><code>{{ ucet_jmeno }}</code></dd></div><div><dt>Heslo</dt><dd>nastavené (z bezpečnostních důvodů se nezobrazuje){% if ucet_zmena %} · změněno {{ ucet_zmena|cz_datetime }}{% endif %}</dd></div></dl>
-  <form method="post" action="{{ url_for('main.update_account') }}" class="account-form" data-account-form autocomplete="off">
+  {# správce hesel (Chrome / Google Password Manager): username + current-password + 2× new-password → návrh silného hesla do obou polí a nabídka uložení #}
+  <form method="post" action="{{ url_for('main.update_account') }}" class="account-form" id="ucet-zmena-hesla" data-account-form>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label>Uživatelské jméno<input name="username" value="{{ ucet_jmeno }}" required minlength="3" maxlength="50" autocomplete="username"></label>
-    <label>Současné heslo<input type="password" name="current_password" required autocomplete="current-password"></label>
-    <label>Nové heslo<input type="password" name="new_password" minlength="8" autocomplete="new-password"></label>
-    <label>Nové heslo znovu<input type="password" name="new_password2" minlength="8" autocomplete="new-password"></label>
+    <label for="ucet-jmeno">Uživatelské jméno<input id="ucet-jmeno" name="username" value="{{ ucet_jmeno }}" required minlength="3" maxlength="50" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+    <label for="ucet-soucasne-heslo">Současné heslo<input type="password" id="ucet-soucasne-heslo" name="current_password" required autocomplete="current-password"></label>
+    <label for="ucet-nove-heslo">Nové heslo<input type="password" id="ucet-nove-heslo" name="new_password" minlength="8" maxlength="200" autocomplete="new-password"></label>
+    <label for="ucet-nove-heslo-znovu">Nové heslo znovu<input type="password" id="ucet-nove-heslo-znovu" name="new_password2" minlength="8" maxlength="200" autocomplete="new-password"></label>
     <button type="submit">Uložit přihlášení</button>
   </form>
-  <p class="settings-help">Při změně jen jména nechte nové heslo prázdné. Heslo musí mít aspoň 8 znaků. Aplikace heslo nezná, ukládá jen jeho otisk. Po změně hesla se odhlásí ostatní přihlášená zařízení.</p>
+  <p class="settings-help">Při změně jen jména nechte nové heslo prázdné. Heslo musí mít aspoň 8 znaků. Aplikace heslo nezná, ukládá jen jeho otisk. Po změně hesla se odhlásí ostatní přihlášená zařízení a dostanete nový záchranný kód.</p>
+  {# 1.0.3: záchranný kód pro zapomenuté heslo – ukáže se jednou, v databázi jen otisk #}
+  <h3 class="settings-subtitle">Záchranný kód</h3>
+  <p class="settings-help" data-account-kod>{% if ucet_ma_kod %}Vytvořen {{ ucet_kod|cz_datetime }}. Nový kód nahradí ten starý.{% else %}<strong>Zatím nemáte záchranný kód.</strong> Vytvořte si ho – když zapomenete heslo, nastavíte si s ním nové (Přihlášení → Zapomněl jsem heslo).{% endif %}</p>
+  {# samostatný formulář s vlastním jednoznačným polem současného hesla; skryté jméno = správce hesel ví, ke kterému účtu heslo patří #}
+  <form method="post" action="{{ url_for('main.new_rescue_code') }}" class="settings-account-kod" id="ucet-zachranny-kod" data-account-kod-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="text" id="kod-jmeno" name="rescue_username" value="{{ ucet_jmeno }}" autocomplete="username" readonly hidden tabindex="-1">
+    <label for="kod-soucasne-heslo">Současné heslo<input type="password" id="kod-soucasne-heslo" name="rescue_current_password" required autocomplete="current-password"></label>
+    <button type="submit" data-ceka-na-vyplneni>{{ 'Vytvořit nový záchranný kód' if ucet_ma_kod else 'Vytvořit záchranný kód' }}</button>
+  </form>
 </section>
 {# moduly – zapnutí/vypnutí jen mění volbu v instance/moduly.json, data zůstávají. #}
 <section class="settings-card settings-modules settings-tab-panel" id="settings-panel-modules" role="tabpanel" aria-labelledby="settings-tab-modules" data-settings-panel="modules" hidden>

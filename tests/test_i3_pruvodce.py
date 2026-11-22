@@ -97,7 +97,8 @@ class Chyby(Zaklad):
 
 class Uspech(Zaklad):
     def test_hlavni_cinnost_skutecne_vydaje_vozidlo_vse_zelene(self):
-        r = self.odesli(); self.assertEqual((r.status_code, r.headers['Location']), (302, '/pruvodce/dalsi'))
+        r = self.odesli(); self.assertEqual((r.status_code, r.headers['Location']), (302, '/ucet/zachranny-kod'), 'nejdřív záchranný kód (1.0.3)')
+        html = self.k.get('/ucet/zachranny-kod').get_data(as_text=True); self.assertIn('data-zachranny-kod>', html); self.assertIn('action="/pruvodce/dalsi"', html)
         self.assertEqual(self.moduly(), {'doprava': {'zapnuto': True, 'zapocitat': True}, 'externi_web': {'zapnuto': False, 'zapocitat': True}})
         html = self.k.get('/pruvodce/dalsi').get_data(as_text=True); self.assertIn('první vozidlo', html); self.assertNotIn('zdroj příjmů', html.lower().split('legend')[-1] if False else '')
         r = self.strana2(vozidlo_nazev='Škoda Fabia', vozidlo_spz='1ab 2345', vozidlo_palivo='Natural 95', vozidlo_spotreba='4,7', vozidlo_rezim='actual')
@@ -120,7 +121,8 @@ class Uspech(Zaklad):
             vyber = self.k.post('/pruvodce/zamestnavatel', data={'csrf_token': t, 'ico': '87654321'}).get_json()
         r = self.odesli(zamestnani='ano', zamestnavatel=vyber['name'], zamestnavatel_token=vyber['token'], zamestnani_socialni='yes', zamestnani_zdravotni='yes',
                         social_zalohy='neplati', health_zalohy='neplati', vydaje='percentage', pausal='trade', modul_doprava=None)
-        self.assertEqual((r.status_code, r.headers['Location']), (302, '/'), 'bez modulů se strana 2 přeskočí')
+        self.assertEqual((r.status_code, r.headers['Location']), (302, '/ucet/zachranny-kod'))
+        self.assertIn('action="/"', self.k.get('/ucet/zachranny-kod').get_data(as_text=True), 'bez modulů se strana 2 přeskočí')
         self.assertEqual(self.moduly()['doprava']['zapnuto'], False)
         p = json.loads(self.db().execute('SELECT data FROM osvc_year_profiles').fetchone()[0])
         self.assertEqual((p['employer'], p['employer_ico'], p['expense_rate']), ('Strojírny Brno a.s.', '87654321', 'trade'))

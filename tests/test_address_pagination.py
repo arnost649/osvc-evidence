@@ -39,22 +39,23 @@ class AddressPaginationTests(unittest.TestCase):
   self.assertEqual(response.status_code,200)
   return contexts[-1]
  def test_boundaries_all_roles_and_unique_rows(self):
+  # 1.0.3: jeden seznam „Všechny kontakty“ s výběrem typu (typ=dodavatele/odberatele/benzinky), stránkování page
   for count in [99,100,101,200,201]:
-   for key,role in [('suppliers','supplier'),('customers','customer'),('stations','fuel_station')]:
+   for typ,roles in [('dodavatele',('supplier','both')),('odberatele',('customer','both')),('benzinky',('fuel_station',))]:
     seen=[]
     for page in range(1,(count+99)//100+1):
-     c=self.get(f'/address-book?q=TESTPAG{count}&{key}_page={page}')
-     self.assertEqual(c['pagers'][key].total,count)
-     self.assertEqual(c['pagers'][key].pages,(count+99)//100)
-     self.assertEqual(len(c[key]),min(100,count-100*(page-1)))
-     self.assertTrue(all(r['role']==role for r in c[key]))
-     seen.extend(r['id'] for r in c[key])
+     c=self.get(f'/address-book?q=TESTPAG{count}&typ={typ}&page={page}')
+     self.assertEqual(c['pager'].total,count)
+     self.assertEqual(c['pager'].pages,(count+99)//100)
+     self.assertEqual(len(c['kontakty']),min(100,count-100*(page-1)))
+     self.assertTrue(all(r['role'] in roles for r in c['kontakty']))
+     seen.extend(r['id'] for r in c['kontakty'])
     self.assertEqual(len(set(seen)),count)
- def test_independent_pages_and_legacy_url(self):
+ def test_vse_a_stara_adresa(self):
   for prefix in ['/address-book','/settings/address-book']:
-   c=self.get(prefix+'?q=TESTPAG201&suppliers_page=2&customers_page=3&stations_page=1')
-   self.assertEqual([c['pagers'][k].page for k in ['suppliers','customers','stations']],[2,3,1])
-   self.assertEqual([len(c[k]) for k in ['suppliers','customers','stations']],[100,1,100])
+   c=self.get(prefix+'?q=TESTPAG201&page=2')
+   self.assertEqual(c['typ'],'vse'); self.assertEqual(c['pager'].total,603); self.assertEqual(c['pager'].page,2); self.assertEqual(len(c['kontakty']),100)
+  self.assertEqual(self.get('/address-book?typ=nesmysl')['typ'],'vse')
 
 if __name__=='__main__':
  if '--serve' in sys.argv:

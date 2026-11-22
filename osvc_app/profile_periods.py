@@ -14,6 +14,20 @@ def interval(raw,year):
  resolved=resolve_year_period(year,raw.get('from'),raw.get('to'))
  return resolved['effective_from'],resolved['effective_to']
 
+def prazdne(item):
+ """Období bez data Od i Do – neukládá se a nepočítá (dřív by znamenalo celý rok)."""
+ return not ((item or {}).get('from') or (item or {}).get('to'))
+
+def platna(periods):
+ """Období s aspoň jedním datem (prázdná se ignorují i u starších uložených dat)."""
+ return [x for x in (periods or []) if not prazdne(x)]
+
+def zacatek(periods):
+ """Začátek nejdřívějšího platného období: ISO datum, '' = od začátku roku (Od prázdné), None = žádné období."""
+ platne=platna(periods)
+ if not platne:return None
+ return min((x.get('from') or '') for x in platne)
+
 def overlap(a,b):return max(a[0],b[0])<=min(a[1],b[1])
 
 def covers(periods,first,last):
@@ -32,8 +46,9 @@ def project(year,p):
   if p.get(key) in ('',None):p[key]='0'
  if not p.get('social_voluntary'):p['social_voluntary']='no'
  hydrate(p)
- business=[interval(x,year) for x in (p.get('business_periods') or [{}])] if p.get('business_status')=='yes' else []
- jobs=[(interval(x,year),x) for x in (p.get('employment_periods') or [{}])] if p.get('employment_status')=='yes' else []
+ # prázdné období (bez Od i Do) se nepočítá – bez platného období je údaj chybějící, ne „celý rok“
+ business=[interval(x,year) for x in platna(p.get('business_periods'))] if p.get('business_status')=='yes' else []
+ jobs=[(interval(x,year),x) for x in platna(p.get('employment_periods'))] if p.get('employment_status')=='yes' else []
  rows=[]
  for m in range(1,13):
   first,last=date(year,m,1),date(year,m,monthrange(year,m)[1]);window=(first,last)
@@ -55,9 +70,9 @@ def project(year,p):
   if p.get('overrides_enabled'):row.update({k:v for k,v in p.get('month_overrides',{}).get(str(m),{}).items() if k in MONTH_KEYS and v})
   rows.append(row)
  p['months']=rows
- periods=p.get('business_periods',[])
- p['start']=min(((x.get('from') or '') for x in periods),default='');p['end']=max((x.get('to','') for x in periods),default='') if periods and all(x.get('to') for x in periods) else ''
- emp=p.get('employment_periods',[]) if p.get('employment_status')=='yes' else []
+ periods=platna(p.get('business_periods'))
+ p['start']=zacatek(periods) or '';p['end']=max((x.get('to','') for x in periods),default='') if periods and all(x.get('to') for x in periods) else ''
+ emp=platna(p.get('employment_periods')) if p.get('employment_status')=='yes' else []
  p['employment_from']=min(((x.get('from') or '') for x in emp),default='');p['employment_to']=max((x.get('to','') for x in emp),default='') if emp and all(x.get('to') for x in emp) else ''
  return p
 
@@ -81,6 +96,9 @@ def parse_periods(form,kind,year):
  result=[]
  for item in items:
   if not isinstance(item,dict):raise ValueError('Neplatné období.')
+  if prazdne(item):
+   if kind=='employment' and any(item.get(k) for k in ('insured','health_conditions')):raise ValueError('Zaměstnání: doplňte datum Od nebo Do, nebo období odeberte.')
+   continue   # prázdné období se neukládá (nepočítá se jako celý rok)
   try:a,b=interval(item,year)
   except (ValueError,KeyError,TypeError):raise ValueError('Doplňte platné datum začátku období.')
   row={'from':item.get('from') or '', 'to':item.get('to') or ''}
@@ -95,7 +113,9 @@ def parse_periods(form,kind,year):
 def source_missing(p):
  missing={k:[] for k in ('business','employment','social','health')}
  if p.get('business_status') not in ('yes','no'):missing['business'].append('Doplňte období podnikání nebo potvrďte rok bez činnosti.')
+ elif p.get('business_status')=='yes' and not platna(p.get('business_periods')):missing['business'].append('Doplňte období podnikání (datum Od nebo Do).')
  if p.get('employment_status') not in ('yes','no'):missing['employment'].append('Uveďte, zda jste byl/a zaměstnán/a.')
+ elif p.get('employment_status')=='yes' and not platna(p.get('employment_periods')):missing['employment'].append('Doplňte období zaměstnání (datum Od nebo Do).')
  if any(m.get('activity')=='yes' and not m.get('social') for m in p['months']) and not missing['business'] and not missing['employment']:missing['social'].append('Potvrďte účast zaměstnání na pojištění pro vedlejší SVČ.')
  if any(m.get('activity')=='yes' and not m.get('minimum') for m in p['months']) and not missing['business'] and not missing['employment']:missing['health'].append('Potvrďte podmínky zdravotního pojištění v období zaměstnání.')
  return missing

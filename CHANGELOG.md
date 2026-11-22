@@ -2,6 +2,25 @@
 
 Popis každého vydání (`## vX.Y.Z`) se při vydání vloží do GitHub Releases. Bez popisu se vydání nevytvoří.
 
+## v1.0.3
+- **Roční přehled:** nahoře stav a tlačítko „Stáhnout podklady (PDF)“. Pod ním karty Finanční úřad, ČSSZ a zdravotní
+  pojišťovna: který úřad je pro vás příslušný podle adresy (datová schránka, web), formulář pro daný rok a termíny podání
+  a doplatku. Údaje jen z oficiálních zdrojů se zdrojem a datem ověření; co ještě nevyšlo, je tak označené.
+  Výpočet je v rozbalení „Jak se počítá“.
+- **PDF „Podklady pro přiznání a přehledy“** na jednu stranu A4: jen čísla k opsání do formulářů (finanční úřad, ČSSZ,
+  pojišťovna) a nová měsíční záloha podle pravidel 2027 (průměrná mzda z nařízení vlády č. 177/2026 Sb.).
+- **Zapomenuté heslo:** záchranný kód (vytisknout / stáhnout) a odkaz „Zapomněl jsem heslo“ na přihlášení. Bez kódu
+  pomůže nástroj „OSVČ evidence – obnovit heslo“ (Windows, nabídka Start) nebo `sudo osvc-evidence obnovit-heslo` (Linux).
+  Data se při obnově nemění.
+- **Hesla:** správci hesel (Chrome) navrhnou a uloží silné heslo; u polí s heslem ikonka oka pro zobrazení.
+- **Zálohy:** opraveno visení obnovy na „Probíhá zpracování…“; ukazatel průběhu a po vytvoření i obnově srovnávací tabulka.
+- **Profil OSVČ:** možnost zadat trvalý pobyt jinde než adresu podnikání (podle něj se určují úřady); prázdné období se
+  už nepočítá jako celý rok a souhrn ukazuje skutečný začátek podnikání.
+- **Adresář** vypadá jako ostatní seznamy: výběr Všichni / Dodavatelé / Odběratelé / Benzinky a hledání v záhlaví,
+  úprava přímo v řádku. Kontakty vznikají při zápisu dokladu.
+- **Menu:** větší ikony.
+- **Aktualizace ve Windows** proběhne bez okna instalátoru – průběh je vidět v aplikaci, která se sama znovu spustí.
+
 ## v1.0.2
 - **Formuláře Příjmy, Výdaje, Jízdy a PHM:** nové přehledné rozvržení v mřížce, Uložit vpravo dole. Tabulátor jde zleva
   doprava a shora dolů, Uložit naposledy. Na mobilu jsou pole pod sebou.

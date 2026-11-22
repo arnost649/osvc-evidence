@@ -4,8 +4,9 @@ from wtforms.validators import DataRequired, Optional, Length, NumberRange
 from decimal import Decimal, DecimalException, ROUND_HALF_UP
 
 class LoginForm(FlaskForm):
-    username=StringField('Uživatelské jméno', validators=[DataRequired(), Length(max=100)])
-    password=PasswordField('Heslo', validators=[DataRequired()])
+    # správce hesel: přihlašovací formulář = username + current-password
+    username=StringField('Uživatelské jméno', validators=[DataRequired(), Length(max=100)], render_kw={'autocomplete': 'username', 'autocapitalize': 'none', 'spellcheck': 'false'})
+    password=PasswordField('Heslo', validators=[DataRequired()], render_kw={'autocomplete': 'current-password'})
 
 class PaymentForm(FlaskForm):
     payment_date=DateField('Datum úhrady', validators=[DataRequired()])

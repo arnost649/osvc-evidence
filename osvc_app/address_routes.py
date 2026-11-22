@@ -9,22 +9,25 @@ from .pagination import paginate
 from .routes import bp, audit, cursor_audit, login_required, supplier_attachment
 
 
+TYPY_KONTAKTU={'vse':('Všichni',"('supplier','customer','both','fuel_station')"),'dodavatele':('Dodavatelé',"('supplier','both')"),
+               'odberatele':('Odběratelé',"('customer','both')"),'benzinky':('Benzinky',"('fuel_station')")}
+
+
 @bp.get('/settings/address-book')
 @bp.get('/address-book')
 @login_required
 def address_book():
+ """Adresář (1.0.3): jeden seznam „Všechny kontakty“ s výběrem typu a hledáním v záhlaví, jako ostatní seznamy.
+ Kontakty vznikají při zápisu dokladu – adresář slouží k přehledu a údržbě (úprava na místě řádku, ověření v ARES)."""
  search=' '.join(request.args.get('q','').split())[:200]
- extra=' AND deleted_at IS NULL'
- params=[]
+ typ=request.args.get('typ','vse')
+ if typ not in TYPY_KONTAKTU:typ='vse'
+ extra=' AND deleted_at IS NULL'; params=[]
  if search:
-  extra+=' AND (name LIKE %s OR ico LIKE %s OR dic LIKE %s OR street LIKE %s OR city LIKE %s OR postal_code LIKE %s)'; term=f'%{search}%'; params += [term]*6
+  extra+=' AND (name LIKE %s OR operator_name LIKE %s OR ico LIKE %s OR dic LIKE %s OR street LIKE %s OR city LIKE %s OR postal_code LIKE %s OR official_address LIKE %s)'; term=f'%{search}%'; params += [term]*8
  fields='id,role,name,operator_name,ico,dic,street,city,postal_code,official_address,country_code,verified_at,verification_source,deleted_at'   # e-mail, telefon a poznámka se nezobrazují (v DB zůstávají)
- groups={}; pagers={}
- for key,roles in [('suppliers',"('supplier','both')"),('customers',"('customer','both')"),('stations',"('fuel_station')")]:
-  groups[key],pagers[key]=paginate(f"SELECT {fields} FROM counterparties WHERE source='manual' AND role IN {roles}{extra} ORDER BY name,id",tuple(params),page_parameter=key+'_page',fragment=key)
- # All active contacts for the live suggestions of „Hledat kontakt“ (filtered in the browser by the shared combobox, ui.js).
- contacts=query("SELECT id,role,name,operator_name,ico,city FROM counterparties WHERE source='manual' AND deleted_at IS NULL ORDER BY name,id")
- return render_template('address_book.html',**groups,pagers=pagers,search=search,contacts=contacts)
+ kontakty,pager=paginate(f"SELECT {fields} FROM counterparties WHERE source='manual' AND role IN {TYPY_KONTAKTU[typ][1]}{extra} ORDER BY name,id",tuple(params))
+ return render_template('address_book.html',kontakty=kontakty,pager=pager,search=search,typ=typ,typy={k:v[0] for k,v in TYPY_KONTAKTU.items()})
 
 
 def ares_contact(ico):

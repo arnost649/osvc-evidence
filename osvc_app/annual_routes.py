@@ -20,7 +20,7 @@ def year_arg():
 def context(year):
  identity,p,ir,yr,report=annual.year_report(year)
  opts={**profile.OPTIONS,'expense_rate':{k:v['label'] for k,v in (profile.rules(year) or {}).get('expense_rates',{}).items()},'reason':(profile.rules(year) or {}).get('secondary_reasons',{'employment':'Zaměstnání','other':'Jiný důvod'})}
- return dict(profile_identity=identity,year_profile=p,profile_ir=ir,profile_yr=yr,profile_year=year,profile_report=report,profile_fields=profile.FIELDS,profile_options=opts,profile_months=profile.MONTHS,profile_identity_fields=profile.IDENTITY,profile_help=profile.MONTH_HELP,profile_vehicles=profile.vehicles(),profile_insurers=insurers.names(),insurer_directory=insurers.entries(),profile_view=profile_presentation.build(identity,p,report,profile.vehicles()))
+ return dict(profile_identity=identity,year_profile=p,profile_ir=ir,profile_yr=yr,profile_year=year,profile_report=report,profile_fields=profile.FIELDS,profile_options=opts,profile_months=profile.MONTHS,profile_identity_fields=profile.IDENTITY,profile_pobyt_fields=profile.POBYT,profile_help=profile.MONTH_HELP,profile_vehicles=profile.vehicles(),profile_insurers=insurers.names(),insurer_directory=insurers.entries(),profile_view=profile_presentation.build(identity,p,report,profile.vehicles()))
 
 @bp.post('/settings/profile')
 @login_required
@@ -101,7 +101,10 @@ def overview():
  if request.values.get('year'):year=year_arg()
  else:year=cas.today().year if cas.today().year in years or not years else years[0]   # bez zvoleného roku: letošní, nemá-li data, poslední rok s daty
  if year not in years:years=sorted(set(years)|{year},reverse=True)   # zvolený rok (odkaz) musí být v nabídce; bez dat vůbec = jen letošní
- return render_template('annual.html',display=annual.display,profile_years=years,**context(year))
+ ctx=context(year)
+ from .annual_podklad import podklad   # 1.0.3: stejný podklad k opsání jako PDF
+ from . import urady   # úřady, formuláře a termíny podle adresy z Profilu OSVČ (ARES jen poprvé, pak uloženo)
+ return render_template('annual.html',display=annual.display,profile_years=years,podklad=podklad(ctx['profile_report']),urady=urady.karty(ctx['profile_identity'],ctx['year_profile'],year),**ctx)
 
 @bp.get('/annual/pdf')
 @login_required

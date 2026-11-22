@@ -38,6 +38,8 @@ def short_date(value):
  except (ValueError,TypeError):return '—'
 
 def period_text(periods):
+ from .profile_periods import platna
+ periods=platna(periods)
  return ' · '.join((short_date(p.get('from')) if p.get('from') else 'začátek roku')+' – '+(short_date(p['to']) if p.get('to') else 'konec roku / trvá') for p in periods) or 'Období neuvedeno'
 
 def build(identity,p,report,vehicles):
@@ -60,11 +62,13 @@ def build(identity,p,report,vehicles):
  method=profile.OPTIONS['expense_method'].get(p.get('expense_method'),'—')
  modes={'actual':'Skutečné náklady','flat':'Paušální výdaj na dopravu','none':'Daňově neuplatňováno'}
  vehicle_text=' · '.join(v['name']+' – '+(profile.OPTIONS['actual_basis'].get(p.get('vehicles',{}).get(str(v['id']),{}).get('actual_basis'),'Skutečné náklady / cestovní náhrady') if p.get('vehicles',{}).get(str(v['id']),{}).get('vehicle_method')=='actual' else modes.get(p.get('vehicles',{}).get(str(v['id']),{}).get('vehicle_method'),'—')) for v in vehicles) or 'Bez vozidla'
+ from .profile_periods import platna,zacatek
+ od=zacatek(p.get('business_periods'))   # skutečné období (náhled i uložený profil), ne pomocné p['start']
  reg=identity.get('registry',{});registered=bool(reg.get('data')) and all(identity.get(k)==reg['data'].get(k) for k in ('ico','name'))
  identification=(identity.get('name') or '—')+(' · IČO '+identity['ico'] if identity.get('ico') else '')
  quick=[item('Identifikace',identification,'missing' if missing['identity'] else 'known','registry' if registered else 'user_confirmed',reg.get('sources',{}).get('name','ARES') if registered else '',target='identity'),
   item('OSVČ',social,social_fact_state,target='social'),
-  item('Aktivní od',short_date(p.get('start')) if p.get('start') else 'Začátek roku' if p.get('business_status')=='yes' else '—',business_state if p.get('business_status')!='no' else 'known','business_periods',period_text(p.get('business_periods',[]))),
+  item('Aktivní od',short_date(od) if od else 'Začátek roku' if od=='' and p.get('business_status')=='yes' else '—',business_state if p.get('business_status')!='no' else 'known','business_periods',period_text(p.get('business_periods',[]))),
   item('Aktivita',str(n)+(' měsíc' if n==1 else ' měsíce' if 2<=n<=4 else ' měsíců') if known_activity else '—',business_state,'derived'),
   item('Zaměstnání',employer,'missing' if missing['employment'] else 'known','employer',('Firma: ARES · '+p.get('employer_verified_at','')[:10]+'; ' if p.get('employer_source')=='ARES' else '')+'Pracovní poměr: '+source(p,'employment_periods')['label']+' · '+period_text(p.get('employment_periods',[])),target='employment'),
   item('ČSSZ',social+(' · '+reason if reason else ''),social_fact_state,'derived',target='social'),
@@ -78,7 +82,7 @@ def build(identity,p,report,vehicles):
   for item_row in quick:
    if item_row['label']=='Zdravotní':
     item_row['value']=insurer;item_row['hint']=institution['name']+' · IČO '+institution['ico']+' · oficiální číselník'
- briefs={'identity':identification,'business':('Aktivní od '+(short_date(p.get('start')) if p.get('start') else 'začátku roku')+' · '+str(n)+(' měsíc' if n==1 else ' měsíce' if 2<=n<=4 else ' měsíců')) if known_activity and n else 'Bez činnosti' if known_activity else 'Období neuvedeno','employment':employer+' · '+(year_period_text(year,p.get('employment_periods') or [{}]) if p.get('employment_status')=='yes' else 'Bez zaměstnání' if p.get('employment_status')=='no' else 'Období neuvedeno'),'social':social+(' · '+reason if reason else ''),'health':insurer,'tax':method,'vehicles':vehicle_text}
+ briefs={'identity':identification,'business':('Aktivní od '+(short_date(od) if od else 'začátku roku')+' · '+str(n)+(' měsíc' if n==1 else ' měsíce' if 2<=n<=4 else ' měsíců')) if known_activity and n else 'Bez činnosti' if known_activity else 'Období neuvedeno','employment':employer+' · '+(year_period_text(year,platna(p.get('employment_periods'))) if p.get('employment_status')=='yes' and platna(p.get('employment_periods')) else 'Období neuvedeno' if p.get('employment_status')=='yes' else 'Bez zaměstnání' if p.get('employment_status')=='no' else 'Období neuvedeno'),'social':social+(' · '+reason if reason else ''),'health':insurer,'tax':method,'vehicles':vehicle_text}
  cards={}
  for key,title in TITLES.items():
   section_status=completeness['sections'][key]

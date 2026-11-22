@@ -1,4 +1,12 @@
 #!/bin/sh
-# Otevře OSVČ evidenci v prohlížeči (adresa podle /etc/osvc-evidence/osvc.conf). Spouští zástupce v nabídce aplikací.
+# osvc-evidence                        otevře OSVČ evidenci v prohlížeči (adresa podle /etc/osvc-evidence/osvc.conf); spouští zástupce v nabídce aplikací
+# sudo osvc-evidence obnovit-heslo     zapomenuté heslo: dočasné přihlášení osvc / osvc jen na tomto počítači (data se nemění)
+if [ "${1:-}" = obnovit-heslo ]; then
+  shift
+  [ "$(id -u)" = 0 ] || { echo "Spusťte přes sudo: sudo osvc-evidence obnovit-heslo" >&2; exit 2; }
+  cd /opt/osvc-evidence/app || exit 2
+  # jako uživatel služby – soubory databáze zůstanou jeho
+  exec runuser -u osvc-evidence -- /opt/osvc-evidence/venv/bin/python -X utf8 -m osvc_app.spoustec obnovit-heslo --config /etc/osvc-evidence/osvc.conf "$@"
+fi
 PORT=$(sed -n 's/^PORT=//p' /etc/osvc-evidence/osvc.conf 2>/dev/null | head -n1)
 exec xdg-open "http://localhost:${PORT:-8765}/"

@@ -236,7 +236,9 @@ class WindowsZapisSouboru(unittest.TestCase):
             from urllib.parse import urlencode
             r = o.open(url + '/pruvodce', urlencode({'csrf_token': t, 'zamestnani': 'ne', 'pojistovna': '111', 'social_zalohy': 'neplati', 'health_zalohy': 'neplati', 'vydaje': 'actual', 'dane_rezim': 'standard', 'prvni_zahajeni': 'ne', 'ico': '12345678', 'name': 'Žluťoučký kůň', 'street': 'Šťastná', 'number': '1',
                        'city': 'Česká Lípa', 'zip': '47001', 'username': 'test', 'password': 'heslo-12345', 'password2': 'heslo-12345', 'modul_doprava': '1'}).encode(), timeout=30)
-            html2 = r.read().decode(); self.assertEqual(r.status, 200); self.assertIn('Ještě chvilku', html2, 'se zapnutou Dopravou strana 2')
+            html2 = r.read().decode(); self.assertEqual(r.status, 200); self.assertIn('data-zachranny-kod>', html2, 'po průvodci záchranný kód (1.0.3)')
+            self.assertIn('action="/pruvodce/dalsi"', html2)
+            html2 = o.open(url + '/pruvodce/dalsi', timeout=30).read().decode(); self.assertIn('Ještě chvilku', html2, 'se zapnutou Dopravou strana 2')
             t = re.search(r'name="csrf_token"[^>]*value="([^"]+)"', html2).group(1)   # po přihlášení nová session
             r = o.open(url + '/pruvodce/dalsi', urlencode({'csrf_token': t, 'vozidlo_nazev': 'Škoda Fabia', 'vozidlo_rezim': 'actual', 'dalsi': 'hotovo'}).encode(), timeout=30)
             self.assertIn('Přehled', r.read().decode(), 'po průvodci Přehled (ve Windows tu byl pád)')

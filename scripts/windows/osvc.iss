@@ -63,22 +63,26 @@ Type: filesandordirs; Name: "{app}\python"
 ; Smaže se jen složka programu; data jsou v %LOCALAPPDATA%\OSVC evidence a o nich rozhoduje odinstalace (viz [Code]).
 Type: filesandordirs; Name: "{app}\python"
 Type: filesandordirs; Name: "{app}\app"
+Type: files; Name: "{app}\Obnovit heslo.cmd"
 Type: dirifempty; Name: "{app}"
 
 [Files]
 Source: "python\*"; DestDir: "{app}\python"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "osvc.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Obnovit heslo.cmd"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#Nazev}"; Filename: "{app}\python\pythonw.exe"; Parameters: "{#Spust} --otevrit"; WorkingDir: "{app}\app"; IconFilename: "{app}\osvc.ico"; Comment: "Spustí evidenci a otevře ji v prohlížeči"
 Name: "{autoprograms}\Zastavit {#Nazev}"; Filename: "{app}\python\pythonw.exe"; Parameters: "-X utf8 -m osvc_app.spoustec zastav --config ""{#Konf}"""; WorkingDir: "{app}\app"; IconFilename: "{app}\osvc.ico"; Comment: "Ukončí běžící evidenci"
+; zapomenuté heslo (1.0.3): dočasné přihlášení osvc / osvc jen na tomto počítači; nástroj se zeptá a výsledek oznámí v okně
+Name: "{autoprograms}\{#Nazev} – obnovit heslo"; Filename: "{app}\python\pythonw.exe"; Parameters: "-X utf8 -m osvc_app.spoustec obnovit-heslo --config ""{#Konf}"""; WorkingDir: "{app}\app"; IconFilename: "{app}\osvc.ico"; Comment: "Zapomenuté heslo: dočasné přihlášení osvc / osvc na tomto počítači"
 Name: "{autodesktop}\{#Nazev}"; Filename: "{app}\python\pythonw.exe"; Parameters: "{#Spust} --otevrit"; WorkingDir: "{app}\app"; IconFilename: "{app}\osvc.ico"; Tasks: plocha
 Name: "{userstartup}\{#Nazev}"; Filename: "{app}\python\pythonw.exe"; Parameters: "{#Spust}"; WorkingDir: "{app}\app"; IconFilename: "{app}\osvc.ico"; Tasks: autostart
 
 [Run]
 Filename: "{app}\python\pythonw.exe"; Parameters: "{#Spust} --otevrit"; WorkingDir: "{app}\app"; Description: "Spustit {#Nazev}"; Flags: postinstall nowait skipifsilent
-; aktualizace z aplikace (tichá instalace /SPUSTIT=1): po instalaci aplikaci znovu spustit, stránka v prohlížeči se obnoví sama
+; aktualizace z aplikace (skrytá instalace /VERYSILENT /SPUSTIT=1): po instalaci aplikaci znovu spustit, stránka v prohlížeči se obnoví sama
 Filename: "{app}\python\pythonw.exe"; Parameters: "{#Spust}"; WorkingDir: "{app}\app"; Flags: nowait; Check: SpustitPoAktualizaci
 
 [UninstallRun]

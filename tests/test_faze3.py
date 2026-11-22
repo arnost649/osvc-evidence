@@ -87,7 +87,11 @@ class RozdeleniRoutes(unittest.TestCase):
                       ['/settings/sit', 'main.update_sit', ['POST']], ['/settings/sit/adaptery', 'main.sit_adaptery', ['GET']],   # síťový přístup
                       ['/aktualizace/okno', 'main.aktualizace_okno', ['GET']], ['/aktualizace/zkontrolovat', 'main.aktualizace_zkontrolovat', ['POST']],
                       ['/aktualizace/instalovat', 'main.aktualizace_instalovat', ['POST']], ['/aktualizace/prubeh', 'main.aktualizace_prubeh', ['GET']],   # aktualizace
-                      ['/address-book/ares/<ico>', 'main.address_ares', ['GET']]]   # Adresář: doplnit kontakt z ARES
+                      ['/address-book/ares/<ico>', 'main.address_ares', ['GET']],   # Adresář: doplnit kontakt z ARES
+                      ['/settings/backup/progress/<job>', 'backup.progress', ['GET']],   # průběh zálohy a obnovy
+                      ['/login/zapomenute-heslo', 'obnova.zapomenute', ['GET', 'POST']], ['/login/nove-heslo', 'obnova.nove', ['GET', 'POST']],   # 1.0.3: zapomenuté heslo
+                      ['/ucet/zmena-hesla', 'obnova.zmena', ['GET', 'POST']], ['/ucet/zachranny-kod', 'obnova.kod', ['GET']],
+                      ['/settings/account/rescue-code', 'main.new_rescue_code', ['POST']]]
         self.assertEqual([r for r in now if r not in nove_po_3d], before)
 
     def test_moduly_oblasti(self):

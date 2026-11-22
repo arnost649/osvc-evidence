@@ -84,6 +84,9 @@ def create_app(test_config=None):
     from . import pruvodce   # I3: bez účtu (samostatná instalace) vede každá stránka do průvodce prvním spuštěním
     app.before_request(pruvodce.brana)
     app.register_blueprint(pruvodce.bp)
+    from . import obnova   # 1.0.3: zapomenuté heslo (záchranný kód) a vynucená změna po dočasném přihlášení osvc / osvc
+    app.before_request(obnova.vynucena_zmena)
+    app.register_blueprint(obnova.bp)
     from flask_wtf.csrf import CSRFError
     @app.errorhandler(CSRFError)
     def csrf_chyba(exc):

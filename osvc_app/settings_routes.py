@@ -26,8 +26,9 @@ def settings():
  from . import ucet as ucet_modul
  ucet_akt=ucet_modul.aktualni()
  ucet_db=query('SELECT password_changed_at FROM app_accounts WHERE id=%s',(ucet_akt['id'],),one=True) if ucet_akt and ucet_akt.get('id') else None
+ ucet_kod=ucet_akt.get('kod_vytvoren') if ucet_akt and ucet_akt.get('kod_otisk') else None
  sit_info=sit_prehled() if current_app.config.get('OSVC_SAMOSTATNA') else None
- return render_template('settings.html',sit_info=sit_info,ucet_jmeno=ucet_akt['username'] if ucet_akt else '',ucet_zmena=ucet_db['password_changed_at'] if ucet_db else None,moduly=moduly_view,potvrdit_modul=potvrdit,obnova=last_restore_result(),system_types=system_types.entries(),vehicles=vehicles_rows,active_vehicle_count=active_vehicle_count,supplier_count=supplier_count,customer_count=customer_count,**context(year_arg()),**settings_context())
+ return render_template('settings.html',sit_info=sit_info,ucet_jmeno=ucet_akt['username'] if ucet_akt else '',ucet_zmena=ucet_db['password_changed_at'] if ucet_db else None,ucet_kod=ucet_kod,ucet_ma_kod=bool(ucet_akt and ucet_akt.get('kod_otisk')),moduly=moduly_view,potvrdit_modul=potvrdit,obnova=last_restore_result(),system_types=system_types.entries(),vehicles=vehicles_rows,active_vehicle_count=active_vehicle_count,supplier_count=supplier_count,customer_count=customer_count,**context(year_arg()),**settings_context())
 
 @bp.post('/settings/vehicles')
 @login_required
@@ -210,12 +211,26 @@ def update_account():
  """I2: změna přihlašovacího jména a/nebo hesla (vždy s ověřením současného hesla)."""
  from . import ucet
  try:
-  u=ucet.zmen(request.form.get('current_password',''),request.form.get('username',''),request.form.get('new_password',''),request.form.get('new_password2',''))
+  u,kod=ucet.zmen(request.form.get('current_password',''),request.form.get('username',''),request.form.get('new_password',''),request.form.get('new_password2',''))
  except ValueError as exc:
   flash(str(exc),'error'); return redirect(url_for('main.settings',tab='account'))
  session['user']=u['username']; session['auth']=u['auth_version']   # toto přihlášení platí dál
  flash('Přihlašovací údaje jsou uložené.','success')
+ if kod:   # nové heslo = nový záchranný kód (ukáže se jednou)
+  from .obnova import zobraz_kod
+  return zobraz_kod(kod,url_for('main.settings',tab='account'))
  return redirect(url_for('main.settings',tab='account'))
+
+@bp.post('/settings/account/rescue-code')
+@login_required
+def new_rescue_code():
+ """Nový záchranný kód pro obnovu zapomenutého hesla (ověří současné heslo); starý kód přestane platit."""
+ from . import ucet
+ from .obnova import zobraz_kod
+ try: kod=ucet.novy_zachranny_kod(request.form.get('rescue_current_password',''))
+ except ValueError as exc:
+  flash(str(exc),'error'); return redirect(url_for('main.settings',tab='account'))
+ return zobraz_kod(kod,url_for('main.settings',tab='account'))
 
 
 @bp.post('/settings/modules/<klic>')

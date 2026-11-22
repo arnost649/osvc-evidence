@@ -4,6 +4,7 @@
     python -m osvc_app.spoustec spust --config SOUBOR [--data SLOZKA] [--otevrit] [--bez-planovace]
     python -m osvc_app.spoustec zastav --config SOUBOR                                                    ukončí běžící aplikaci
     python -m osvc_app.spoustec zaloha-zip --config SOUBOR --cil SLOZKA                                   ZIP záloha (odinstalace)
+    python -m osvc_app.spoustec obnovit-heslo --config SOUBOR [--ano]                                     zapomenuté heslo (osvc / osvc jen na tomto počítači)
 
 spust: když soubor nastavení chybí a je zadané --data, založí ho (první spuštění, port auto). Když už aplikace na portu běží,
 jen otevře prohlížeč. Jinak připraví data a spustí server (waitress) + plánovač: synchronizace zdrojů příjmů každých 15 minut
@@ -183,7 +184,12 @@ def main(argv=None):
     s.add_argument('--po-restartu', action='store_true', help='nejdřív počkat, až předchozí běh uvolní port (restart z aplikace)')
     z = sub.add_parser('zastav', help='ukončit běžící aplikaci'); z.add_argument('--config', required=True)
     zz = sub.add_parser('zaloha-zip', help='ZIP záloha dat do složky'); zz.add_argument('--config', required=True); zz.add_argument('--cil', required=True)
+    oh = sub.add_parser('obnovit-heslo', help='zapomenuté heslo: dočasné přihlášení osvc / osvc jen na tomto počítači')
+    oh.add_argument('--config', required=True); oh.add_argument('--ano', action='store_true', help='bez otázky')
     a = p.parse_args(argv)
+    if a.prikaz == 'obnovit-heslo':
+        from . import obnova_hesla
+        return obnova_hesla.main(['--config', a.config] + (['--ano'] if a.ano else []))
     from . import instalace
     if a.prikaz == 'init':
         port = volny_port(a.host) if a.port == 'auto' else int(a.port)

@@ -1,0 +1,40 @@
+{
+  "rok": 2027,
+  "id": "cz-zalohy-2027-20261122",
+  "overeno": "2026-11-22",
+  "popis": "Parametry pro novou měsíční zálohu OSVČ placenou v roce 2027 (po podání přehledů za rok 2026). Jen z oficiálních zdrojů: Sbírka zákonů (nařízení vlády, zákony č. 589/1992 Sb. a 592/1992 Sb. ve znění účinném od 1. 1. 2027). ČSSZ ani VZP k datu ověření částky pro rok 2027 na svých stránkách nezveřejnily – minima jsou vypočtena ze zákona a nařízení vlády.",
+  "prumerna_mzda": {
+    "hodnota": "51663",
+    "vypocet": "všeobecný vyměřovací základ za rok 2025 48 900 Kč × přepočítací koeficient 1,0565 = 51 662,85 Kč → 51 663 Kč (zaokrouhleno na celé koruny nahoru, § 3a odst. 2 zákona č. 592/1992 Sb.)",
+    "zdroj": "Nařízení vlády č. 177/2026 Sb., o výši všeobecného vyměřovacího základu za rok 2025, přepočítacího koeficientu pro úpravu všeobecného vyměřovacího základu za rok 2025, redukčních hranic pro stanovení výpočtového základu pro rok 2027 …, § 1 odst. 1 (48 900 Kč) a § 1 odst. 2 (1,0565)",
+    "vydano": "2026-09-21",
+    "vyhlaseno": "2026-09-29",
+    "ucinnost": "2027-01-01",
+    "url": "https://e-sbirka.gov.cz/sb/2026/177"
+  },
+  "social": {
+    "rate": {"hodnota": "0.292", "zdroj": "zákon č. 589/1992 Sb., § 7 odst. 1 písm. e) bod 1 (29,2 %), znění účinné od 1. 1. 2027", "vyhlaseno": "trvalé ustanovení zákona – pro rok 2027 se samostatně nevyhlašuje", "url": "https://www.zakonyprolidi.cz/cs/1992-589/zneni-20270101"},
+    "base_ratio": {"hodnota": "0.55", "zdroj": "zákon č. 589/1992 Sb., § 14 odst. 2 (55 % průměru daňového základu na kalendářní měsíc výkonu SVČ), znění účinné od 1. 1. 2027", "vyhlaseno": "trvalé ustanovení zákona – pro rok 2027 se samostatně nevyhlašuje", "url": "https://www.zakonyprolidi.cz/cs/1992-589/zneni-20270101"},
+    "main_min_ratio": {"hodnota": "0.35", "zdroj": "zákon č. 589/1992 Sb., § 14 odst. 5 věta první (35 % průměrné mzdy) ve znění zákona č. 90/2026 Sb. (ze dne 26. 5. 2026, účinnost 1. 7. 2026)", "vyhlaseno": "2026-06-10", "url": "https://www.zakonyprolidi.cz/cs/2026-90"},
+    "new_main_min_ratio": {"hodnota": "0.25", "zdroj": "zákon č. 589/1992 Sb., § 14 odst. 5 (25 % průměrné mzdy v roce zahájení a ve 2 následujících letech, nebyla-li OSVČ v předchozích 20 letech), znění účinné od 1. 1. 2027", "vyhlaseno": "trvalé ustanovení zákona – pro rok 2027 se samostatně nevyhlašuje", "url": "https://www.zakonyprolidi.cz/cs/1992-589/zneni-20270101"},
+    "secondary_min_ratio": {"hodnota": "0.11", "zdroj": "zákon č. 589/1992 Sb., § 14 odst. 5 (vedlejší SVČ pro účely záloh 11 % průměrné mzdy), znění účinné od 1. 1. 2027", "vyhlaseno": "trvalé ustanovení zákona – pro rok 2027 se samostatně nevyhlašuje", "url": "https://www.zakonyprolidi.cz/cs/1992-589/zneni-20270101"},
+    "rounding": {"zdroj": "zákon č. 589/1992 Sb., § 14 odst. 13 (měsíční vyměřovací základ nahoru na celé koruny) a § 7 odst. 3 (pojistné nahoru na celé koruny)"},
+    "since": {"zdroj": "zákon č. 589/1992 Sb., § 14 odst. 6 – nová záloha se platí od měsíce následujícího po podání přehledu"},
+    "main_min_month": "18083",
+    "new_main_min_month": "12916",
+    "secondary_min_month": "5683",
+    "main_min_advance": "5281",
+    "new_main_min_advance": "3772",
+    "secondary_min_advance": "1660",
+    "max_base": {"hodnota": "2479824", "zdroj": "zákon č. 589/1992 Sb., § 15a odst. 5 (48násobek průměrné mzdy)"}
+  },
+  "health": {
+    "rate": {"hodnota": "0.135", "zdroj": "zákon č. 592/1992 Sb., § 2 odst. 1 (13,5 %)", "vyhlaseno": "trvalé ustanovení zákona – pro rok 2027 se samostatně nevyhlašuje (zakonyprolidi.cz k 22. 11. 2026 neuvádí změnu od 1. 1. 2027)", "url": "https://www.zakonyprolidi.cz/cs/1992-592"},
+    "base_ratio": {"hodnota": "0.5", "zdroj": "zákon č. 592/1992 Sb., § 3a odst. 1 (vyměřovací základ OSVČ 50 % daňového základu)", "vyhlaseno": "trvalé ustanovení zákona – pro rok 2027 se samostatně nevyhlašuje", "url": "https://www.zakonyprolidi.cz/cs/1992-592"},
+    "min_ratio": {"hodnota": "0.5", "zdroj": "zákon č. 592/1992 Sb., § 3a odst. 2 (minimum 50 % průměrné mzdy měsíčně)", "vyhlaseno": "trvalé ustanovení zákona – pro rok 2027 se samostatně nevyhlašuje", "url": "https://www.zakonyprolidi.cz/cs/1992-592"},
+    "rounding": {"zdroj": "zákon č. 592/1992 Sb., § 2 odst. 2 (pojistné a zálohy nahoru na celé koruny)"},
+    "since": {"zdroj": "zákon č. 592/1992 Sb., § 8 odst. 2 – nová záloha se platí poprvé za měsíc, v němž byl nebo měl být podán přehled"},
+    "min_month": "25831.50",
+    "min_advance": "3488"
+  }
+}

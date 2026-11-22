@@ -42,3 +42,8 @@ test_aktualizace_okno.py
 test_rok_v_zahlavi.py
 test_vydaj_formular.py
 test_adresar_formular.py
+test_zaloha_prubeh.py
+test_obnova_hesla.py
+test_rocni_podklad.py
+test_zalohy_2027.py
+test_urady.py

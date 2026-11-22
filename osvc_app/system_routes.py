@@ -13,6 +13,12 @@ def login():
  form=LoginForm()
  if form.validate_on_submit():
   u=ucet.overit(form.username.data,form.password.data)   # účet v aplikaci (I2), před převzetím z nastavení serveru
+  if u and u.get('docasne'):   # dočasné přihlášení z nástroje Obnovit heslo: jen z tohoto počítače, pak vynucená změna
+   from .obnova import je_mistni
+   if not je_mistni():
+    current_app.logger.warning('přihlášení: dočasné přihlášení odmítnuto mimo tento počítač (%s)',request.remote_addr)
+    flash('Dočasné přihlášení funguje jen přímo na počítači, kde aplikace běží.','error')
+    return render_template('login.html',form=form),403
   if u:
    session.clear()
    session['user']=u['username']

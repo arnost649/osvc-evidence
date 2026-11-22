@@ -2,6 +2,7 @@
 e-mail, telefon a poznámka se nezobrazují ani nemažou. ARES je nahrazený mockem. Běží jen přes tests/spust.sh."""
 import os
 import re
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 from osvc_app import create_app
@@ -27,12 +28,24 @@ class AdresarFormular(unittest.TestCase):
     def row(self, name): return db.query("SELECT * FROM counterparties WHERE name=%s AND deleted_at IS NULL", (name,), one=True)
 
     def test_stranka_bez_kontaktnich_poli(self):
+        self.post('/address-book', {'name': 'Test Pořadí Polí', 'roles': ['supplier'], 'city': 'Brno'})
         html = self.k.get('/address-book').get_data(as_text=True)
         for pole in ('name="email"', 'name="phone"', 'name="note"', 'telefonu nebo e-mailu'): self.assertNotIn(pole, html)
-        self.assertIn('data-ares-fill', html); self.assertIn('class="role-chip"', html); self.assertIn('data-address-new', html)
-        form = re.search(r'<form class="address-edit-form[^"]*"[^>]*data-new-contact.*?</form>', html, re.S).group(0)
+        self.assertIn('data-ares-fill', html); self.assertIn('class="role-chip"', html)
+        self.assertNotIn('data-address-new', html, '1.0.3: kontakt se v adresáři nepřidává (vzniká při zápisu dokladu)')
+        self.assertNotIn('<th>DIČ</th>', html, 'DIČ a Ověřeno jen v úpravě kontaktu'); self.assertNotIn('<th>Ověřeno</th>', html)
+        self.assertNotIn(' title="', html.split('<main', 1)[1], 'bez systémových bublin – popis jen pro čtečky (aria-label)')
+        for label in ('aria-label="Ověřit v ARES"', 'aria-label="Upravit"', 'aria-label="Doplnit z ARES"'): self.assertIn(label, html, label)
+        form = re.search(r'<form class="address-edit-form[^"]*"[^>]*data-address-form.*?</form>', html, re.S).group(0)
         poradi = re.findall(r'name="(roles|name|ico|dic|street|city|postal_code|country_code)"', form)
         self.assertEqual([p for i, p in enumerate(poradi) if p not in poradi[:i]], ['roles', 'name', 'ico', 'dic', 'street', 'city', 'postal_code', 'country_code'])
+        for text in ('<th>Název</th><th>IČO</th><th>Adresa</th><th>Role</th><th class="akce-sloupec">Akce</th>', 'name="typ"', 'type="search" name="q"', 'data-edit-toggle', 'data-address-count'):
+            self.assertIn(text, html, text)
+        import osvc_app
+        static = Path(osvc_app.__file__).resolve().parent / 'static'
+        css, js = (static / 'ux.css').read_text(encoding='utf-8'), (static / 'ui.js').read_text(encoding='utf-8')
+        self.assertIn("section.address-list-section:has(> .list-heading [data-edit-toggle]:not(:checked)) td.akce-sloupec :is(a,button){filter:grayscale(1)", css, 'Akce bez Upravit šedé jako v ostatních seznamech')
+        self.assertIn("section.classList.contains('address-list-section')", js, 'ui.js dá akcím inert')
 
     def test_rucni_kontakt_a_role(self):
         r = self.post('/address-book', {'name': 'Test Ruční Osoba', 'roles': ['customer'], 'street': 'Polní 5', 'city': 'Brno', 'postal_code': '60200'})

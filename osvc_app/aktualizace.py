@@ -136,7 +136,7 @@ def okno():
 _PRUBEH = {'faze': 'nic'}
 _ZAMEK = threading.Lock()
 MAX_VELIKOST = 300 * 1024 * 1024
-TEXTY = {'stahuji': 'Stahuji…', 'overuji': 'Ověřuji…', 'spoustim': 'Spouštím instalaci, aplikace se na chvíli zavře.'}
+TEXTY = {'stahuji': 'Stahuji…', 'overuji': 'Ověřuji…', 'spoustim': 'Instaluji novou verzi – aplikace se na chvíli zavře a sama znovu spustí.'}
 
 
 def prubeh():
@@ -150,9 +150,10 @@ def _nastav(**hodnoty):
 
 
 def _instalator_spust(exe):
-    """Tichá instalace přes starou verzi; instalátor aplikaci ukončí a po instalaci ji znovu spustí (/SPUSTIT=1)."""
+    """Skrytá instalace přes starou verzi (/VERYSILENT – okno instalátoru se neukáže, průběh je jen v aplikaci); instalátor
+    aplikaci ukončí a po instalaci ji znovu spustí (/SPUSTIT=1)."""
     import subprocess
-    subprocess.Popen([str(exe), '/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SPUSTIT=1'], close_fds=True,
+    subprocess.Popen([str(exe), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SPUSTIT=1'], close_fds=True,
                      stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                      creationflags=0x00000008 | 0x00000200 if os.name == 'nt' else 0)
 

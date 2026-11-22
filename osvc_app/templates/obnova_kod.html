@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% block content %}<section class="login obnova obnova-kod-stranka">
+<h1>Záchranný kód</h1>
+<p class="settings-help">Když zapomenete heslo, tímto kódem si nastavíte nové (Přihlášení → <em>Zapomněl jsem heslo</em>). Kód se ukazuje <strong>jen teď</strong>, aplikace si ukládá jen jeho otisk. Případný starší kód už neplatí.</p>
+<div class="obnova-kod-karta" data-zachranny-kod-karta>
+  <p class="obnova-kod-popis">OSVČ evidence – záchranný kód pro obnovu hesla</p>
+  <p class="obnova-kod" data-zachranny-kod>{{ kod }}</p>
+  <p class="obnova-kod-popis">Vytvořen {{ vytvoren|cz_datetime }} · uložte ho mimo počítač, např. vytištěný k dokladům.</p>
+</div>
+<div class="obnova-kod-akce">
+  <button type="button" class="secondary" data-kod-tisk>Vytisknout</button>
+  <button type="button" class="secondary" data-kod-stahnout>Stáhnout jako .txt</button>
+</div>
+<form method="get" action="{{ dal_cesta }}" class="obnova-kod-hotovo" data-kod-hotovo data-dal="{{ dal_cesta }}{% if dal_parametry %}?{{ dal_parametry|urlencode }}{% endif %}">
+  {% for k, v in dal_parametry %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+  <label class="checkbox-row"><input type="checkbox" required data-kod-ulozen> Kód jsem si uložil</label>
+  <button type="submit" data-ceka-na-vyplneni>Pokračovat</button>
+</form>
+</section>
+<script src="{{ url_for('static', filename='obnova-kod.js') }}"></script>{% endblock %}

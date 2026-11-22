@@ -18,7 +18,8 @@ Pro OSVČ – neplátce DPH. Data zůstávají jen u vás, rozhraní je česky.
 ## Co umí
 - **Příjmy a výdaje** s doklady a přílohami, daňové posouzení výdajů, rychlé akce na Přehledu.
 - **Jízdy a PHM** (modul Doprava): náhrady podle vyhláškových sazeb, tankování, vozidla a jejich daňový režim.
-- **Roční přehled a Profil OSVČ:** vyměřovací základy, pojistné, zálohy a doplatky; stav podkladů zeleně / k doplnění.
+- **Roční přehled a Profil OSVČ:** podklady k opsání do přiznání a přehledů (PDF na 1 stranu), pojistné, zálohy a doplatky;
+  příslušný finanční úřad, OSSZ a pojišťovna s datovou schránkou, formuláři a termíny podání.
 - **Adresář** dodavatelů a odběratelů s doplněním z ARES.
 - **Externí web** (volitelný modul): stahování zaplacených objednávek z e-shopu WooCommerce.
 - **Zálohy:** denní automatická záloha a ruční ZIP záloha všech dat s kontrolou při obnově.
@@ -68,6 +69,15 @@ používat. Na druhé straně případně vozidlo a zdroj příjmů. Všechno jd
 
 <img alt="Zálohy" src="obrazky/zalohy.png#gh-light-mode-only"><img alt="Zálohy" src="obrazky/zalohy-tmavy.png#gh-dark-mode-only">
 
+## Zapomenuté heslo
+- **Záchranný kód:** při nastavení nebo změně hesla aplikace jednou ukáže záchranný kód (např. `K7QF-M2XD-9RTB`).
+  Vytiskněte si ho nebo stáhněte jako .txt a uložte mimo počítač. Nový kód si můžete kdykoli vytvořit v Nastavení → Účet / Přihlášení.
+  Na přihlašovací stránce klikněte na **Zapomněl jsem heslo**, zadejte kód a nastavte si nové jméno a heslo.
+- **Bez kódu, přímo na počítači s aplikací:** Windows – nabídka Start → **OSVČ evidence – obnovit heslo**;
+  Linux – `sudo osvc-evidence obnovit-heslo`. Pak se **na tomto počítači** přihlaste jako `osvc` / `osvc`
+  (přes síť to nejde) a aplikace hned vyžádá nové jméno a heslo.
+- Data, doklady ani nastavení se při obnově nemění. Po obnově se odhlásí všechna zařízení.
+
 ## Aktualizace
 Nová verze se instaluje **přes starou** (stejný instalátor / balíček) – data zůstanou. Před úpravou struktury databáze
 aplikace sama uloží snímek a při chybě data vrátí. Jednou denně se aplikace podívá na GitHub, zda nevyšla nová verze,
@@ -85,7 +95,7 @@ na Linuxu aplikace firewall nemění.
   i data, předtím je uloží do `/var/backups/osvc-evidence`.
 
 ## Bezpečnost a soukromí
-Data jsou jen na vašem počítači. Aplikace se připojuje ven jen do veřejného rejstříku ARES (na vyžádání), jednou denně
+Data jsou jen na vašem počítači. Aplikace se připojuje ven jen do veřejného rejstříku ARES (na vyžádání; adresu z Profilu OSVČ jednou kvůli určení příslušných úřadů v Ročním přehledu), jednou denně
 na GitHub kvůli nové verzi (vypnutelné) a k vašemu e-shopu, pokud zapnete modul Externí web.
 Bezpečnostní chyby hlaste podle [SECURITY.md](SECURITY.md).
 

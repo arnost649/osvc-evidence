@@ -6,7 +6,8 @@
 Výsledek ve VYSTUP/windows-VERZE/:
     python/      oficiální vložitelný Python pro Windows (python.org, ověřený SHA-256) + knihovny v Lib/site-packages
     app/         kód aplikace (osvc_app, sql/sqlite)
-    osvc.ico, osvc.iss (skript instalátoru Inno Setup), Spustit OSVC evidence.cmd (přenosné spuštění bez instalace)
+    osvc.ico, osvc.iss (skript instalátoru Inno Setup), Spustit OSVC evidence.cmd (přenosné spuštění bez instalace),
+    Obnovit heslo.cmd (zapomenuté heslo)
 a VYSTUP/osvc-evidence-VERZE-windows-prenosna.zip (totéž zabalené). Instalátor .exe: ISCC /DVerze=VERZE osvc.iss (Inno Setup 6, Windows).
 """
 import argparse
@@ -33,6 +34,11 @@ SPUSTIT_CMD = ('@echo off\r\n'
                'rem OSVC evidence - prenosne spusteni bez instalace (data jsou ve stejne slozce jako u instalace)\r\n'
                'start "" "%~dp0python\\pythonw.exe" -X utf8 -m osvc_app.spoustec spust --config "%LOCALAPPDATA%\\OSVC evidence\\osvc.conf" '
                '--data "%LOCALAPPDATA%\\OSVC evidence\\data" --otevrit\r\n')
+# 1.0.3: zapomenuté heslo – dočasné přihlášení osvc / osvc jen na tomto počítači (zeptá se a výsledek oznámí v okně)
+OBNOVIT_CMD = ('@echo off\r\n'
+               'rem OSVC evidence - obnovit zapomenute heslo (docasne prihlaseni osvc / osvc jen na tomto pocitaci, data se nemeni)\r\n'
+               'cd /d "%~dp0app"\r\n'
+               'start "" "%~dp0python\\pythonw.exe" -X utf8 -m osvc_app.spoustec obnovit-heslo --config "%LOCALAPPDATA%\\OSVC evidence\\osvc.conf"\r\n')
 
 
 def sha256(cesta):
@@ -116,6 +122,7 @@ def main(argv=None):
     shutil.copy(TADY / 'soukromi.txt', cil / 'soukromi.txt')
     (cil / 'osvc.iss').write_text(iss, encoding='utf-8-sig')   # Inno Setup potřebuje UTF-8 s BOM kvůli diakritice
     (cil / 'Spustit OSVC evidence.cmd').write_bytes(SPUSTIT_CMD.encode('ascii'))
+    (cil / 'Obnovit heslo.cmd').write_bytes(OBNOVIT_CMD.encode('ascii'))
     balik = vystup / f'osvc-evidence-{a.verze}-windows-prenosna.zip'
     zabal(cil, balik)
     print(f'hotovo: {cil}\n        {balik} ({balik.stat().st_size // 1_000_000} MB, SHA-256 {sha256(balik)})')

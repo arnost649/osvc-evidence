@@ -128,7 +128,7 @@ class InstalaceWindows(Zaklad):
             self.assertTrue(aktualizace.aktualizuj(self.app, otevri=g, spust=spusteno.append, cekat=0))
             self.assertFalse(aktualizace.aktualizuj(self.app, otevri=g, spust=spusteno.append, cekat=0), 'podruhé během stahování ne')
             p = self.cekej({'spoustim', 'chyba'})
-        self.assertEqual(p['faze'], 'spoustim'); self.assertEqual(p['text'], 'Spouštím instalaci, aplikace se na chvíli zavře.')
+        self.assertEqual(p['faze'], 'spoustim'); self.assertEqual(p['text'], 'Instaluji novou verzi – aplikace se na chvíli zavře a sama znovu spustí.')
         time.sleep(0.2)
         self.assertEqual(len(spusteno), 1); self.assertEqual(spusteno[0].read_bytes(), INSTALATOR); self.assertTrue(spusteno[0].name.endswith('9.9.9.exe'))
         self.assertFalse(list(spusteno[0].parent.glob('*.part')))
@@ -153,7 +153,7 @@ class InstalaceWindows(Zaklad):
 
     def test_instalator_spousti_tichou_instalaci_a_znovu_aplikaci(self):
         with mock.patch('subprocess.Popen') as popen: aktualizace._instalator_spust(Path('C:/x/osvc.exe'))
-        self.assertEqual(popen.call_args.args[0][1:], ['/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SPUSTIT=1'])
+        self.assertEqual(popen.call_args.args[0][1:], ['/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SPUSTIT=1'])
         iss = (Path.cwd() / 'scripts' / 'windows' / 'osvc.iss').read_text(encoding='utf-8-sig')
         self.assertIn("ExpandConstant('{param:SPUSTIT|0}') = '1'", iss); self.assertIn('Check: SpustitPoAktualizaci', iss)
 

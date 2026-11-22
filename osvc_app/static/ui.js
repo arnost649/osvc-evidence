@@ -539,6 +539,7 @@ document.addEventListener('DOMContentLoaded', function () {
           document.getElementById(verificationTrigger.dataset.idInput).value = data.supplier.id;
         } else {
           var id = verificationTrigger.dataset.supplierId;
+          if (verificationTrigger.closest('[data-kontakt]')) { closeVerification(); location.reload(); return; }   // Adresář (tabulka): řádek ukáže nové údaje i datum ověření
           var row = verificationTrigger.closest('.address-row');
           var nameNode = row && row.querySelector('.address-main strong');
           var ico = row && row.querySelector('.address-main small');
@@ -613,7 +614,7 @@ window.addEventListener('pageshow', function () { document.querySelectorAll('[da
 (function () {
   function sync(toggle) {
     var section = toggle.closest('section');
-    if (!section || !(section.querySelector('.list-heading .list-sum') || section.classList.contains('address-section'))) return;
+    if (!section || !(section.querySelector('.list-heading .list-sum') || section.classList.contains('address-section') || section.classList.contains('address-list-section'))) return;
     section.querySelectorAll('td.akce-sloupec, .address-actions.akce-sloupec').forEach(function (cell) {
       if (!toggle.checked) cell.querySelectorAll('details[open]').forEach(function (d) { d.open = false; });
       cell.inert = !toggle.checked;
@@ -629,7 +630,7 @@ window.addEventListener('pageshow', function () { document.querySelectorAll('[da
 /* Tlačítka Uložit (všude): šedá, dokud ve formuláři nejsou vyplněné všechny povinné a platné údaje. Kliknout jde dál –
    prohlížeč pak ukáže, co chybí. Platnost se čte z validity polí (bez checkValidity, aby nevznikaly události „invalid“). */
 (function () {
-  var buttons = [].slice.call(document.querySelectorAll('button.save-button'));
+  var buttons = [].slice.call(document.querySelectorAll('button.save-button, button[data-ceka-na-vyplneni]'));   // i textová tlačítka obnovy hesla (1.0.3)
   if (!buttons.length) return;
   function complete(form) {
     for (var i = 0; i < form.elements.length; i++) {
@@ -653,4 +654,55 @@ window.addEventListener('pageshow', function () { document.querySelectorAll('[da
   ['input', 'change', 'reset', 'combobox:choose'].forEach(function (t) { document.addEventListener(t, later, true); });
   window.addEventListener('load', later); window.addEventListener('pageshow', later);
   setTimeout(later, 300);
+})();
+
+/* Pole s heslem (1.0.3): vpravo ikonka oka – zobrazit / skrýt heslo. Tlačítko je dosažitelné tabulátorem, ovládá se Enter
+   i mezerníkem, čtečka slyší „Zobrazit heslo“ / „Skrýt heslo“ a stav (aria-pressed). Před odesláním formuláře se pole vrátí
+   na type=password, aby správce hesel heslo poznal a nabídl jeho uložení. */
+(function () {
+  var SVG = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+  var OKO = SVG + '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var PRESKRTNUTE = SVG + '<path d="M17.9 17.9A10.4 10.4 0 0 1 12 19c-6.4 0-10-7-10-7a18.6 18.6 0 0 1 4.1-5.1"/><path d="M9.9 5.2A9.6 9.6 0 0 1 12 5c6.4 0 10 7 10 7a18.7 18.7 0 0 1-2.2 3.2"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M2 2l20 20"/></svg>';
+  var cislo = 0;
+  function pridej(input) {
+    if (input.dataset.heslo) return;
+    input.dataset.heslo = '1';
+    if (!input.id) input.id = 'heslo-pole-' + (++cislo);
+    var obal = document.createElement('span'); obal.className = 'heslo-pole';
+    input.parentNode.insertBefore(obal, input); obal.appendChild(input);
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'heslo-oko';
+    b.setAttribute('aria-controls', input.id);
+    function nastav(viditelne) {
+      input.type = viditelne ? 'text' : 'password';
+      b.setAttribute('aria-pressed', viditelne ? 'true' : 'false');
+      b.setAttribute('aria-label', viditelne ? 'Skrýt heslo' : 'Zobrazit heslo');
+      b.title = viditelne ? 'Skrýt heslo' : 'Zobrazit heslo';
+      b.innerHTML = viditelne ? PRESKRTNUTE : OKO;
+    }
+    nastav(false);
+    b.addEventListener('click', function () { nastav(input.type === 'password'); });
+    input._skryjHeslo = function () { nastav(false); };
+    obal.appendChild(b);
+  }
+  function vse() { document.querySelectorAll('input[type=password]').forEach(pridej); }
+  vse();
+  document.addEventListener('submit', function (e) {
+    if (e.target && e.target.querySelectorAll) e.target.querySelectorAll('input[data-heslo]').forEach(function (i) { if (i._skryjHeslo) i._skryjHeslo(); });
+  }, true);
+  window.addEventListener('pageshow', function () {   // Zpět z jiné stránky: heslo zase skryté
+    document.querySelectorAll('input[data-heslo]').forEach(function (i) { if (i._skryjHeslo) i._skryjHeslo(); });
+  });
+})();
+
+/* Trvalý pobyt jinde než adresa podnikání (Profil OSVČ, průvodce, 1.0.3): zaškrtnutí ukáže pole adresy a zapne jejich kontrolu. */
+(function () {
+  document.querySelectorAll('[data-pobyt-jinde]').forEach(function (volba) {
+    var blok = volba.closest('form') && volba.closest('form').querySelector('[data-pobyt-adresa]'); if (!blok) return;
+    function sync() {
+      blok.hidden = !volba.checked;
+      blok.querySelectorAll('input').forEach(function (i) { i.disabled = !volba.checked; });
+      if (volba.checked) { var prvni = blok.querySelector('input'); if (prvni && document.activeElement === volba) prvni.focus(); }
+    }
+    volba.addEventListener('change', sync); sync();
+  });
 })();

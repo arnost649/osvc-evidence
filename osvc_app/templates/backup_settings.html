@@ -24,13 +24,16 @@
 <ul class="backup-chips" aria-label="Obsah zálohy">{% for name,label in [('archive','Databáze'),('file','Doklady'),('clip','Přílohy'),('settings','Nastavení'),('settings','Motiv vzhledu')] %}<li>{{ icon(name) }}{{ label }}</li>{% endfor %}</ul>
 <p class="settings-help">Přihlašovací údaje se nezálohují.</p>
 <form method="post" action="{{ url_for('backup.export') }}" data-backup-export><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">{{ icon('download') }}<span>Vytvořit zálohu</span></button></form>
+<div class="backup-progress" data-backup-progress hidden><div class="backup-progress-head"><span data-progress-step>…</span><span data-progress-pct>0 %</span></div><progress max="100" value="0" aria-label="Průběh"></progress></div>
 <dl class="backup-stats backup-export-meta" data-backup-export-meta hidden></dl>
 <p class="backup-status" data-backup-status role="status" hidden></p>
+<div class="backup-export-comparison" data-backup-export-comparison hidden></div>
 </article>
 <article class="backup-card" aria-labelledby="backup-restore-title">
 <div class="settings-card-head"><div class="settings-icon">{{ icon('restore') }}</div><div><h3 id="backup-restore-title">Obnova ze zálohy</h3><p class="settings-help">Nahrajte ZIP zálohu a ověřte její obsah před obnovením dat.</p></div></div>
 <form class="backup-upload" method="post" enctype="multipart/form-data" action="{{ url_for('backup.validate') }}" data-backup-validate><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="backup-file">Vybrat ZIP<input id="backup-file" type="file" name="backup" accept=".zip" required aria-describedby="backup-file-help"></label><small id="backup-file-help" class="settings-help">Po ověření uvidíte obsah zálohy. Data se zatím nezmění.</small><button class="secondary" type="submit">{{ icon('verify') }}<span>Ověřit zálohu</span></button></form>
 {% include '_backup_notice.html' %}
+<div class="backup-progress" data-backup-progress hidden><div class="backup-progress-head"><span data-progress-step>…</span><span data-progress-pct>0 %</span></div><progress max="100" value="0" aria-label="Průběh"></progress></div>
 <div data-backup-result aria-live="polite"><div class="backup-idle">{{ icon('file') }}<p>Vyberte zálohu. Zde se zobrazí její datum, počty záznamů a dokumentů.</p></div></div>
 <p class="backup-status" data-backup-status role="status" hidden></p>
 </article>

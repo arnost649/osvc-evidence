@@ -1,0 +1,65 @@
+{
+  "rok": 2026,
+  "overeno": "2026-11-22",
+  "popis": "Formuláře a termíny ročních podání OSVČ za rok 2026 (podávají se v roce 2027). Jen oficiální zdroje. Formulář, který ještě nevyšel, má stav „zatím nevydáno“. Termíny jsou spočtené ze zákona; oficiální kalendáře na rok 2027 k datu ověření ještě nevyšly.",
+  "tax": {
+    "formular": {
+      "nazev": "Přiznání k dani z příjmů fyzických osob za zdaňovací období 2026 (tiskopis 25 5405) s Přílohou č. 1",
+      "stav": "zatím nevydáno",
+      "poznamka": "Finanční správa k 22. 11. 2026 nabízí vzor č. 30 – za zdaňovací období 2025.",
+      "zdroj": "Finanční správa – Daňové tiskopisy",
+      "url": "https://financnisprava.gov.cz/cs/dane/danove-tiskopisy",
+      "epodani": [
+        {"nazev": "Online finanční úřad (MOJE daně)", "url": "https://mojedane.gov.cz/pmd/"},
+        {"nazev": "Elektronická podání (EPO)", "url": "https://adisspr.mfcr.cz/pmd/epo"}
+      ],
+      "overeno": "2026-11-22"
+    },
+    "terminy": [
+      {"popis": "Podání na papíře nebo bez prodloužení", "datum": "2027-04-01", "zdroj": "daňový řád (zákon č. 280/2009 Sb.), § 136 odst. 1"},
+      {"popis": "Podání výhradně elektronicky", "datum": "2027-05-03", "zdroj": "daňový řád (zákon č. 280/2009 Sb.), § 136 odst. 2 písm. a) (4 měsíce) a § 33 odst. 4 (1. 5. 2027 je sobota a svátek)"},
+      {"popis": "Přiznání podává daňový poradce", "datum": "2027-07-01", "zdroj": "daňový řád (zákon č. 280/2009 Sb.), § 136 odst. 2 (6 měsíců)"}
+    ],
+    "doplatek": {"popis": "Daň je splatná v poslední den lhůty pro podání přiznání (podle způsobu podání výše)", "zdroj": "daňový řád (zákon č. 280/2009 Sb.), § 135 odst. 3"},
+    "stav_terminu": "podle zákona – daňový kalendář Finanční správy na rok 2027 zatím nevydán"
+  },
+  "social": {
+    "formular": {
+      "nazev": "Přehled o příjmech a výdajích OSVČ a dalších údajích za rok 2026",
+      "stav": "zatím nevydáno",
+      "poznamka": "ČSSZ k 22. 11. 2026 uvádí tiskopis za rok 2025.",
+      "zdroj": "ČSSZ – Přehled o příjmech a výdajích",
+      "url": "https://www.cssz.gov.cz/prehled-o-prijmech-a-vydajich",
+      "epodani": [
+        {"nazev": "ePortál ČSSZ – e-Podání přehledu", "url": "https://www.cssz.gov.cz/e-podani-prehledu-o-prijmech-a-vydajich-osvc"}
+      ],
+      "overeno": "2026-11-22"
+    },
+    "terminy": [
+      {"popis": "Daňové přiznání podáno do 1. 4. 2027", "datum": "2027-05-03", "zdroj": "zákon č. 589/1992 Sb., § 15 odst. 1 (do 1 měsíce po lhůtě pro přiznání; 1. 5. 2027 je sobota a svátek)"},
+      {"popis": "Přiznání podáno elektronicky po 1. 4. 2027", "datum": "2027-06-03", "zdroj": "zákon č. 589/1992 Sb., § 15 odst. 1"},
+      {"popis": "Přiznání podává daňový poradce po 1. 4. 2027", "datum": "2027-08-02", "zdroj": "zákon č. 589/1992 Sb., § 15 odst. 1 (1. 8. 2027 je neděle)"}
+    ],
+    "doplatek": {"popis": "Do 8 dnů po podání přehledu (při podání v poslední den: 11. 5. / 11. 6. / 10. 8. 2027)", "zdroj": "zákon č. 589/1992 Sb., § 14a odst. 3"},
+    "stav_terminu": "podle zákona – termíny ČSSZ za rok 2026 zatím nezveřejněny (za rok 2025 stejný postup: 4. 5. / 4. 6. / 3. 8. 2026)"
+  },
+  "health": {
+    "formular": {
+      "nazev": "Přehled o výši daňového základu OSVČ za rok 2026",
+      "stav": "zatím nevydáno",
+      "poznamka": "VZP k 22. 11. 2026 nabízí formulář za rok 2025; u ostatních pojišťoven neověřeno.",
+      "zdroj": "VZP ČR – Přehled o výši daňového základu OSVČ",
+      "url": "https://www.vzp.cz/platci/formulare/prehled-o-vysi-danoveho-zakladu-osvc",
+      "url_pojistovna": {"111": "https://www.vzp.cz/platci/formulare/prehled-o-vysi-danoveho-zakladu-osvc"},
+      "overeno": "2026-11-22"
+    },
+    "terminy": [
+      {"popis": "Daňové přiznání podáno do 1. 4. 2027", "datum": "2027-05-03", "zdroj": "zákon č. 592/1992 Sb., § 24 odst. 2 (do 1 měsíce po lhůtě pro přiznání)"},
+      {"popis": "Přiznání podáno elektronicky po 1. 4. 2027", "datum": "2027-06-03", "zdroj": "zákon č. 592/1992 Sb., § 24 odst. 2"},
+      {"popis": "Přiznání podává daňový poradce po 1. 4. 2027", "datum": "2027-08-02", "zdroj": "zákon č. 592/1992 Sb., § 24 odst. 2"},
+      {"popis": "Kdo daňové přiznání nepodává", "datum": "2027-04-08", "zdroj": "zákon č. 592/1992 Sb., § 24 odst. 2"}
+    ],
+    "doplatek": {"popis": "Do 8 dnů po podání přehledu (při podání v poslední den: 11. 5. / 11. 6. / 10. 8. 2027)", "zdroj": "zákon č. 592/1992 Sb., § 8 odst. 5"},
+    "stav_terminu": "podle zákona – termíny pojišťoven za rok 2026 zatím nezveřejněny"
+  }
+}

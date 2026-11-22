@@ -5,7 +5,7 @@
  const LOCKED=['name','dic','street','city','postal_code','country_code'];
  const today=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear();};
  document.querySelectorAll('[data-address-form]').forEach(form=>{
-  const row=form.closest('.address-row'),station=form.classList.contains('is-station');
+  const row=form.closest('[data-kontakt]'),station=form.classList.contains('is-station');
   const state=form.querySelector('[data-ares-state]'),ico=form.querySelector('[data-ares-ico]'),fill=form.querySelector('[data-ares-fill]');
   const status=form.querySelector('[data-ares-status]'),message=form.querySelector('[data-ares-message]');
   const roles=[...form.querySelectorAll('input[name=roles][type=checkbox]')];
@@ -49,16 +49,16 @@
   ico.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();load();}});
   ico.addEventListener('input',()=>{syncFill();if(verifiedIco&&digits()!==verifiedIco){verifiedIco='';state.value='';lock(false);showStatus('');say('IČO se změnilo – načtěte údaje z ARES, nebo je vyplňte ručně.');}});
   roles.forEach(r=>r.addEventListener('change',rolesValidity));
-  form.querySelector('.address-edit-cancel').addEventListener('click',()=>{form.reset();initial();if(row){row.classList.remove('is-editing');if(row.hasAttribute('data-address-new-row'))row.hidden=true;}const back=row&&row.querySelector('[data-address-edit]');if(back)back.focus();});
+  form.querySelector('.address-edit-cancel').addEventListener('click',()=>{form.reset();initial();if(row){row.classList.remove('is-editing');}const back=row&&row.querySelector('[data-address-edit]');if(back)back.focus();});
   initial();
  });
  document.querySelectorAll('[data-address-edit]').forEach(button=>button.addEventListener('click',()=>{
-  const row=button.closest('.address-row');row.classList.add('is-editing');const first=row.querySelector('[data-address-form] input:not([type=hidden]):not([readonly])');if(first)first.focus();
+  const row=button.closest('[data-kontakt]');row.classList.add('is-editing');const first=row.querySelector('[data-address-form] input:not([type=hidden]):not([readonly])');if(first)first.focus();
  }));
  document.querySelectorAll('[data-address-new]').forEach(button=>button.addEventListener('click',()=>{
   const section=button.closest('section'),row=section.querySelector('[data-address-new-row]');if(!row)return;
   row.hidden=false;row.scrollIntoView({block:'nearest'});const first=row.querySelector('input:not([type=hidden]):not([type=checkbox])');if(first)first.focus();
  }));
  // Přepínač Upravit vypnutý → otevřené úpravy se zavřou (nový kontakt zůstane).
- document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-edit-toggle]')&&!e.target.checked){e.target.closest('section').querySelectorAll('.address-row.is-editing:not([data-address-new-row])').forEach(r=>{const c=r.querySelector('.address-edit-cancel');if(c)c.click();});}});
+ document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-edit-toggle]')&&!e.target.checked){e.target.closest('section').querySelectorAll('[data-kontakt].is-editing').forEach(r=>{const c=r.querySelector('.address-edit-cancel');if(c)c.click();});}});
 })();

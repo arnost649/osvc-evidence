@@ -6,6 +6,8 @@
     python scripts/ci/zkouska_instalace.py overit    --url … --otisk otisk.json    po aktualizaci: přihlášení, data stejná, průvodce se neukáže
     python scripts/ci/zkouska_instalace.py port      --config osvc.conf             vypíše adresu z nastavení
     python scripts/ci/zkouska_instalace.py sit       --url … --rezim domaci|lokalni  síťový přístup z Nastavení; počká na restart
+    python scripts/ci/zkouska_instalace.py obnova    --url …                        po nástroji Obnovit heslo: osvc / osvc → vynucená změna
+                                                                                     → záchranný kód → Zapomněl jsem heslo; na konci zase JMENO / HESLO
 """
 import argparse
 import http.cookiejar
@@ -38,6 +40,15 @@ class Klient:
         if 'Přehled' not in html: raise SystemExit(f'CHYBA: přihlášení se nepovedlo ({adresa})')
 
 
+def kod_ze_stranky(adresa, html):
+    """Stránka záchranného kódu (1.0.3): (kód, kam pokračovat). Jinde (None, adresa)."""
+    if not adresa.split('?')[0].endswith('/ucet/zachranny-kod'): return None, adresa
+    kod = re.search(r'data-zachranny-kod>([A-Z0-9-]+)<', html).group(1)
+    form = re.search(r'<form method="get" action="([^"]+)"[^>]*data-kod-hotovo>(.*?)</form>', html, re.S)
+    parametry = re.findall(r'type="hidden" name="([^"]+)" value="([^"]*)"', form.group(2))
+    return kod, form.group(1) + ('?' + urllib.parse.urlencode(parametry) if parametry else '')
+
+
 def cekej(url, limit=90):
     konec = time.time() + limit
     while time.time() < konec:
@@ -65,6 +76,8 @@ def pripravit(url, soubor):
                                             'username': JMENO, 'password': HESLO, 'password2': HESLO, 'podnikani_od': f'{rok}-01-01', 'podnikani_konec': 'ne',
                                             'prvni_zahajeni': 'ne', 'zamestnani': 'ne', 'pojistovna': '111', 'social_zalohy': 'neplati', 'health_zalohy': 'neplati',
                                             'vydaje': 'actual', 'dane_rezim': 'standard', 'potvrzeni': 'ano', 'modul_doprava': '1'})
+        kod, dal = kod_ze_stranky(adresa, html)   # od 1.0.3 nejdřív záchranný kód
+        if kod: print('průvodce: záchranný kód ukázán'); adresa, html = k.get(dal.replace(k.url, ''))
         if adresa.endswith('/pruvodce/dalsi'): k.post('/pruvodce/dalsi', {'vozidlo_nazev': 'Zkušební auto', 'vozidlo_rezim': 'actual', 'dalsi': 'hotovo'})
     else:
         k.prihlas()
@@ -80,6 +93,28 @@ def overit(url, soubor):
     k.prihlas(); o = otisk(k); puvodni = json.load(open(soubor, encoding='utf-8'))
     if o != puvodni: raise SystemExit(f'CHYBA: data po aktualizaci nesedí: {o} × {puvodni}')
     print('data po aktualizaci sedí', o)
+
+
+def obnova(url):
+    """Po nástroji Obnovit heslo (CI ho spustí s --ano): dočasné přihlášení osvc / osvc z tohoto počítače → jen stránka změny
+    → nové jméno a heslo → záchranný kód → Zapomněl jsem heslo s tímto kódem → zase JMENO / HESLO (pro další kroky zkoušky)."""
+    k = Klient(url)
+    adresa, html = k.post('/login', {'username': JMENO, 'password': HESLO})
+    if 'Přehled' in html: raise SystemExit('CHYBA: po obnovení hesla platí staré heslo')
+    adresa, html = k.post('/login', {'username': 'osvc', 'password': 'osvc'})
+    if not adresa.endswith('/ucet/zmena-hesla'): raise SystemExit(f'CHYBA: dočasné přihlášení nevede na změnu hesla ({adresa})')
+    if not k.get('/settings')[0].endswith('/ucet/zmena-hesla'): raise SystemExit('CHYBA: před změnou hesla se otevřela jiná stránka')
+    adresa, html = k.post('/ucet/zmena-hesla', {'username': 'obnova-zkouska', 'password': 'obnova-heslo-1', 'password2': 'obnova-heslo-1'})
+    kod, _ = kod_ze_stranky(adresa, html)
+    if not kod: raise SystemExit(f'CHYBA: po vynucené změně se neukázal záchranný kód ({adresa})')
+    k2 = Klient(url)
+    adresa, html = k2.post('/login/zapomenute-heslo', {'kod': kod.lower().replace('-', ' ')})
+    if not adresa.endswith('/login/nove-heslo'): raise SystemExit(f'CHYBA: záchranný kód nepřijat ({adresa})')
+    adresa, html = k2.post('/login/nove-heslo', {'username': JMENO, 'password': HESLO, 'password2': HESLO})
+    if not kod_ze_stranky(adresa, html)[0]: raise SystemExit(f'CHYBA: po obnově kódem se neukázal nový záchranný kód ({adresa})')
+    if not k.get('/settings')[0].endswith('/login'): raise SystemExit('CHYBA: po obnově zůstalo přihlášené jiné zařízení')
+    Klient(url).prihlas()
+    print('obnova hesla: dočasné přihlášení, vynucená změna, záchranný kód i Zapomněl jsem heslo v pořádku')
 
 
 def sit(url, rezim):
@@ -100,7 +135,7 @@ def sit(url, rezim):
 
 
 def main(argv=None):
-    a = argparse.ArgumentParser(); a.add_argument('prikaz', choices=('cekej', 'pripravit', 'overit', 'port', 'sit')); a.add_argument('--rezim', choices=('domaci', 'lokalni'))
+    a = argparse.ArgumentParser(); a.add_argument('prikaz', choices=('cekej', 'pripravit', 'overit', 'port', 'sit', 'obnova')); a.add_argument('--rezim', choices=('domaci', 'lokalni'))
     a.add_argument('--url'); a.add_argument('--otisk', default='otisk.json'); a.add_argument('--config')
     a = a.parse_args(argv)
     if a.prikaz == 'port':
@@ -109,6 +144,7 @@ def main(argv=None):
     if a.prikaz == 'pripravit': pripravit(a.url, a.otisk)
     elif a.prikaz == 'overit': overit(a.url, a.otisk)
     elif a.prikaz == 'sit': sit(a.url, a.rezim)
+    elif a.prikaz == 'obnova': obnova(a.url)
     return 0
 
 

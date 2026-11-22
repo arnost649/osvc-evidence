@@ -43,8 +43,8 @@ class LocalAuthTests(unittest.TestCase):
         token = self.token()
         checked = []
         for rule in self.app.url_map.iter_rules():
-            if rule.endpoint in ('static', 'main.login') or rule.endpoint.startswith('pruvodce.'):
-                continue   # průvodce prvním spuštěním (I3) je jen pro instalaci bez účtu – s účtem nic nedělá (tests/test_i3_pruvodce.py)
+            if rule.endpoint in ('static', 'main.login', 'obnova.zapomenute', 'obnova.nove') or rule.endpoint.startswith('pruvodce.'):
+                continue   # zapomenuté heslo (1.0.3) je před přihlášením záměrně (tests/test_obnova_hesla.py); průvodce prvním spuštěním (I3) je jen pro instalaci bez účtu – s účtem nic nedělá (tests/test_i3_pruvodce.py)
             view = self.app.view_functions[rule.endpoint]
             self.assertTrue(hasattr(view, '__wrapped__'), rule.rule)
             path = re.sub(r'<(?:[^:>]+:)?([^>]+)>', '1', rule.rule)

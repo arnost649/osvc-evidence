@@ -1,0 +1,623 @@
+{
+ "popis": "Adresář úřadů pro roční podání OSVČ. Jen z oficiálních zdrojů; ke každé části zdroj a datum ověření. Příslušnost: FÚ podle kraje místa pobytu, OSSZ podle okresu trvalého pobytu, zdravotní pojišťovna podle Profilu OSVČ.",
+ "overeno": "2026-11-22",
+ "financni_urady": {
+  "zdroj": "Finanční správa – Seznam ID kódů orgánů finanční správy ČR (stav k 1. 7. 2023), příloha Identifikacni_kody_FR_a_FU.pdf",
+  "url": "https://financnisprava.gov.cz/cs/dane/dane-elektronicky/datove-schranky/seznam-id-kodu-organu-financni-spravy-cr",
+  "overeno": "2026-11-22",
+  "prislusnost": "daňový řád (zákon č. 280/2009 Sb.), § 13 odst. 1 písm. a) – fyzická osoba podle místa pobytu; finanční úřad pro kraj",
+  "web": "https://financnisprava.gov.cz/cs/kontakty",
+  "urady": {
+   "Hlavní město Praha": {
+    "nazev": "Finanční úřad pro hlavní město Prahu",
+    "adresa": "Štěpánská 619/28, Praha 1, 112 33",
+    "id_ds": "7nyn2d9"
+   },
+   "Středočeský kraj": {
+    "nazev": "Finanční úřad pro Středočeský kraj",
+    "adresa": "Na Pankráci 1685/17, 19, Praha 4, 140 21",
+    "id_ds": "6sxny3p"
+   },
+   "Jihočeský kraj": {
+    "nazev": "Finanční úřad pro Jihočeský kraj",
+    "adresa": "Mánesova 1803/3a, České Budějovice, 371 87",
+    "id_ds": "scdnz6b"
+   },
+   "Plzeňský kraj": {
+    "nazev": "Finanční úřad pro Plzeňský kraj",
+    "adresa": "Hálkova 14, Plzeň 3, 305 72",
+    "id_ds": "gf9n2e3"
+   },
+   "Karlovarský kraj": {
+    "nazev": "Finanční úřad pro Karlovarský kraj",
+    "adresa": "Krymská 2a, Karlovy Vary, 360 01",
+    "id_ds": "q9in2ev"
+   },
+   "Ústecký kraj": {
+    "nazev": "Finanční úřad pro Ústecký kraj",
+    "adresa": "Velká hradební 39/61, Ústí nad Labem-město, 400 21",
+    "id_ds": "qjfn2bj"
+   },
+   "Liberecký kraj": {
+    "nazev": "Finanční úřad pro Liberecký kraj",
+    "adresa": "1. máje 97, Liberec, 460 02",
+    "id_ds": "zcqn2bf"
+   },
+   "Královéhradecký kraj": {
+    "nazev": "Finanční úřad pro Královéhradecký kraj",
+    "adresa": "Horova 17, Hradec Králové, 500 02",
+    "id_ds": "fj8ny4i"
+   },
+   "Pardubický kraj": {
+    "nazev": "Finanční úřad pro Pardubický kraj",
+    "adresa": "Boženy Němcové 2625, Pardubice I, 530 02",
+    "id_ds": "95zn2bb"
+   },
+   "Kraj Vysočina": {
+    "nazev": "Finanční úřad pro Kraj Vysočina",
+    "adresa": "Tolstého 2, Jihlava, 586 01",
+    "id_ds": "tqjn2cy"
+   },
+   "Jihomoravský kraj": {
+    "nazev": "Finanční úřad pro Jihomoravský kraj",
+    "adresa": "náměstí Svobody 4, Brno-střed, 602 00",
+    "id_ds": "qdhny4c"
+   },
+   "Olomoucký kraj": {
+    "nazev": "Finanční úřad pro Olomoucký kraj",
+    "adresa": "Lazecká 545/22, Olomouc, 779 00",
+    "id_ds": "25nnz67"
+   },
+   "Moravskoslezský kraj": {
+    "nazev": "Finanční úřad pro Moravskoslezský kraj",
+    "adresa": "Na Jízdárně 3162/3, Moravská Ostrava a Přívoz, 709 00",
+    "id_ds": "4hun2cu"
+   },
+   "Zlínský kraj": {
+    "nazev": "Finanční úřad pro Zlínský kraj",
+    "adresa": "třída Tomáše Bati 21, Zlín, 761 86",
+    "id_ds": "n69nz5y"
+   }
+  }
+ },
+ "ossz": {
+  "zdroj": "ČSSZ – Kontakty, stránky jednotlivých OSSZ (ID datové schránky); začlenění OSSZ Praha-východ a Praha-západ pod PSSZ a sloučení OSSZ Plzeň od 1. 7. 2024 (ČSSZ, 27. 6. 2024)",
+  "url": "https://www.cssz.gov.cz/web/cz/kontakty",
+  "overeno": "2026-11-22",
+  "prislusnost": "OSSZ podle okresu trvalého pobytu OSVČ (Praha: Pražská správa sociálního zabezpečení, Brno-město: MSSZ Brno)",
+  "okresy": {
+   "cesky-krumlov": "jihocesky-kraj_cesky-krumlov",
+   "jindrichuv-hradec": "jihocesky-kraj_jindrichuv-hradec",
+   "prachatice": "jihocesky-kraj_prachatice",
+   "strakonice": "jihocesky-kraj_strakonice",
+   "tabor": "jihocesky-kraj_tabor",
+   "blansko": "jihomoravsky-kraj_blansko",
+   "breclav": "jihomoravsky-kraj_breclav",
+   "brno-venkov": "jihomoravsky-kraj_brno-venkov",
+   "hodonin": "jihomoravsky-kraj_hodonin",
+   "vyskov": "jihomoravsky-kraj_vyskov",
+   "znojmo": "jihomoravsky-kraj_znojmo",
+   "cheb": "karlovarsky-kraj_cheb",
+   "karlovy-vary": "karlovarsky-kraj_karlovy-vary",
+   "sokolov": "karlovarsky-kraj_sokolov",
+   "jihlava": "kraj-vysocina_jihlava",
+   "pelhrimov": "kraj-vysocina_pelhrimov",
+   "zdar-nad-sazavou": "kraj-vysocina_zdar-nad-sazavou",
+   "hradec-kralove": "kralovehradecky-kraj_hradec-kralove",
+   "jicin": "kralovehradecky-kraj_jicin",
+   "nachod": "kralovehradecky-kraj_nachod",
+   "rychnov-nad-kneznou": "kralovehradecky-kraj_rychnov-nad-kneznou",
+   "trutnov": "kralovehradecky-kraj_trutnov",
+   "ceska-lipa": "liberecky-kraj_ceska-lipa",
+   "jablonec-nad-nisou": "liberecky-kraj_jablonec-nad-nisou",
+   "liberec": "liberecky-kraj_liberec",
+   "semily": "liberecky-kraj_semily",
+   "bruntal": "moravskoslezsky-kraj_bruntal",
+   "frydek-mistek": "moravskoslezsky-kraj_frydek-mistek",
+   "karvina": "moravskoslezsky-kraj_karvina",
+   "novy-jicin": "moravskoslezsky-kraj_novy-jicin",
+   "opava": "moravskoslezsky-kraj_opava",
+   "prerov": "olomoucky-kraj_prerov",
+   "prostejov": "olomoucky-kraj_prostejov",
+   "sumperk": "olomoucky-kraj_sumperk",
+   "chrudim": "pardubicky-kraj_chrudim",
+   "pardubice": "pardubicky-kraj_pardubice",
+   "svitavy": "pardubicky-kraj_svitavy",
+   "usti-nad-orlici": "pardubicky-kraj_usti-nad-orlici",
+   "domazlice": "plzensky-kraj_domazlice",
+   "rokycany": "plzensky-kraj_rokycany",
+   "tachov": "plzensky-kraj_tachov",
+   "praha": "praha",
+   "benesov": "stredocesky-kraj_benesov",
+   "beroun": "stredocesky-kraj_beroun",
+   "kladno": "stredocesky-kraj_kladno",
+   "kolin": "stredocesky-kraj_kolin",
+   "kutna-hora": "stredocesky-kraj_kutna-hora",
+   "melnik": "stredocesky-kraj_melnik",
+   "mlada-boleslav": "stredocesky-kraj_mlada-boleslav",
+   "nymburk": "stredocesky-kraj_nymburk",
+   "pribram": "stredocesky-kraj_pribram",
+   "rakovnik": "stredocesky-kraj_rakovnik",
+   "decin": "ustecky-kraj_decin",
+   "litomerice": "ustecky-kraj_litomerice",
+   "louny": "ustecky-kraj_louny",
+   "most": "ustecky-kraj_most",
+   "teplice": "ustecky-kraj_teplice",
+   "usti-nad-labem": "ustecky-kraj_usti-nad-labem",
+   "kromeriz": "zlinsky-kraj_kromeriz",
+   "uherske-hradiste": "zlinsky-kraj_uherske-hradiste",
+   "vsetin": "zlinsky-kraj_vsetin",
+   "ceske-budejovice": "jihocesky-kraj_ceske-budejovice",
+   "pisek": "jihocesky-kraj_pisek",
+   "havlickuv-brod": "kraj-vysocina_havlickuv-brod",
+   "trebic": "kraj-vysocina_trebic",
+   "jesenik": "olomoucky-kraj_jesenik",
+   "olomouc": "olomoucky-kraj_olomouc",
+   "klatovy": "plzensky-kraj_klatovy",
+   "chomutov": "ustecky-kraj_chomutov",
+   "zlin": "zlinsky-kraj_zlin",
+   "brno-mesto": "jihomoravsky-kraj_brno",
+   "ostrava-mesto": "moravskoslezsky-kraj_ostrava",
+   "plzen-mesto": "plzensky-kraj_plzen-mesto",
+   "plzen-jih": "plzensky-kraj_plzen-mesto",
+   "plzen-sever": "plzensky-kraj_plzen-mesto",
+   "praha-vychod": "praha",
+   "praha-zapad": "praha",
+   "hlavni-mesto-praha": "praha"
+  },
+  "spravy": {
+   "jihocesky-kraj_cesky-krumlov": {
+    "nazev": "Okresní správa sociálního zabezpečení Český Krumlov",
+    "adresa": "Plešivec 268, 381 01 Český Krumlov",
+    "id_ds": "cqfaczn",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihocesky-kraj/cesky-krumlov"
+   },
+   "jihocesky-kraj_jindrichuv-hradec": {
+    "nazev": "Okresní správa sociálního zabezpečení Jindřichův Hradec",
+    "adresa": "Sládkova 332, 377 01 Jindřichův Hradec",
+    "id_ds": "mhqaczi",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihocesky-kraj/jindrichuv-hradec"
+   },
+   "jihocesky-kraj_prachatice": {
+    "nazev": "Okresní správa sociálního zabezpečení Prachatice",
+    "adresa": "Nádražní 1121, 383 01 Prachatice",
+    "id_ds": "64aacz8",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihocesky-kraj/prachatice"
+   },
+   "jihocesky-kraj_strakonice": {
+    "nazev": "Okresní správa sociálního zabezpečení Strakonice",
+    "adresa": "Na Ohradě 498, 386 01 Strakonice",
+    "id_ds": "fvjac22",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihocesky-kraj/strakonice"
+   },
+   "jihocesky-kraj_tabor": {
+    "nazev": "Okresní správa sociálního zabezpečení Tábor",
+    "adresa": "Bílkova 2924, 390 02 Tábor",
+    "id_ds": "qnuac2x",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihocesky-kraj/tabor"
+   },
+   "jihomoravsky-kraj_blansko": {
+    "nazev": "Okresní správa sociálního zabezpečení Blansko",
+    "adresa": "Seifertova 5, 678 01 Blansko",
+    "id_ds": "ydaadab",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihomoravsky-kraj/blansko"
+   },
+   "jihomoravsky-kraj_breclav": {
+    "nazev": "Okresní správa sociálního zabezpečení Břeclav",
+    "adresa": "Husova 2994/1a, 690 02 Břeclav",
+    "id_ds": "sq5adbw",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihomoravsky-kraj/breclav"
+   },
+   "jihomoravsky-kraj_brno-venkov": {
+    "nazev": "Okresní správa sociálního zabezpečení Brno-venkov",
+    "adresa": "Kounicova 14, 602 00 Brno",
+    "id_ds": "hxuadbz",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihomoravsky-kraj/brno-venkov"
+   },
+   "jihomoravsky-kraj_brno": {
+    "nazev": "Městská správa sociálního zabezpečení Brno",
+    "adresa": "Veveří 5, 660 20 Brno",
+    "id_ds": "86jada7",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihomoravsky-kraj/brno"
+   },
+   "jihomoravsky-kraj_hodonin": {
+    "nazev": "Okresní správa sociálního zabezpečení Hodonín",
+    "adresa": "Národní třída 3200/38, 695 01 Hodonín",
+    "id_ds": "cbpadci",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihomoravsky-kraj/hodonin"
+   },
+   "jihomoravsky-kraj_vyskov": {
+    "nazev": "Okresní správa sociálního zabezpečení Vyškov",
+    "adresa": "Dvořákova 119/36, 682 01 Vyškov",
+    "id_ds": "9unaddh",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihomoravsky-kraj/vyskov"
+   },
+   "jihomoravsky-kraj_znojmo": {
+    "nazev": "Okresní správa sociálního zabezpečení Znojmo",
+    "adresa": "Vídeňská třída 701/31, 669 02 Znojmo",
+    "id_ds": "te8ade8",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihomoravsky-kraj/znojmo"
+   },
+   "karlovarsky-kraj_cheb": {
+    "nazev": "Okresní správa sociálního zabezpečení Cheb",
+    "adresa": "Obrněné brigády 30, 350 01 Cheb",
+    "id_ds": "99eac2m",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/karlovarsky-kraj/cheb"
+   },
+   "karlovarsky-kraj_karlovy-vary": {
+    "nazev": "Okresní správa sociálního zabezpečení Karlovy Vary",
+    "adresa": "Krymská 2A, 360 01 Karlovy Vary",
+    "id_ds": "i2pac3f",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/karlovarsky-kraj/karlovy-vary"
+   },
+   "karlovarsky-kraj_sokolov": {
+    "nazev": "Okresní správa sociálního zabezpečení Sokolov",
+    "adresa": "Nádražní 381, 356 01 Sokolov",
+    "id_ds": "wy4ac4q",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/karlovarsky-kraj/sokolov"
+   },
+   "kraj-vysocina_jihlava": {
+    "nazev": "Okresní správa sociálního zabezpečení Jihlava",
+    "adresa": "Brtnická 25, 586 01 Jihlava",
+    "id_ds": "k4yadce",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kraj-vysocina/jihlava"
+   },
+   "kraj-vysocina_pelhrimov": {
+    "nazev": "Okresní správa sociálního zabezpečení Pelhřimov",
+    "adresa": "Pražská 2462, 393 01 Pelhřimov",
+    "id_ds": "6piadc5",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kraj-vysocina/pelhrimov"
+   },
+   "kraj-vysocina_zdar-nad-sazavou": {
+    "nazev": "Okresní správa sociálního zabezpečení Žďár nad Sázavou",
+    "adresa": "Husova 7, 591 01 Žďár nad Sázavou",
+    "id_ds": "38hade2",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kraj-vysocina/zdar-nad-sazavou"
+   },
+   "kralovehradecky-kraj_hradec-kralove": {
+    "nazev": "Okresní správa sociálního zabezpečení Hradec Králové",
+    "adresa": "Slezská 839, 502 00 Hradec Králové",
+    "id_ds": "g9rac8p",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kralovehradecky-kraj/hradec-kralove"
+   },
+   "kralovehradecky-kraj_jicin": {
+    "nazev": "Okresní správa sociálního zabezpečení Jičín",
+    "adresa": "Riegrova 1143, 506 11 Jičín",
+    "id_ds": "2ubac8d",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kralovehradecky-kraj/jicin"
+   },
+   "kralovehradecky-kraj_nachod": {
+    "nazev": "Okresní správa sociálního zabezpečení Náchod",
+    "adresa": "Karlovo náměstí 2054, 547 01 Náchod",
+    "id_ds": "bmkac98",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kralovehradecky-kraj/nachod"
+   },
+   "kralovehradecky-kraj_rychnov-nad-kneznou": {
+    "nazev": "Okresní správa sociálního zabezpečení Rychnov nad Kněžnou",
+    "adresa": "Štemberkova 1433, 516 01 Rychnov nad Kněžnou",
+    "id_ds": "u76ac9y",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kralovehradecky-kraj/rychnov-nad-kneznou"
+   },
+   "kralovehradecky-kraj_trutnov": {
+    "nazev": "Okresní správa sociálního zabezpečení Trutnov",
+    "adresa": "Faltisova 998, 541 01 Trutnov",
+    "id_ds": "esqadak",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kralovehradecky-kraj/trutnov"
+   },
+   "liberecky-kraj_ceska-lipa": {
+    "nazev": "Okresní správa sociálního zabezpečení Česká Lípa",
+    "adresa": "Bezručova 3015, 470 30 Česká Lípa",
+    "id_ds": "gjnac5d",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/liberecky-kraj/ceska-lipa"
+   },
+   "liberecky-kraj_jablonec-nad-nisou": {
+    "nazev": "Okresní správa sociálního zabezpečení Jablonec nad Nisou",
+    "adresa": "U Zeleného stromu 838/3, 466 97 Jablonec nad Nisou",
+    "id_ds": "axhac6v",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/liberecky-kraj/jablonec-nad-nisou"
+   },
+   "liberecky-kraj_liberec": {
+    "nazev": "Okresní správa sociálního zabezpečení Liberec",
+    "adresa": "Frýdlantská 1399/20, 460 01 Liberec 1",
+    "id_ds": "jqsac6s",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/liberecky-kraj/liberec"
+   },
+   "liberecky-kraj_semily": {
+    "nazev": "Okresní správa sociálního zabezpečení Semily",
+    "adresa": "Bořkovská 571, 513 01 Semily",
+    "id_ds": "nvwac76",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/liberecky-kraj/semily"
+   },
+   "moravskoslezsky-kraj_bruntal": {
+    "nazev": "Okresní správa sociálního zabezpečení Bruntál",
+    "adresa": "Rýmařovská 779/6, 792 01 Bruntál",
+    "id_ds": "czsadfu",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/moravskoslezsky-kraj/bruntal"
+   },
+   "moravskoslezsky-kraj_frydek-mistek": {
+    "nazev": "Okresní správa sociálního zabezpečení Frýdek-Místek",
+    "adresa": "Palackého 115, 738 01 Frýdek-Místek",
+    "id_ds": "ms3adfq",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/moravskoslezsky-kraj/frydek-mistek"
+   },
+   "moravskoslezsky-kraj_karvina": {
+    "nazev": "Okresní správa sociálního zabezpečení Karviná",
+    "adresa": "Nám. Budovatelů 1333/31, 735 06 Karviná",
+    "id_ds": "7dmadff",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/moravskoslezsky-kraj/karvina"
+   },
+   "moravskoslezsky-kraj_novy-jicin": {
+    "nazev": "Okresní správa sociálního zabezpečení Nový Jičín",
+    "adresa": "Svatopluka Čecha 1697/15, 741 01 Nový Jičín",
+    "id_ds": "f6wadg9",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/moravskoslezsky-kraj/novy-jicin"
+   },
+   "moravskoslezsky-kraj_opava": {
+    "nazev": "Okresní správa sociálního zabezpečení Opava",
+    "adresa": "Krnovská 2975/75, 746 98 Opava",
+    "id_ds": "zrgadgy",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/moravskoslezsky-kraj/opava"
+   },
+   "olomoucky-kraj_prerov": {
+    "nazev": "Okresní správa sociálního zabezpečení Přerov",
+    "adresa": "Bayerova 732/1, 750 11 Přerov 2",
+    "id_ds": "t5badhg",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/olomoucky-kraj/prerov"
+   },
+   "olomoucky-kraj_prostejov": {
+    "nazev": "Okresní správa sociálního zabezpečení Prostějov",
+    "adresa": "Plumlovská 458/36, 797 30 Prostějov",
+    "id_ds": "jb2adhn",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/olomoucky-kraj/prostejov"
+   },
+   "olomoucky-kraj_sumperk": {
+    "nazev": "Okresní správa sociálního zabezpečení Šumperk",
+    "adresa": "ul. 17. listopadu 19, 787 01 Šumperk",
+    "id_ds": "4wkadhc",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/olomoucky-kraj/sumperk"
+   },
+   "pardubicky-kraj_chrudim": {
+    "nazev": "Okresní správa sociálního zabezpečení Chrudim",
+    "adresa": "V Hliníkách 1172, 537 55 Chrudim",
+    "id_ds": "r22ac8j",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/pardubicky-kraj/chrudim"
+   },
+   "pardubicky-kraj_pardubice": {
+    "nazev": "Okresní správa sociálního zabezpečení Pardubice",
+    "adresa": "U Stadionu 2729, 530 02 Pardubice",
+    "id_ds": "kevac94",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/pardubicky-kraj/pardubice"
+   },
+   "pardubicky-kraj_svitavy": {
+    "nazev": "Okresní správa sociálního zabezpečení Svitavy",
+    "adresa": "Erbenova 205/1, 568 02 Svitavy",
+    "id_ds": "5zfac9s",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/pardubicky-kraj/svitavy"
+   },
+   "pardubicky-kraj_usti-nad-orlici": {
+    "nazev": "Okresní správa sociálního zabezpečení Ústí nad Orlicí",
+    "adresa": "Smetanova 43, 562 01 Ústí nad Orlicí",
+    "id_ds": "pjzadah",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/pardubicky-kraj/usti-nad-orlici"
+   },
+   "plzensky-kraj_domazlice": {
+    "nazev": "Okresní správa sociálního zabezpečení Domažlice",
+    "adresa": "Msgre. B. Staška 265, 344 01 Domažlice",
+    "id_ds": "zf5ac2t",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/plzensky-kraj/domazlice"
+   },
+   "plzensky-kraj_plzen-mesto": {
+    "nazev": "Okresní správa sociálního zabezpečení Plzeň",
+    "adresa": "Americká 28-30, 301 00 Plzeň",
+    "id_ds": "4k9ac38",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/plzensky-kraj/plzen-mesto"
+   },
+   "plzensky-kraj_rokycany": {
+    "nazev": "Okresní správa sociálního zabezpečení Rokycany",
+    "adresa": "Josefa Tomáška 100, 337 01 Rokycany",
+    "id_ds": "m7tac4u",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/plzensky-kraj/rokycany"
+   },
+   "plzensky-kraj_tachov": {
+    "nazev": "Okresní správa sociálního zabezpečení Tachov",
+    "adresa": "Sadová 1694, 347 01 Tachov",
+    "id_ds": "7sdac4i",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/plzensky-kraj/tachov"
+   },
+   "praha": {
+    "nazev": "Pražská správa sociálního zabezpečení",
+    "adresa": "Trojská 1997/13a, 182 00 Praha 8",
+    "id_ds": "hnhacvt",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/praha"
+   },
+   "stredocesky-kraj_benesov": {
+    "nazev": "Okresní správa sociálního zabezpečení Benešov",
+    "adresa": "Nádražní 2120, 256 01 Benešov",
+    "id_ds": "sfsacvp",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/benesov"
+   },
+   "stredocesky-kraj_beroun": {
+    "nazev": "Okresní správa sociálního zabezpečení Beroun",
+    "adresa": "Okružní 511, 266 40 Beroun 2",
+    "id_ds": "283acvj",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/beroun"
+   },
+   "stredocesky-kraj_kladno": {
+    "nazev": "Okresní správa sociálního zabezpečení Kladno",
+    "adresa": "Fibichova 2819, 272 67 Kladno",
+    "id_ds": "b2cacwb",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/kladno"
+   },
+   "stredocesky-kraj_kolin": {
+    "nazev": "Okresní správa sociálního zabezpečení Kolín",
+    "adresa": "Obecní dvůr 6, 280 50 Kolín III",
+    "id_ds": "ktmacw7",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/kolin"
+   },
+   "stredocesky-kraj_kutna-hora": {
+    "nazev": "Okresní správa sociálního zabezpečení Kutná Hora",
+    "adresa": "Lorecká 667, 284 01 Kutná Hora",
+    "id_ds": "vkwacw4",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/kutna-hora"
+   },
+   "stredocesky-kraj_melnik": {
+    "nazev": "Okresní správa sociálního zabezpečení Mělník",
+    "adresa": "Tyršova 106, 276 01 Mělník",
+    "id_ds": "6d7acwy",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/melnik"
+   },
+   "stredocesky-kraj_mlada-boleslav": {
+    "nazev": "Okresní správa sociálního zabezpečení Mladá Boleslav",
+    "adresa": "Jaselská 292/IV, 293 01 Mladá Boleslav",
+    "id_ds": "e7gacxq",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/mlada-boleslav"
+   },
+   "stredocesky-kraj_nymburk": {
+    "nazev": "Okresní správa sociálního zabezpečení Nymburk",
+    "adresa": "U Prádelny 384, 288 02 Nymburk",
+    "id_ds": "pyracxk",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/nymburk"
+   },
+   "stredocesky-kraj_pribram": {
+    "nazev": "Okresní správa sociálního zabezpečení Příbram",
+    "adresa": "Hailova 133, 261 80 Příbram I",
+    "id_ds": "ickacy5",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/pribram"
+   },
+   "stredocesky-kraj_rakovnik": {
+    "nazev": "Okresní správa sociálního zabezpečení Rakovník",
+    "adresa": "Dukelských hrdinů 2595, 269 01 Rakovník",
+    "id_ds": "s5vacyz",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/stredocesky-kraj/rakovnik"
+   },
+   "ustecky-kraj_decin": {
+    "nazev": "Okresní správa sociálního zabezpečení Děčín",
+    "adresa": "U Plovárny 1190/14, 405 02 Děčín",
+    "id_ds": "rcxac59",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/ustecky-kraj/decin"
+   },
+   "ustecky-kraj_litomerice": {
+    "nazev": "Okresní správa sociálního zabezpečení Litoměřice",
+    "adresa": "Seifertova 2063/3, 412 01 Litoměřice",
+    "id_ds": "uh3ac6n",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/ustecky-kraj/litomerice"
+   },
+   "ustecky-kraj_louny": {
+    "nazev": "Okresní správa sociálního zabezpečení Louny",
+    "adresa": "Pod Nemocnicí 2378, 440 01 Louny",
+    "id_ds": "5bcac6g",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/ustecky-kraj/louny"
+   },
+   "ustecky-kraj_most": {
+    "nazev": "Okresní správa sociálního zabezpečení Most",
+    "adresa": "tř. Budovatelů 1987, 434 01 Most",
+    "id_ds": "d4mac7a",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/ustecky-kraj/most"
+   },
+   "ustecky-kraj_teplice": {
+    "nazev": "Okresní správa sociálního zabezpečení Teplice",
+    "adresa": "Přítkovská 1576, 415 02 Teplice",
+    "id_ds": "xn7ac73",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/ustecky-kraj/teplice"
+   },
+   "ustecky-kraj_usti-nad-labem": {
+    "nazev": "Okresní správa sociálního zabezpečení Ústí nad Labem",
+    "adresa": "Revoluční 3289/15, 400 01 Ústí nad Labem",
+    "id_ds": "8ggac7v",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/ustecky-kraj/usti-nad-labem"
+   },
+   "zlinsky-kraj_kromeriz": {
+    "nazev": "Okresní správa sociálního zabezpečení Kroměříž",
+    "adresa": "Generála Svobody 1190/2, 767 01 Kroměříž",
+    "id_ds": "vv9adca",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/zlinsky-kraj/kromeriz"
+   },
+   "zlinsky-kraj_uherske-hradiste": {
+    "nazev": "Okresní správa sociálního zabezpečení Uherské Hradiště",
+    "adresa": "Stojanova 484, 686 01 Uherské Hradiště",
+    "id_ds": "p94addt",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/zlinsky-kraj/uherske-hradiste"
+   },
+   "zlinsky-kraj_vsetin": {
+    "nazev": "Okresní správa sociálního zabezpečení Vsetín",
+    "adresa": "Mostecká 303, 755 01 Vsetín",
+    "id_ds": "y3daddm",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/zlinsky-kraj/vsetin"
+   },
+   "jihocesky-kraj_ceske-budejovice": {
+    "nazev": "Okresní správa sociálního zabezpečení České Budějovice",
+    "adresa": "A. Barcala 1461, 370 05 České Budějovice",
+    "id_ds": "3w6acyv",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihocesky-kraj/ceske-budejovice"
+   },
+   "jihocesky-kraj_pisek": {
+    "nazev": "Okresní správa sociálního zabezpečení Písek",
+    "adresa": "Husovo nám. 2078, 397 01 Písek",
+    "id_ds": "wazacze",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/jihocesky-kraj/pisek"
+   },
+   "kraj-vysocina_havlickuv-brod": {
+    "nazev": "Okresní správa sociálního zabezpečení Havlíčkův Brod",
+    "adresa": "Sídliště Pražská 2893, 580 01 Havlíčkův Brod",
+    "id_ds": "3ieadbq",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kraj-vysocina/havlickuv-brod"
+   },
+   "kraj-vysocina_trebic": {
+    "nazev": "Okresní správa sociálního zabezpečení Třebíč",
+    "adresa": "Karlovo náměstí 106/57, 674 17 Třebíč",
+    "id_ds": "fgtaddx",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/kraj-vysocina/trebic"
+   },
+   "moravskoslezsky-kraj_ostrava": {
+    "nazev": "Okresní správa sociálního zabezpečení Ostrava",
+    "adresa": "Zelená 3158/34a, 702 00 Ostrava",
+    "id_ds": "airadhs",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/moravskoslezsky-kraj/ostrava"
+   },
+   "olomoucky-kraj_jesenik": {
+    "nazev": "Okresní správa sociálního zabezpečení Jeseník",
+    "adresa": "Karla Čapka 1147/10, 790 01 Jeseník",
+    "id_ds": "wkcadfj",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/olomoucky-kraj/jesenik"
+   },
+   "olomoucky-kraj_olomouc": {
+    "nazev": "Okresní správa sociálního zabezpečení Olomouc",
+    "adresa": "tř. Kosmonautů 1151/6C, 779 11 Olomouc",
+    "id_ds": "qx7adg5",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/olomoucky-kraj/olomouc"
+   },
+   "plzensky-kraj_klatovy": {
+    "nazev": "Okresní správa sociálního zabezpečení Klatovy",
+    "adresa": "Kollárova 528, Klatovy III",
+    "id_ds": "viedtba",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/plzensky-kraj/klatovy"
+   },
+   "ustecky-kraj_chomutov": {
+    "nazev": "Okresní správa sociálního zabezpečení Chomutov",
+    "adresa": "Roháčova 4183, 430 03 Chomutov",
+    "id_ds": "z58ac55",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/ustecky-kraj/chomutov"
+   },
+   "zlinsky-kraj_zlin": {
+    "nazev": "Okresní správa sociálního zabezpečení Zlín",
+    "adresa": "třída Tomáše Bati 3792, 762 61 Zlín",
+    "id_ds": "imxadec",
+    "web": "https://www.cssz.gov.cz/web/cz/kontakty/region/ossz/zlinsky-kraj/zlin"
+   }
+  }
+ },
+ "pojistovny": {
+  "zdroj_schranky": "VZP ČR – číselník zdravotních pojišťoven (insurers.json)",
+  "overeno": "2026-11-22",
+  "web": {
+   "111": "https://www.vzp.cz/",
+   "201": "https://www.vozp.cz/",
+   "205": "https://www.cpzp.cz/",
+   "207": "https://www.ozp.cz/",
+   "209": "https://www.zpskoda.cz/",
+   "211": "https://www.zpmvcr.cz/",
+   "213": "https://www.rbp213.cz/"
+  },
+  "zdroj_web": "oficiální weby pojišťoven (ověřena dostupnost 22. 11. 2026)"
+ }
+}

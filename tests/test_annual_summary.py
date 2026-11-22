@@ -19,9 +19,7 @@ class SummaryParser(HTMLParser):
 
     def handle_starttag(self,tag,attrs):
         attrs=dict(attrs)
-        if tag=='button':
-            self.in_summary=attrs.get('id')=='annual-tab-status'
-        if tag=='span' and self.in_summary and 'annual-tab-status' in attrs.get('class','').split():
+        if tag=='span' and attrs.get('id')=='annual-stav':   # 1.0.3: souhrnný stav u nadpisu podkladu
             self.state=attrs['class'].split()[-1]
             self.title=attrs['aria-label']   # důvod je jen pro čtečky (bez bubliny po najetí myší)
 
@@ -54,7 +52,9 @@ class AnnualSummaryTests(unittest.TestCase):
              patch('osvc_app.db.connection',side_effect=AssertionError('No database access')):
             report=annual.build(2026,self.identity,self.p,self.ev)
             view=profile_presentation.build(self.identity,self.p,report,[])
-            html=render_template('annual.html',profile_report=report,profile_view=view,
+            from osvc_app.annual_podklad import podklad
+            from osvc_app import urady
+            html=render_template('annual.html',profile_report=report,profile_view=view,podklad=podklad(report),urady=urady.karty(self.identity,self.p,2026,sit=False),
                                  profile_year=2026,year_profile=self.p,display=annual.display)
         summary=SummaryParser()
         summary.feed(html)

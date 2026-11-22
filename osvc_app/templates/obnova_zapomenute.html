@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% block content %}<section class="login obnova">
+<h1>Zapomenuté heslo</h1>
+{% if chyba %}<p class="flash error" role="alert" data-obnova-chyba>{{ chyba }}</p>{% endif %}
+<form method="post" data-obnova-kod-form autocomplete="off">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Záchranný kód<input name="kod" required minlength="12" maxlength="20" placeholder="XXXX-XXXX-XXXX" autocapitalize="characters" spellcheck="false" autocomplete="one-time-code" autofocus class="obnova-kod-pole"></label>
+  <button type="submit" data-ceka-na-vyplneni>Pokračovat</button>
+</form>
+<p class="settings-help">Záchranný kód jste dostali při nastavení nebo poslední změně hesla (vytištěný nebo uložený jako soubor .txt). Po jeho zadání si nastavíte nové jméno a heslo. Data se nemění.</p>
+<h2 class="obnova-nadpis">Nemáte záchranný kód?</h2>
+<p class="settings-help">Heslo obnovíte přímo na počítači, kde aplikace běží:</p>
+<ul class="settings-help obnova-postup">
+  {% if windows %}<li><strong>Windows:</strong> nabídka Start → <em>OSVČ evidence – obnovit heslo</em>.</li>
+  {% else %}<li><strong>Linux:</strong> v terminálu <code>sudo osvc-evidence obnovit-heslo</code>.</li>{% endif %}
+  <li>Pak se na tomto počítači přihlaste jako <code>osvc</code> / <code>osvc</code> a nastavte si nové jméno a heslo.</li>
+</ul>
+<p><a href="{{ url_for('main.login') }}">Zpět na přihlášení</a></p>
+</section>{% endblock %}

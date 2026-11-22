@@ -8,6 +8,16 @@ from .db import IntegrityError
 
 MONTHS=['Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec']
 IDENTITY={'ico':'IČO','name':'Jméno / obchodní jméno','dic':'DIČ','street':'Ulice','number':'Číslo domu','city':'Obec','zip':'PSČ','country':'Stát'}
+POBYT={'street':'Ulice','number':'Číslo domu','city':'Obec','zip':'PSČ'}   # 1.0.3: trvalý pobyt jinde než adresa podnikání (určuje FÚ a OSSZ)
+
+def parse_pobyt(form,prefix):
+ """Zaškrtnutí „Trvalý pobyt je jinde než adresa podnikání“ + adresa. Vrátí (pobyt_jinde 'ano'/'', adresa dict nebo None). Chyba = ValueError."""
+ if form.get(prefix+'pobyt_jinde')!='ano':return '',None
+ adresa={k:' '.join((form.get(prefix+'pobyt_'+k) or '').split())[:200 if k!='zip' else 10] for k in POBYT}
+ adresa['zip']=re.sub(r'\s','',adresa['zip'])
+ if not adresa['number'] or not adresa['city'] or not adresa['zip']:raise ValueError('Vyplňte adresu trvalého pobytu: číslo domu, obec a PSČ.')
+ if not re.fullmatch(r'\d{5}',adresa['zip']):raise ValueError('PSČ trvalého pobytu musí mít 5 číslic.')
+ return 'ano',adresa
 # key, human label, widget, help: one source for profile UI and documentation.
 FIELDS={
  'business': [('start','Zahájení / obnovení','date','Datum je pomocné. Rozhodující jsou potvrzené měsíce aktivity níže; lze je předvyplnit tlačítkem z období.'),('end','Přerušení / ukončení','date','Poslední den činnosti v období. Při více přerušeních upravte jednotlivé měsíce; ovlivní přehledy obou pojištění.')],
@@ -34,6 +44,11 @@ def rules(year):
  p=Path(__file__).parent/'tax_rules'/f'{year}.json'
  return json.loads(p.read_text(encoding='utf-8')) if p.exists() else None
 
+def zalohy(year):
+ """Parametry nové měsíční zálohy placené v roce `year` (tax_rules/zalohy-YYYY.json, jen z oficiálních zdrojů), jinak None."""
+ p=Path(__file__).parent/'tax_rules'/f'zalohy-{year}.json'
+ return json.loads(p.read_text(encoding='utf-8')) if p.exists() else None
+
 def load(year):
  permanent=query('SELECT * FROM osvc_profile WHERE id=1',one=True)
  annual=query('SELECT * FROM osvc_year_profiles WHERE tax_year=%s',(year,),one=True)
@@ -51,6 +66,7 @@ def _parse_legacy(form,year,old_identity):
  identity={k:form.get('identity_'+k,'').strip()[:200] for k in IDENTITY}
  if identity['ico'] and not re.fullmatch(r'\d{8}',identity['ico']):raise ValueError('IČO musí mít 8 číslic.')
  identity['ares']=old_identity.get('ares') if all(identity.get(k)==old_identity.get(k) for k in IDENTITY) else None
+ identity['pobyt_jinde'],identity['pobyt']=parse_pobyt(form,'identity_')
  data={'months':[],'vehicles':{}}
  opts={**OPTIONS,'expense_rate':{k:v['label'] for k,v in (rules(year) or {}).get('expense_rates',{}).items()}}
  for fields in FIELDS.values():

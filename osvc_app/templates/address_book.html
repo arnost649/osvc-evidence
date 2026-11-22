@@ -3,14 +3,16 @@
 {% from '_pagination.html' import pagination %}
 {% from '_icons.html' import icon %}
 {% block content %}
+{# DIČ a datum ověření jen v úpravě kontaktu (pole DIČ, štítek „Ověřeno v ARES …“), v seznamu ne. #}
+{# 1.0.3: Adresář jako ostatní seznamy – jedna karta „Všechny kontakty“, v záhlaví výběr typu (jako výběr roku), kompaktní hledání,
+   počet a přepínač Upravit. Kontakty vznikají při zápisu dokladu, tady se jen prohlížejí a udržují (úprava na místě řádku, ověření v ARES). #}
 <div class="page-header"><h1>Adresář</h1></div>
-<form class="address-toolbar" method="get" action="{{ url_for('main.address_book') }}" data-address-search data-lookup-url="{{ url_for('main.verify_supplier_name') }}" data-apply-url="{{ url_for('main.apply_supplier_name_verification') }}" data-csrf="{{ csrf_token() }}"><label class="address-search" aria-label="Hledat kontakt"><div class="combobox combobox-verified" data-combobox data-hidden-input="address-search-id"><input id="address-search-q" type="search" name="q" value="{{ search }}" maxlength="200" placeholder="Hledat dle názvu, IČO nebo adresy" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false"><button type="button" class="combobox-verify" data-registry-search{% if search|length < 2 %} disabled{% endif %} aria-label="Vyhledat firmu na internetu (ARES)" >{{ icon('verify') }}</button><button type="button" class="combobox-toggle" aria-label="Zobrazit možnosti" tabindex="-1">▾</button><div class="combobox-options" role="listbox" hidden>{% for c in contacts %}{% set section = 'stations' if c.role == 'fuel_station' else ('customers' if c.role == 'customer' else 'suppliers') %}{% set label = 'Benzinka' if c.role == 'fuel_station' else ('Odběratel' if c.role == 'customer' else ('Dodavatel i odběratel' if c.role == 'both' else 'Dodavatel')) %}<button type="button" role="option" data-value="{{ c.id }}" data-name="{{ c.name }}" data-section="{{ section }}" data-role="{{ c.role }}" data-ico="{{ c.ico or '' }}" data-search="{{ c.name }} {{ c.operator_name or '' }} {{ c.ico or '' }} {{ c.city or '' }}"><span>{{ c.name }}</span><small>{{ label }}{% if c.ico %} · IČO {{ c.ico }}{% endif %}{% if c.city %} · {{ c.city }}{% endif %}</small></button>{% endfor %}</div><div class="entity-result" data-registry-results role="status" hidden></div></div></label><input type="hidden" id="address-search-id" value=""></form>
 {# Formulář kontaktu (úprava na místě řádku i nový kontakt): jen veřejné údaje – název, IČO, DIČ, adresa.
    Role jako přepínací štítky nahoře; IČO s ikonkou „Doplnit z ARES“; ověřené údaje jen pro čtení. Pořadí v kódu = pořadí tabulátoru. #}
 {% macro contact_form(item, kind) -%}
 {% set station = (item.role == 'fuel_station') if item else (kind == 'fuel_station') %}
 {% set verified = item and item.verified_at and item.ico %}
-<form class="address-edit-form form-grid{% if station %} is-station{% endif %}" method="post" action="{{ url_for('main.edit_address', ident=item.id) if item else url_for('main.create_address') }}" data-address-form data-ares-url="{{ url_for('main.address_ares', ico='00000000') }}" data-verified-ico="{{ item.ico if verified else '' }}" data-verified-label="{{ ('Ověřeno v ARES ' ~ (item.verified_at|cz_date) ~ ((' · provozovatel ' ~ item.operator_name) if station and item.operator_name else '')) if verified else '' }}"{% if not item %} data-new-contact{% endif %}>
+<form class="address-edit-form form-grid{% if station %} is-station{% endif %}" method="post" action="{{ url_for('main.edit_address', ident=item.id) }}" data-address-form data-ares-url="{{ url_for('main.address_ares', ico='00000000') }}" data-verified-ico="{{ item.ico if verified else '' }}" data-verified-label="{{ ('Ověřeno v ARES ' ~ (item.verified_at|cz_date) ~ ((' · provozovatel ' ~ item.operator_name) if station and item.operator_name else '')) if verified else '' }}"{% if not item %} data-new-contact{% endif %}>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <input type="hidden" name="ares" value="{{ 'keep' if verified else '' }}" data-ares-state>
   {% if station %}<input type="hidden" name="roles" value="fuel_station">
@@ -20,7 +22,7 @@
   </div>{% endif %}
   <div class="address-ares-status" data-ares-status>{% if verified %}<span class="ares-badge">{{ 'Ověřeno v ARES ' ~ (item.verified_at|cz_date) }}{% if station and item.operator_name %} · provozovatel {{ item.operator_name }}{% endif %}</span><button type="button" class="link-button" data-ares-refresh>Aktualizovat z ARES</button>{% endif %}</div>
   <label class="af-name">{{ 'Název provozovny' if station else 'Název / jméno' }}<input name="name" value="{{ item.name if item else '' }}" maxlength="200" required autocomplete="off"></label>
-  <label class="af-ico">IČO<span class="input-with-icon"><input name="ico" value="{{ item.ico if item and item.ico else '' }}" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" autocomplete="off" data-ares-ico><button type="button" class="input-icon-button" data-ares-fill aria-label="Doplnit z ARES" title="Doplnit z ARES">{{ icon('verify') }}</button></span></label>
+  <label class="af-ico">IČO<span class="input-with-icon"><input name="ico" value="{{ item.ico if item and item.ico else '' }}" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" autocomplete="off" data-ares-ico><button type="button" class="input-icon-button" data-ares-fill aria-label="Doplnit z ARES">{{ icon('verify') }}</button></span></label>
   <label class="af-dic">DIČ<input name="dic" value="{{ item.dic if item and item.dic else '' }}" maxlength="30" autocomplete="off"></label>
   <label class="af-street">Ulice a č. p.<input name="street" value="{{ item.street if item and item.street else '' }}" maxlength="200" autocomplete="off"></label>
   <label class="af-city">Obec<input name="city" value="{{ item.city if item and item.city else '' }}" maxlength="120" autocomplete="off"></label>
@@ -35,19 +37,37 @@
 </form>
 {%- endmacro %}
 
-{% macro row(item, kind) -%}
-<article class="address-row{% if item.deleted_at %} address-row-inactive{% endif %}"><div class="address-main"><strong class="text-2r">{{ item.name }}</strong>{% if item.operator_name and item.operator_name != item.name %}<span class="address-operator text-2r">Provozovatel: {{item.operator_name}}</span>{% endif %}<div class="address-details">{% if item.ico or item.dic %}<span>{% if item.ico %}IČO {{ item.ico }}{% endif %}{% if item.ico and item.dic %} · {% endif %}{% if item.dic %}DIČ {{ item.dic }}{% endif %}</span>{% endif %}{% if item.street or item.city %}<span>{{ item.street or '' }}{% if item.street and item.city %}, {% endif %}{{ item.postal_code or '' }} {{ item.city or '' }}</span>{% elif item.official_address %}<span>{{ item.official_address }}</span>{% endif %}{% if item.role %}<span>{{ 'Dodavatel i odběratel' if item.role == 'both' else ('Benzinka' if item.role == 'fuel_station' else ('Dodavatel' if item.role == 'supplier' else 'Odběratel')) }}</span>{% endif %}</div>{% if item.verified_at %}<small class="address-verified">Ověřeno {{ item.verified_at|cz_datetime }}</small>{% endif %}</div><div class="address-actions akce-sloupec"><button type="button" class="icon-only-action secondary verify-supplier" data-supplier-id="{{ item.id }}" data-url="{{ url_for('main.verify_supplier_view',ident=item.id) }}" data-apply-url="{{ url_for('main.apply_supplier_verification',ident=item.id) }}" data-csrf="{{ csrf_token() }}"  aria-label="Ověřit">{{ icon('verify') }}</button><button type="button" class="icon-only-action secondary" data-address-edit aria-label="Upravit">{{ icon('edit') }}</button></div>{{ contact_form(item, kind) }}</article>
-{%- endmacro %}
-{% macro new_row(kind) -%}
-<article class="address-row address-row-new is-editing" data-address-new-row hidden>{{ contact_form(none, kind) }}</article>
-{%- endmacro %}
-{% macro new_button(kind) -%}<button type="button" class="section-action secondary address-new-button" data-address-new aria-label="Nový kontakt" title="Nový kontakt">{{ icon('plus') }}</button>{%- endmacro %}
-<div class="settings-tabs address-workspace"><div class="settings-tablist" role="tablist" aria-label="Typ kontaktu">
-{% for key,label in [('suppliers','Dodavatelé'),('customers','Odběratelé'),('stations','Benzinky')] %}<button type="button" class="settings-tab{% if loop.first %} is-active{% endif %}" role="tab" id="address-tab-{{key}}" aria-controls="address-panel-{{key}}" aria-selected="{{'true' if loop.first else 'false'}}" data-address-tab="{{key}}">{{icon('contacts')}}<span>{{label}}</span></button>{% endfor %}</div><div class="settings-tab-content">
-<section class="address-section settings-card address-tab-panel" data-address-panel="suppliers" id="address-panel-suppliers" role="tabpanel" aria-labelledby="address-tab-suppliers"><div class="address-section-head list-heading section-heading payment-list-heading{% if pagers.suppliers.pages > 1 %} has-pagination{% endif %}"><div class="pagination-heading-title"><h2>Dodavatelé</h2><p class="settings-help">Firmy, OSVČ i soukromé osoby, kterým platíte.</p></div>{{pagination(pagers.suppliers)}}<div class="address-head-tools">{{ new_button('supplier') }}{% if suppliers %}{{ edit_toggle() }}{% endif %}</div></div><div class="address-list">{{ new_row('supplier') }}{% for item in suppliers %}{{ row(item,'supplier') }}{% else %}<p class="empty-state">Zatím žádní dodavatelé.</p>{% endfor %}</div>{{pagination(pagers.suppliers,'bottom')}}</section>
-<section class="address-section settings-card address-tab-panel" data-address-panel="customers" id="address-panel-customers" role="tabpanel" aria-labelledby="address-tab-customers" hidden><div class="address-section-head list-heading section-heading payment-list-heading{% if pagers.customers.pages > 1 %} has-pagination{% endif %}"><div class="pagination-heading-title"><h2>Odběratelé</h2><p class="settings-help">Ručně evidovaní zákazníci a organizace, od kterých přijímáte platby.</p></div>{{pagination(pagers.customers)}}<div class="address-head-tools">{{ new_button('customer') }}{% if customers %}{{ edit_toggle() }}{% endif %}</div></div><div class="address-list">{{ new_row('customer') }}{% for item in customers %}{{ row(item,'customer') }}{% else %}<p class="empty-state">Zatím žádní odběratelé.</p>{% endfor %}</div>{{pagination(pagers.customers,'bottom')}}</section>
-<section class="address-section settings-card address-tab-panel" data-address-panel="stations" id="address-panel-stations" role="tabpanel" aria-labelledby="address-tab-stations" hidden><div class="address-section-head list-heading section-heading payment-list-heading{% if pagers.stations.pages > 1 %} has-pagination{% endif %}"><div class="pagination-heading-title"><h2>Benzinky</h2><p class="settings-help">Samostatné provozovny. Ověření právního subjektu nemění název ani adresu stanice.</p></div>{{pagination(pagers.stations)}}<div class="address-head-tools">{{ new_button('fuel_station') }}{% if stations %}{{ edit_toggle() }}{% endif %}</div></div><div class="address-list">{{ new_row('fuel_station') }}{% for item in stations %}{{row(item,'fuel_station')}}{% else %}<p class="empty-state">Zatím žádné benzinky.</p>{% endfor %}</div>{{pagination(pagers.stations,'bottom')}}</section>
-</div></div>
-<script src="{{ url_for('static',filename='address-search.js') }}"></script>
+{% macro role_text(item) -%}{{ 'Stanice' if item.role == 'fuel_station' else ('Dodavatel i odběratel' if item.role == 'both' else ('Dodavatel' if item.role == 'supplier' else 'Odběratel')) }}{%- endmacro %}
+<section class="address-list-section">
+  <div class="list-heading section-heading payment-list-heading{% if pager.pages > 1 %} has-pagination{% endif %}">
+    <form class="list-title address-filter" method="get" action="{{ url_for('main.address_book') }}" role="search">
+      <h2>Všechny kontakty</h2>
+      <span class="year-filter address-typ-filter"><select name="typ" class="address-typ" aria-label="Typ kontaktu" onchange="this.form.requestSubmit()">{% for k,label in typy.items() %}<option value="{{ k }}"{% if k == typ %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></span>
+      <span class="address-hledat"><input type="search" name="q" value="{{ search }}" placeholder="Hledat název, IČO, adresu" aria-label="Hledat kontakt podle názvu, IČO nebo adresy" autocomplete="off"><button type="submit" class="input-icon-button" aria-label="Hledat">{{ icon('search') }}</button></span>
+    </form>
+    {{ pagination(pager) }}
+    <div class="list-heading-end"><p class="list-count" data-address-count>{{ pager.total }} {{ 'kontakt' if pager.total == 1 else 'kontakty' if 2 <= pager.total <= 4 else 'kontaktů' }}</p>{% if kontakty %}{{ edit_toggle() }}{% endif %}</div>
+  </div>
+  <div class="table-wrap">
+    <table class="responsive-table address-table">
+      <thead><tr><th>Název</th><th>IČO</th><th>Adresa</th><th>Role</th><th class="akce-sloupec">Akce</th></tr></thead>
+      {% for item in kontakty %}
+      <tbody class="kontakt{% if item.deleted_at %} kontakt-neaktivni{% endif %}" data-kontakt>
+        <tr class="kontakt-radek">
+          <td data-label="Název"><span class="kontakt-nazev"><strong class="text-2r">{{ item.name }}</strong>{% if item.operator_name and item.operator_name != item.name %}<span class="address-operator">Provozovatel: {{ item.operator_name }}</span>{% endif %}</span></td>
+          <td data-label="IČO" class="numeric-value kontakt-kod">{{ item.ico or '—' }}</td>
+          <td data-label="Adresa"><span class="text-2r">{% if item.street or item.city %}{{ item.street or '' }}{% if item.street and item.city %}, {% endif %}{{ item.postal_code or '' }} {{ item.city or '' }}{% elif item.official_address %}{{ item.official_address }}{% else %}—{% endif %}</span></td>
+          <td data-label="Role">{{ role_text(item) }}</td>
+          <td class="akce-sloupec" data-label="Akce"><span class="address-akce"><button type="button" class="icon-only-action secondary verify-supplier" data-supplier-id="{{ item.id }}" data-url="{{ url_for('main.verify_supplier_view',ident=item.id) }}" data-apply-url="{{ url_for('main.apply_supplier_verification',ident=item.id) }}" data-csrf="{{ csrf_token() }}" aria-label="Ověřit v ARES">{{ icon('verify') }}</button><button type="button" class="icon-only-action secondary" data-address-edit aria-label="Upravit">{{ icon('edit') }}</button></span></td>
+        </tr>
+        <tr class="kontakt-uprava"><td colspan="5" data-label="">{{ contact_form(item, item.role) }}</td></tr>
+      </tbody>
+      {% else %}
+      <tbody><tr><td colspan="5" class="empty-state">{% if search %}Nic neodpovídá hledání „{{ search }}“.{% else %}Zatím žádné kontakty – vzniknou při zápisu příjmu, výdaje nebo tankování.{% endif %}</td></tr></tbody>
+      {% endfor %}
+    </table>
+  </div>
+  {{ pagination(pager,'bottom') }}
+</section>
 <script src="{{ url_for('static',filename='address-form.js') }}" defer></script>
 {% endblock %}

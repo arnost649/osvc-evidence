@@ -18,11 +18,20 @@
         <label>PSČ<input name="zip" value="{{ f.zip or '' }}" required inputmode="numeric" maxlength="10"></label></div>
       <div class="pruvodce-radek"><label>Stát<input name="country" value="{{ f.country or '' }}" maxlength="60"></label>
         <label>DIČ (nepovinné)<input name="dic" value="{{ f.dic or '' }}" maxlength="20" placeholder="CZ12345678"></label></div>
+      {% set pobyt_jinde=f.pobyt_jinde=='ano' %}
+      <label class="checkbox-row pruvodce-pobyt-volba"><input type="checkbox" name="pobyt_jinde" value="ano" data-pobyt-jinde{% if pobyt_jinde %} checked{% endif %}> Trvalý pobyt je jinde než adresa podnikání</label>
+      <div class="pruvodce-pobyt" data-pobyt-adresa{% if not pobyt_jinde %} hidden{% endif %}>
+        <p class="settings-help">Adresa trvalého pobytu – podle ní se určuje příslušný finanční úřad a OSSZ.</p>
+        <div class="pruvodce-radek"><label>Ulice<input name="pobyt_street" value="{{ f.pobyt_street or '' }}" maxlength="200"{% if not pobyt_jinde %} disabled{% endif %}></label>
+          <label>Číslo domu<input name="pobyt_number" value="{{ f.pobyt_number or '' }}" required maxlength="20"{% if not pobyt_jinde %} disabled{% endif %}></label></div>
+        <div class="pruvodce-radek"><label>Obec<input name="pobyt_city" value="{{ f.pobyt_city or '' }}" required maxlength="200"{% if not pobyt_jinde %} disabled{% endif %}></label>
+          <label>PSČ<input name="pobyt_zip" value="{{ f.pobyt_zip or '' }}" required inputmode="numeric" maxlength="10" pattern="\d{3} ?\d{2}"{% if not pobyt_jinde %} disabled{% endif %}></label></div>
+      </div>
     </fieldset>
     <fieldset class="pruvodce-krok"><legend>2. Přihlášení do aplikace</legend>
-      <label>Uživatelské jméno<input name="username" value="{{ f.username or '' }}" required minlength="3" maxlength="50" autocomplete="username"></label>
-      <div class="pruvodce-radek"><label>Heslo (aspoň 8 znaků)<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
-        <label>Heslo znovu<input type="password" name="password2" required minlength="8" autocomplete="new-password"></label></div>
+      <label for="pruvodce-jmeno">Uživatelské jméno<input id="pruvodce-jmeno" name="username" value="{{ f.username or '' }}" required minlength="3" maxlength="50" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+      <div class="pruvodce-radek"><label for="pruvodce-nove-heslo">Heslo (aspoň 8 znaků)<input type="password" id="pruvodce-nove-heslo" name="password" required minlength="8" maxlength="200" autocomplete="new-password"></label>
+        <label for="pruvodce-nove-heslo-znovu">Heslo znovu<input type="password" id="pruvodce-nove-heslo-znovu" name="password2" required minlength="8" maxlength="200" autocomplete="new-password"></label></div>
       <p class="settings-help">Aplikace heslo nezná, ukládá jen jeho otisk. Zapamatujte si ho.</p>
     </fieldset>
     <fieldset class="pruvodce-krok"><legend>3. Podnikání v roce {{ rok }}</legend>

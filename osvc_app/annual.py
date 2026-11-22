@@ -18,6 +18,38 @@ def odhad_zaloh(p,n):
    except Exception:pass
  return poznamky
 def money(x):return D(x).quantize(D('.01'),rounding=ROUND_HALF_UP)
+def hodnota(x):return D(x['hodnota'] if isinstance(x,dict) else x)
+def datum_cz(t):
+ d=date.fromisoformat(t);return f'{d.day}. {d.month}. {d.year}'
+def kc(x):
+ t=f'{money(x):,.2f}'.replace(',',' ').replace('.',',')
+ return (t[:-3] if t.endswith(',00') else t)+' Kč'
+def nova_zaloha(key,year,base,n,p,main=0,secondary=0,health_min=0):
+ """Nová měsíční záloha placená v roce year+1 po podání přehledu za rok year (1.0.3), jen podle tax_rules/zalohy-<year+1>.json.
+ Vrátí (částka nebo None, poznámka). Podporované případy: ČSSZ jen hlavní nebo jen vedlejší SVČ; ZP minimum ve všech aktivních měsících."""
+ z=profile.zalohy(year+1)
+ if not z:return None,f'stanoví se podle pravidel {year+1}'
+ if base is None or not n:return None,'chybí podklady pro výpočet'
+ pm=hodnota(z['prumerna_mzda'])
+ if key=='social':
+  s=z['social']
+  if main and not secondary:
+   new20=p.get('social_case')=='new20'
+   if new20:
+    try:new20=date.fromisoformat(str(p.get('start'))[:10]).year>=year+1-2
+    except ValueError:return None,'ověřte u ČSSZ (snížené minimum pro začínající – chybí datum zahájení)'
+   minimum=ceil(pm*hodnota(s['new_main_min_ratio' if new20 else 'main_min_ratio']))
+  elif secondary and not main:minimum=ceil(pm*hodnota(s['secondary_min_ratio']))
+  else:return None,'ověřte u ČSSZ (kombinace hlavní a vedlejší SVČ)'
+  mesic=max(ceil(max(D(0),base)*hodnota(s['base_ratio'])/n),minimum)
+  zaloha=ceil(mesic*hodnota(s['rate']))
+  return zaloha,f"Od měsíce po podání přehledu za {year}: 29,2 % z měsíčního základu {kc(mesic)} (55 % průměrného měsíčního daňového základu, nejméně minimum {year+1} {kc(minimum)}). Zdroj: {s['base_ratio']['zdroj']}; průměrná mzda {kc(pm)} – {z['prumerna_mzda']['zdroj'].split(',')[0]} (vyhlášeno {datum_cz(z['prumerna_mzda']['vyhlaseno'])})."
+ h=z['health']
+ if health_min!=n:return None,'ověřte u pojišťovny (část roku bez povinného minima)'
+ minimum=pm*hodnota(h['min_ratio'])
+ mesic=max(max(D(0),base)*hodnota(h['base_ratio'])/n,minimum)
+ zaloha=ceil(mesic*hodnota(h['rate']))
+ return zaloha,f"Za měsíc podání přehledu za {year} a dál: 13,5 % z měsíčního základu {kc(mesic)} (50 % průměrného měsíčního daňového základu, nejméně minimum {year+1} {kc(minimum)}). Zdroj: {h['base_ratio']['zdroj']}; průměrná mzda {kc(pm)} – {z['prumerna_mzda']['zdroj'].split(',')[0]} (vyhlášeno {datum_cz(z['prumerna_mzda']['vyhlaseno'])})."
 def ceil(x):return D(x).quantize(D('1'),rounding=ROUND_CEILING)
 FORMS={'tax':('Finanční úřad','Přiznání DPFO → Příloha č. 1 – samostatná činnost (§ 7)'), 'social':('ČSSZ','Přehled o příjmech a výdajích OSVČ'),'health':('Zdravotní pojišťovna','Přehled o výši daňového základu OSVČ')}
 LABELS={
@@ -35,7 +67,7 @@ LABELS={
  'assessment':('Vyměřovací základ','Vyměřovací základ','Základ pro pojistné podle pravidel roku a potvrzených výjimek. ČSSZ a zdravotní pojištění používají odlišná pravidla.','Vypočteno z daňového základu a ročního profilu'),
  'premium':('Roční pojistné','Pojistné za kalendářní rok','Pojistné z vyměřovacího základu, zaokrouhlené na koruny nahoru.','Vypočteno'),
  'balance':('Doplatek / přeplatek','Doplatek nebo přeplatek pojistného','Roční pojistné minus zaplacené zálohy. Kladná částka je doplatek, záporná přeplatek.','Vypočteno'),
- 'advance':('Orientační nová záloha','Nová měsíční záloha','Orientační výpočet podle pravidel vykazovaného roku. Minimum a povinnost záloh pro následující rok musí potvrdit aktuální pravidla a instituce; tuto částku zatím neopisujte jako definitivní.','Vypočteno; kontrola dalšího roku nutná'),
+ 'advance':('Orientační nová záloha','Nová měsíční záloha','Nová měsíční záloha po podání přehledu podle pravidel následujícího roku (zákon a nařízení vlády o průměrné mzdě). Platí při stejném režimu činnosti; jinou situaci ověřte u instituce.','Vypočteno podle pravidel následujícího roku'),
  'insurer':('Zdravotní pojišťovna','Zdravotní pojišťovna a kód','Pojišťovna, pro kterou je určen roční přehled. Změna pojišťovny během roku vyžaduje rozdělení údajů.','Profil OSVČ → Zdravotní pojištění'),
  'employment':('Souběh se zaměstnáním','Souběh samostatné činnosti a zaměstnání','Počet aktivních měsíců se zaměstnáním. Pro zdravotní výjimku nestačí samotný souběh ani vedlejší činnost ČSSZ.','Profil OSVČ → Zaměstnání'),
  'minimum':('Měsíce s povinným minimem','Počet měsíců s minimálním vyměřovacím základem','Počet aktivních měsíců s povinností minima. Výjimka ze zaměstnání vyžaduje celoměsíční souběh, hlavní zdroj v zaměstnání a odvod alespoň zaměstnaneckého minima.','Profil OSVČ → Zdravotní pojištění')}
@@ -230,6 +262,14 @@ def build(year,identity,p,ev):
   return {'form_year':year,'form_type':section,'field_key':key,'official_label':official,'row_number':row,'source_note':source,'label':human,'value':value,'status':('missing' if value is None and status=='known' else status),'unit':unit,'tooltip':f'{meaning} Zdroj: {source}. Kam patří: {destination}. '+note,'destination':destination,'note':note}
  f=lambda key,value,status='known',unit='Kč',note='':field('tax',key,value,status,unit,note)
  sections.append({'key':'tax','title':FORMS['tax'][0],'form':FORMS['tax'][1],'fields':[f('income',ev['income'],'review' if ev['issues'] else 'known'),f('expenses',cost,expense_state,note=expense_note),f('result',result,result_state,note=expense_note),f('method',profile.OPTIONS['expense_method'].get(p.get('expense_method')),'known',''),f('adjustment',adjustment),f('base',base,base_state,note=expense_note)]})
+ def advance_field(key,zero_advance,state,advance_note):
+  if zero_advance:return field(key,'advance',D(0),'known',note=advance_note)
+  if state!='known':return field(key,'advance',None,'info',note=advance_note)
+  value,note=nova_zaloha(key,year,base,n,p,main,secondary,health_min)
+  if value is None:return field(key,'advance',None,'info',note=note+'. '+advance_note)
+  f=field(key,'advance',value,'known',note=note)
+  f['tooltip']=f"{LABELS['advance'][2]} Kam patří: {f['destination']}. {note}"   # popis z pravidel roku (2026.json) platí pro neověřenou zálohu
+  return f
  for key,assessment,premium,state in [('social',social_base,social_premium,social_state),('health',health_base,health_premium,health_state)]:
   paid=amount(key+'_paid');items=[field(key,'base',base,base_state,note=expense_note),field(key,'months',n if known_months else None,'known','měsíců',period_note)]
   if key=='social':items += [field(key,'main',main if social_months_ready else None,'known','měsíců'),field(key,'secondary',secondary if social_months_ready else None,'known','měsíců'),field(key,'reason',', '.join(sorted({(r or {}).get('secondary_reasons',{}).get(m.get('reason'),m.get('reason') or 'Chybí důvod') for m in active if m.get('social')=='secondary'})) or ('Nevztahuje se' if known_months and not secondary else None),'known','')]
@@ -240,7 +280,7 @@ def build(year,identity,p,ev):
   advance_note=(f'Při pokračování vedlejší SVČ bez dobrovolné účasti po podání přehledu: záloha 0 Kč. Změna na hlavní činnost nebo dobrovolné přihlášení v roce {year+1} vyžaduje nové posouzení.' if key=='social' else f'Při pokračování celoměsíčního zaměstnání jako hlavního zdroje a splnění zaměstnaneckého minima se zálohy neplatí. Změna okolností v roce {year+1} vyžaduje nové posouzení.') if zero_advance else f'Pro zálohu roku {year+1} je nutné ověřit další trvání činnosti, její pojistný režim a pravidla tohoto roku. Nejde o průměr letošního pojistného.'
   if key=='social' and no_social_participation:
    items[0]['tooltip']+=f' Rozhodná částka pro {n} měsíců: {social_threshold} Kč; povinná účast nevzniká a dobrovolná účast není zvolena.'
-  items += [field(key,'paid',paid,note='Potvrďte skutečný roční úhrn v Profilu OSVČ; nula není předpokládána.' if paid is None else odhady.get(key,'')),field(key,'assessment',assessment,state),field(key,'premium',premium,state),field(key,'balance',premium-paid if premium is not None and paid is not None else None,'missing' if paid is None else state,note='Chybí potvrzený úhrn zaplacených záloh.' if paid is None else ''),field(key,'advance',D(0) if zero_advance else None,'known' if zero_advance else 'info',note=advance_note)]
+  items += [field(key,'paid',paid,note='Potvrďte skutečný roční úhrn v Profilu OSVČ; nula není předpokládána.' if paid is None else odhady.get(key,'')),field(key,'assessment',assessment,state),field(key,'premium',premium,state),field(key,'balance',premium-paid if premium is not None and paid is not None else None,'missing' if paid is None else state,note='Chybí potvrzený úhrn zaplacených záloh.' if paid is None else ''),advance_field(key,zero_advance,state,advance_note)]
   items[-1]['label']='Orientační záloha při stejném režimu'
 
   sections.append({'key':key,'title':FORMS[key][0],'form':FORMS[key][1],'fields':items})

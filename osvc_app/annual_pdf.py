@@ -1,55 +1,80 @@
-from .year_periods import year_period_text
-from .insurers import description as insurer_description
+"""PDF „Podklady pro přiznání a přehledy“ (1.0.3): podklad k opsání do formulářů na jednu stranu A4.
+Obsah sestaví annual_podklad.podklad – stejný jako na stránce Roční přehled."""
 from io import BytesIO
 from pathlib import Path
 from xml.sax.saxutils import escape
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,KeepTogether,PageBreak
-from reportlab.lib.pagesizes import A4
-from .annual import display
-from .profile import IDENTITY,OPTIONS,MONTHS
+from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from . import cas
+from .annual_podklad import podklad
+
+SEDA, LINKA, ZVYRAZNENI = colors.HexColor('#555555'), colors.HexColor('#C9CED6'), colors.HexColor('#F1F3F6')
+OKRAJ = 42
+
+
+def _pisma():
+    slozka = Path(__file__).parent / 'static/fonts'
+    for name, soubor in (('OSVC', 'DejaVuSans.ttf'), ('OSVC-Bold', 'DejaVuSans-Bold.ttf')):
+        if name not in pdfmetrics.getRegisteredFontNames(): pdfmetrics.registerFont(TTFont(name, str(slozka / soubor)))
+    pdfmetrics.registerFontFamily('OSVC', normal='OSVC', bold='OSVC-Bold')
+
 
 def generate(report):
- font=Path(__file__).parent/'static/fonts'
- for name,file in [('OSVC','DejaVuSans.ttf'),('OSVC-Bold','DejaVuSans-Bold.ttf')]:
-  if name not in pdfmetrics.getRegisteredFontNames():pdfmetrics.registerFont(TTFont(name,str(font/file)))
- pdfmetrics.registerFontFamily('OSVC',normal='OSVC',bold='OSVC-Bold')
- styles=getSampleStyleSheet();styles.add(ParagraphStyle(name='BodyCZ',fontName='OSVC',fontSize=9,leading=13,spaceAfter=5));styles.add(ParagraphStyle(name='SmallCZ',parent=styles['BodyCZ'],fontSize=8,leading=11,textColor=colors.HexColor('#444444')));styles.add(ParagraphStyle(name='HeadingCZ',parent=styles['BodyCZ'],fontName='OSVC-Bold',fontSize=15,leading=19,spaceAfter=12))
- out=BytesIO();doc=SimpleDocTemplate(out,pagesize=A4,leftMargin=40,rightMargin=40,topMargin=38,bottomMargin=38,title=f'Podklady pro přiznání a přehledy {report["year"]}',author='OSVČ evidence');story=[]
- def text(s,style='BodyCZ'):return Paragraph(escape(str(s)).replace('\n','<br/>'),styles[style])
- story.extend([text('PODKLADY PRO PŘIZNÁNÍ A PŘEHLEDY','HeadingCZ'),text('Rok '+str(report['year']))])
- pending=any(s['missing'] or s['review'] for s in report['sections']) or report.get('profile_status',{}).get('state','known')!='known' or any(report['missing'].values())
- story.append(text('PRACOVNÍ PODKLAD – obsahuje chybějící údaje nebo položky vyžadující kontrolu.' if pending else 'Kontrolní podklady pro ruční přepis; nejde o úřední formulář.'))
- story.append(text('IDENTIFIKACE OSVČ','HeadingCZ'))
- for k,label in IDENTITY.items():story.append(text(label+': '+(report['identity'].get(k) or '—')))
- p=report['profile']
- if p.get('profile_version')==2:
-  story.append(text('Platnost podnikání v roce '+str(report['year'])+': '+(year_period_text(report['year'],p.get('business_periods') or [{}]) if p.get('business_status')=='yes' else 'Celý rok bez činnosti' if p.get('business_status')=='no' else 'Nepotvrzeno')))
-  story.append(text('Platnost zaměstnání v roce '+str(report['year'])+': '+(year_period_text(report['year'],p.get('employment_periods') or [{}]) if p.get('employment_status')=='yes' else 'Bez zaměstnání / nepotvrzeno')))
-  if p.get('overrides_enabled'):story.append(text('Použity ruční měsíční korekce.','SmallCZ'))
- else:story.append(text('Období podnikání: '+(p.get('start') or 'dle měsíců')+' – '+(p.get('end') or 'dle měsíců')))
- for m in p['months']:
-  story.append(text(f"{MONTHS[m['month']-1]}: aktivita {OPTIONS['activity'].get(m.get('activity'),'chybí')}; zaměstnání {OPTIONS['employment'].get(m.get('employment'),'chybí')}; ČSSZ {OPTIONS['social'].get(m.get('social'),'—')}; zdravotní minimum {OPTIONS['minimum'].get(m.get('minimum'),'—')}",'SmallCZ'))
- story.append(text('Zdravotní pojišťovna: '+insurer_description(p)))
- story.append(text('Daňové výdaje: '+OPTIONS['expense_method'].get(p.get('expense_method'),'chybí')))
- for v in report['vehicles']:story.append(text('Doprava – '+v['name']+': '+v['method']))
- for key,items in report['missing'].items():
-  if items:story.append(text(('Vyřešit daňové podklady (Profil OSVČ / editace výdajů): ' if key=='tax' else 'Doplnit v Profilu OSVČ: ')+', '.join(items),'SmallCZ'))
- if report.get('nezapocteno'):story.append(text('Nezapočteno (vypnutý modul): '+report['nezapocteno']+'.','SmallCZ'))
- for warning in report['reviews']:story.append(text('Kontrola: '+warning,'SmallCZ'))
- for s in report['sections']:
-  story.extend([PageBreak(),text(s['title'],'HeadingCZ'),text('Oficiální formulář: '+s['form'])])
-  if s['key']=='tax' and report.get('expense_summary'):
-   e=report['expense_summary']
-   for label,key in [('Evidované výdaje celkem','recorded'),('Běžné nákupy','ordinary_total'),('Jízdy','travel'),('Potvrzené podle zvoleného režimu dopravy','confirmed'),('Neuznatelné části nákupů','excluded'),('Čeká na posouzení','pending')]:story.append(text(label+': '+display({'value':e[key],'unit':'Kč'})))
-   if e['pending_count']:story.append(text(str(e['pending_count'])+' výdajů čeká na posouzení ve Výdaje → Chybí posouzení.','SmallCZ'))
-  for f in s['fields']:
-   status={'known':'Vypočteno / známé','missing':'Chybí údaj','review':'Vyžaduje kontrolu','info':'Jen pro informaci'}[f['status']]
-   story.append(KeepTogether([text(f['label']+': '+display(f)),text('Stav: '+status,'SmallCZ'),text('Kam patří: '+f['destination'],'SmallCZ'),text('Co to je / zdroj: '+f['tooltip'].split(' Kam patří:')[0],'SmallCZ'),text(f['note'],'SmallCZ'),Spacer(1,8)]))
- story.extend([Spacer(1,12),text('Použitá pravidla: '+(report['rules']['id'] if report['rules'] else 'Pro tento rok neověřena'),'SmallCZ'),text('Čísla řádků nebyla potvrzena pro tento rok; používáme významové názvy. Nové zálohy ověřte podle pravidel následujícího roku.','SmallCZ')])
- for url in (report['rules'] or {}).get('sources',[]):story.append(text(url,'SmallCZ'))
- def footer(canvas,doc):canvas.setFont('OSVC',8);canvas.drawRightString(A4[0]-40,22,f'OSVČ · {report["year"]} · {doc.page}')
- doc.build(story,onFirstPage=footer,onLaterPages=footer);out.seek(0);return out
+    _pisma()
+    data = podklad(report)
+    s = {'nadpis': ParagraphStyle('nadpis', fontName='OSVC-Bold', fontSize=14, leading=18, spaceAfter=2),
+         'pod': ParagraphStyle('pod', fontName='OSVC', fontSize=8, leading=10, textColor=SEDA, spaceAfter=8),
+         'bunka': ParagraphStyle('bunka', fontName='OSVC', fontSize=9, leading=11.5),
+         'hodnota': ParagraphStyle('hodnota', fontName='OSVC-Bold', fontSize=9, leading=11.5, alignment=2),
+         'chybi': ParagraphStyle('chybi', fontName='OSVC-Bold', fontSize=9, leading=11.5, alignment=2, textColor=colors.HexColor('#B42318')),
+         'info': ParagraphStyle('info', fontName='OSVC', fontSize=8, leading=11.5, alignment=2, textColor=SEDA),
+         'urad': ParagraphStyle('urad', fontName='OSVC-Bold', fontSize=10.5, leading=13),
+         'formular': ParagraphStyle('formular', fontName='OSVC', fontSize=8, leading=10, textColor=SEDA),
+         'pozor': ParagraphStyle('pozor', fontName='OSVC-Bold', fontSize=9, leading=12, textColor=colors.HexColor('#8A4B00')),
+         'paticka': ParagraphStyle('paticka', fontName='OSVC', fontSize=7.5, leading=9.5, textColor=SEDA)}
+    t = lambda text, styl: Paragraph(escape(str(text)), s[styl])
+    sirka = A4[0] - 2 * OKRAJ - 12   # rámec stránky má vnitřní okraj 6 pt na každé straně
+    out = BytesIO()
+    doc = SimpleDocTemplate(out, pagesize=A4, leftMargin=OKRAJ, rightMargin=OKRAJ, topMargin=36, bottomMargin=36,
+                            title=f'Podklady pro přiznání a přehledy {data["rok"]}', author='OSVČ evidence')
+    story = [t(f'Podklady pro přiznání a přehledy {data["rok"]}', 'nadpis'),
+             t('Hodnoty k opsání do formulářů. Nejde o úřední formulář.', 'pod')]
+    # hlavička: dvojice „popis | hodnota“ ve dvou sloupcích
+    hl = [(t(k, 'formular'), t(v or '—', 'bunka')) for k, v in data['hlavicka']]
+    radky = [[*hl[i], *(hl[i + 1] if i + 1 < len(hl) else ('', ''))] for i in range(0, len(hl), 2)]
+    hlavicka = Table(radky, colWidths=[sirka * 0.15, sirka * 0.35, sirka * 0.17, sirka * 0.33])
+    hlavicka.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('BOTTOMPADDING', (0, 0), (-1, -1), 3), ('TOPPADDING', (0, 0), (-1, -1), 1),
+                                  ('LEFTPADDING', (0, 0), (-1, -1), 0)]))
+    story += [hlavicka, Spacer(1, 6)]
+    if data['upozorneni']:
+        pozor = Table([[t(data['upozorneni'], 'pozor')]], colWidths=[sirka])
+        pozor.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FFF4E0')), ('BOX', (0, 0), (-1, -1), 0.6, colors.HexColor('#E3B062')),
+                                   ('LEFTPADDING', (0, 0), (-1, -1), 7), ('RIGHTPADDING', (0, 0), (-1, -1), 7), ('TOPPADDING', (0, 0), (-1, -1), 4),
+                                   ('BOTTOMPADDING', (0, 0), (-1, -1), 5)]))
+        story += [pozor, Spacer(1, 4)]
+    for tab in data['tabulky']:
+        bunky = [[t(r['nazev'], 'bunka'), t(r['hodnota'], {'chybi': 'chybi', 'info': 'info'}.get(r['stav'], 'hodnota'))] for r in tab['radky']]
+        tabulka = Table(bunky, colWidths=[sirka * 0.62, sirka * 0.38])
+        styl = [('LINEBELOW', (0, 0), (-1, -1), 0.4, LINKA), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), ('TOPPADDING', (0, 0), (-1, -1), 2.5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3), ('LEFTPADDING', (0, 0), (-1, -1), 4), ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+                ('LINEABOVE', (0, 0), (-1, 0), 0.8, colors.HexColor('#8A93A0'))]
+        for i, r in enumerate(tab['radky']):
+            if r['klic'].endswith(('.base', '.balance')): styl.append(('BACKGROUND', (0, i), (-1, i), ZVYRAZNENI))
+        tabulka.setStyle(TableStyle(styl))
+        story.append(KeepTogether([Spacer(1, 8), t(tab['urad'], 'urad'), t(tab['formular'], 'formular'), Spacer(1, 3), tabulka]))
+    zalohy = (f'Nová záloha podle pravidel {data["rok"] + 1}: průměrná mzda – {data["zalohy"][0][1]} (vyhlášeno {data["zalohy"][0][2]}); '
+              'výpočet podle zákonů č. 589/1992 Sb. a 592/1992 Sb.; platí při stejném režimu činnosti.') if data['zalohy'] else f'Novou zálohu ověřte podle pravidel roku {data["rok"] + 1}.'
+    story += [Spacer(1, 12), t('Čísla řádků se pro tento rok neuvádějí (nejsou ověřená) – hledejte řádek podle názvu. ' + zalohy +
+                               f' Pravidla: {data["pravidla"] or "pro tento rok zatím nejsou"}.', 'paticka')]
+
+    def paticka(canvas, doc):
+        canvas.setFont('OSVC', 7.5); canvas.setFillColor(SEDA)
+        canvas.drawString(OKRAJ, 20, f'OSVČ evidence · vytvořeno {cas.datum(cas.local(cas.utc_now_naive()), s_casem=True)}')
+        canvas.drawRightString(A4[0] - OKRAJ, 20, f'{data["rok"]} · strana {doc.page}')
+    doc.build(story, onFirstPage=paticka, onLaterPages=paticka)
+    out.seek(0)
+    return out

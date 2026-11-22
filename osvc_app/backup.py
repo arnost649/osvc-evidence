@@ -26,6 +26,34 @@ def settings_paths():
     from .moduly import cesta as moduly_path
     return {'appearance.json':preference_path(),'woocommerce_sync.json':state_dir()/'woocommerce_sync.json','browser-drafts.json':state_dir()/'browser-drafts.json','insurers.json':state_dir()/'insurers.json','moduly.json':moduly_path()}
 
+# Průběh vytvoření a obnovy zálohy pro ukazatel v Nastavení → Záloha: stav v state_dir/prubeh/<job>.json, čte ho
+# GET /settings/backup/progress/<job> (bez zámku dat, aby šel číst i během výhradně zamčené obnovy).
+JOB_RE=re.compile(r'[0-9a-f]{32}')
+def progress_path(job):
+    if not job or not JOB_RE.fullmatch(job):return None
+    return state_dir()/'prubeh'/(job+'.json')
+
+def reporter(job):
+    """Vrátí funkci krok(krok, popis, procento) zapisující průběh; bez platného job nic nedělá."""
+    path=progress_path(job)
+    if not path:return lambda *a,**k:None
+    path.parent.mkdir(mode=0o700,exist_ok=True)
+    now=datetime.now(timezone.utc).timestamp()
+    for old in path.parent.glob('*.json'):   # staré záznamy (> 1 h) pryč
+        try:
+            if now-old.stat().st_mtime>3600:old.unlink()
+        except OSError:pass
+    def krok(nazev,popis,procento):
+        try:write_atomic(path,json.dumps({'krok':nazev,'popis':popis,'procento':max(0,min(100,int(procento)))},ensure_ascii=False).encode())
+        except OSError:pass
+    return krok
+
+def read_progress(job):
+    path=progress_path(job)
+    if not path:return None
+    try:return json.loads(path.read_text(encoding='utf-8'))
+    except (OSError,ValueError):return None
+
 @contextmanager
 def data_lock(exclusive=False):
     with (state_dir()/'.data.lock').open('ab') as f:
@@ -203,14 +231,33 @@ def comparison(m,data):
         except ArithmeticError:return a==b
     return [(a,b,c,'OK' if stejne(b,c) else 'ROZDÍL') for a,b,c in radky]
 
-def create_backup(path,browser_drafts=None):
+def export_comparison(m,data):
+    """Řádky po vytvoření zálohy: [(položka, v aplikaci, v záloze, OK/ROZDÍL)] – záloha přečtená zpět ze ZIPu."""
+    from .db import query
+    tables={t:query('SELECT * FROM '+identifier(t)) for t in PENIZE}|{'counterparties':query('SELECT deleted_at FROM counterparties')}
+    zive={'counts':record_counts({'tables':{**data['tables'],**tables}}),'money':money_totals(tables)}
+    zaloha={'counts':record_counts(data),'money':money_totals(data['tables'])}
+    popisky={'income':'Příjmy (počet)','expenses':'Výdaje (počet)','trips':'Jízdy (počet)','fuel':'PHM (počet)','contacts':'Kontakty (počet)','documents':'Doklady (počet)'}
+    radky=[(label,zive['counts'].get(k),zaloha['counts'].get(k)) for k,label in popisky.items()]
+    radky.append(('Soubory dokladů (počet)',len(list(inventory())),m['document_count']))
+    for k in sorted(k for k in set(zive['money'])|set(zaloha['money']) if k.endswith(' celkem')):radky.append((k+' (Kč)',zive['money'].get(k),zaloha['money'].get(k)))
+    def stejne(a,b):
+        try:return Decimal(str(a))==Decimal(str(b)) if a is not None and b is not None else a==b
+        except ArithmeticError:return a==b
+    return [(a,b,c,'OK' if stejne(b,c) else 'ROZDÍL') for a,b,c in radky]
+
+def create_backup(path,browser_drafts=None,krok=None):
+    krok=krok or (lambda *a:None)
+    krok('databaze','Připravuji data…',5)
     structure,data=snapshot();entries=[];warnings=[]
     with zipfile.ZipFile(path,'w',zipfile.ZIP_DEFLATED,compresslevel=6,allowZip64=True) as z:
         def add(name,payload,kind):
             z.writestr(name,payload);entries.append({'path':name,'size':len(payload),'sha256':digest(payload),'type':kind})
         add('database/schema.json',json_bytes(structure),'database_schema')
         add('database/data.json',json_bytes(data),'database_data')
-        for rel,file in inventory():
+        soubory=list(inventory())
+        for i,(rel,file) in enumerate(soubory,1):
+            krok('doklady',f'Přidávám doklady… ({i} z {len(soubory)})',20+50*i/max(1,len(soubory)))
             try:
                 h=hashlib.sha256();size=0
                 with file.open('rb') as source,z.open('files/uploads/'+rel,'w',force_zip64=True) as target:
@@ -329,12 +376,15 @@ def unpack_files(path,staging):
                 target=Path(staging)/name;target.parent.mkdir(parents=True,exist_ok=True)
                 with z.open(name) as src,target.open('wb') as dst:shutil.copyfileobj(src,dst)
 
-def install_files(staging):
+def install_files(staging,krok=None):
+    krok=krok or (lambda *a:None)
     root=Path(current_app.config['UPLOAD_FOLDER']);source=Path(staging)/'files/uploads'
     wanted={p.relative_to(source).as_posix():p for p in source.rglob('*') if p.is_file()} if source.exists() else {}
     for rel,path in inventory():
         if rel not in wanted:path.unlink()
-    for rel,path in wanted.items():write_atomic(root/rel,path.read_bytes())
+    for i,(rel,path) in enumerate(wanted.items(),1):
+        krok('doklady',f'Obnovuji doklady… ({i} z {len(wanted)})',60+35*i/max(1,len(wanted)))
+        write_atomic(root/rel,path.read_bytes())
     for name,dst in settings_paths().items():
         src=Path(staging)/'settings'/name
         if src.exists():write_atomic(dst,src.read_bytes())
@@ -379,12 +429,16 @@ def set_sequences(data):
                     cur.execute('ALTER TABLE '+identifier(name)+' AUTO_INCREMENT='+str(value))
     finally:conn.close()
 
-def apply_data(path,data):
+def apply_data(path,data,krok=None):
+    krok=krok or (lambda *a:None)
     with tempfile.TemporaryDirectory(prefix='osvc-restore-') as staging:
         unpack_files(path,staging)
         conn=connection()
         try:
-            conn.begin();write_database(conn,data);install_files(staging)
+            krok('databaze','Obnovuji databázi…',35)
+            conn.begin();write_database(conn,data)
+            krok('doklady','Obnovuji doklady…',60)
+            install_files(staging,krok)
             hook=current_app.config.get('BACKUP_TEST_BEFORE_COMMIT')
             if hook:hook()
             conn.commit()
@@ -406,8 +460,11 @@ def recover_pending():
     journal.unlink()
     zamky.zapis_slozku(journal.parent)
 
-def restore_backup(path,browser_drafts=None):
+def restore_backup(path,browser_drafts=None,krok=None):
+    krok=krok or (lambda *a:None)
+    krok('kontrola','Kontroluji zálohu…',5)
     m,data=validate_backup(path)
+    krok('kontrola','Kontroluji… (ukládám pojistnou kopii současných dat)',15)
     folder=state_dir()/'backups';folder.mkdir(mode=0o700,exist_ok=True)
     snapshot_path=folder/('pre-restore-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')+'-'+uuid.uuid4().hex+'.zip')
     pre=create_backup(snapshot_path,browser_drafts)
@@ -417,11 +474,15 @@ def restore_backup(path,browser_drafts=None):
     journal=state_dir()/'restore-journal.json'
     write_atomic(journal,json_bytes({'snapshot':snapshot_path.name}))
     zdroje=sum(1 for r in data['tables'].get('income_sources',[]) if r.get('active'))
-    try:apply_data(path,data)
+    current_app.logger.info('obnova zálohy: začátek (záloha z %s)',m.get('created_at','?')[:19])
+    try:apply_data(path,data,krok)
     except Exception:
+        current_app.logger.exception('obnova zálohy selhala – vracím původní data')
         recover_pending();raise BackupError('Obnova selhala. Původní databáze, dokumenty a nastavení byly vráceny.')
     journal.unlink()
+    krok('srovnani','Porovnávám data se zálohou…',97)
     m['srovnani']=comparison(m,data);m['zdroje_vypnuto']=zdroje
+    current_app.logger.info('obnova zálohy: hotovo, %s položek srovnání, rozdílů %s',len(m['srovnani']),sum(r[3]!='OK' for r in m['srovnani']))
     write_atomic(state_dir()/'posledni-obnova.json',json_bytes({'radky':m['srovnani'],'zdroje_vypnuto':zdroje,'zaloha_z':m['created_at']}))
     zamky.zapis_slozku(journal.parent)
     return m,snapshot_path
@@ -438,6 +499,7 @@ def init_gate(app):
     from flask import g, request, abort
     @app.before_request
     def acquire():
+        if request.endpoint=='backup.progress':return   # jen čtení malého souboru průběhu – nesmí čekat na zámek obnovy
         if request.endpoint=='backup.validate':request.max_content_length=MAX_ZIP
         handle=(state_dir()/'.data.lock').open('ab');g.data_lock_handle=handle
         exclusive=request.endpoint in {'backup.export','backup.restore','annual.pdf'}
